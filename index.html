@@ -148,6 +148,18 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 .ftag-rm{cursor:pointer;color:var(--t3);font-size:14px}.ftag-rm:hover{color:var(--acc)}
 .tags-in{background:none;border:none;outline:none;color:var(--t1);font-size:13px;min-width:80px;flex:1;padding:2px 4px;font-family:var(--body)}
 .wrap16{padding:12px 16px}
+
+/* ══ POSTS ══ */
+.post-card{background:var(--sf);border-radius:var(--rl);padding:14px;margin-bottom:10px;box-shadow:var(--sh1);border:1px solid var(--bd);cursor:pointer;transition:all .15s}
+.post-card:active{transform:scale(.99);background:var(--sf2)}
+.post-cat-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--rf);font-size:10px;font-weight:600;margin-bottom:6px}
+.post-title{font-size:14px;font-weight:600;color:var(--t1);line-height:1.4;margin-bottom:5px}
+.post-body-preview{font-size:12px;color:var(--t2);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:8px}
+.post-meta{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--t3)}
+.post-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)}
+.post-action-btn{display:flex;align-items:center;gap:4px;padding:5px 10px;border:none;background:var(--sf2);border-radius:var(--rm);font-size:11px;font-weight:500;color:var(--t2);cursor:pointer;font-family:var(--body);transition:all .15s}
+.post-action-btn:hover{background:var(--acc-dim);color:var(--acc)}
+.post-action-btn.liked{background:var(--acc-dim);color:var(--acc)}
 /* ══ HERO CARD v3 — Gemini exact ══ */
 .hv3-stats-row{display:flex;gap:4px;margin-bottom:4px}
 .hv3-sh{display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:3px 7px;flex:1}
@@ -549,18 +561,18 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
         <button class="hg-btn" onclick="locateNear()">
           <div class="hg-ico">📍</div><div class="hg-lbl">ใกล้ฉัน</div>
         </button>
-        <button class="hg-btn" onclick="setFtf('diesel',document.querySelector('#ftChips .chip:nth-child(2)'))">
-          <div class="hg-ico">🛢️</div><div class="hg-lbl">ดีเซล</div>
+        <button class="hg-btn" onclick="goTo('posts')">
+          <div class="hg-ico">📰</div><div class="hg-lbl">โพสต์</div>
         </button>
-        <button class="hg-btn" onclick="setFtf('gasohol95',document.querySelector('#ftChips .chip:nth-child(3)'))">
-          <div class="hg-ico">🟠</div><div class="hg-lbl">95</div>
+        <button class="hg-btn" onclick="openWeatherModal()">
+          <div class="hg-ico" id="weatherIco">🌤️</div><div class="hg-lbl" id="weatherLbl">อากาศ</div>
         </button>
-        <button class="hg-btn" onclick="setFtf('e20',document.querySelector('#ftChips .chip:nth-child(5)'))">
-          <div class="hg-ico">🟢</div><div class="hg-lbl">E20</div>
+        <button class="hg-btn" onclick="openAnnouncementModal()" style="position:relative">
+          <div class="hg-ico">📢</div><div class="hg-lbl">ประกาศ</div>
+          <span id="annBadge" style="display:none;position:absolute;top:2px;right:8px;width:8px;height:8px;background:var(--empty);border-radius:50%;border:1.5px solid var(--sf)"></span>
         </button>
-        <button class="hg-btn" onclick="openAddPlace()">
-          <div class="hg-ico" style="background:rgba(255,255,255,.2);border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;margin:0 auto 2px">＋</div>
-          <div class="hg-lbl">เพิ่มสถานที่</div>
+        <button class="hg-btn" onclick="goTo('chat')">
+          <div class="hg-ico">💬</div><div class="hg-lbl">แชท</div>
         </button>
       </div>
     </div>
@@ -751,6 +763,74 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
     </div>
   </div>
 
+  <!-- POSTS SCREEN -->
+  <div class="screen" id="s-posts">
+    <div class="page-head">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div class="page-title">📰 ชุมชน FuelWatch</div>
+          <div class="page-sub">แบ่งปัน เรื่องราว ข่าวสาร ปั๊มน้ำมัน</div>
+        </div>
+        <button class="btn-acc" onclick="openNewPost()" style="padding:8px 14px;font-size:12px;border-radius:var(--rf)">✏️ โพสต์ใหม่</button>
+      </div>
+      <!-- Category filter -->
+      <div class="chips" id="postCatChips">
+        <div class="chip on" onclick="setPostCat('all',this)">ทั้งหมด</div>
+        <div class="chip" onclick="setPostCat('fuel',this)">⛽ น้ำมัน</div>
+        <div class="chip" onclick="setPostCat('road',this)">🛣️ ถนน</div>
+        <div class="chip" onclick="setPostCat('tip',this)">💡 เทคนิค</div>
+        <div class="chip" onclick="setPostCat('news',this)">📢 ข่าว</div>
+        <div class="chip" onclick="setPostCat('other',this)">💬 ทั่วไป</div>
+      </div>
+    </div>
+    <div id="postList" style="padding:8px 16px 0"></div>
+  </div>
+
+  <!-- POST DETAIL MODAL -->
+  <div class="overlay" id="postDetailOv" onclick="if(event.target===this)this.classList.remove('on')">
+    <div class="msheet" style="max-height:88vh;overflow-y:auto">
+      <div class="mhandle"></div>
+      <div id="postDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- NEW POST MODAL -->
+  <div class="overlay" id="newPostOv" onclick="if(event.target===this)this.classList.remove('on')">
+    <div class="msheet">
+      <div class="mhandle"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="mttl">✏️ โพสต์ใหม่</div>
+        <button onclick="document.getElementById('newPostOv').classList.remove('on')" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">×</button>
+      </div>
+      <div class="fg">
+        <label class="fl">หมวดหมู่</label>
+        <select class="fi" id="newPostCat">
+          <option value="fuel">⛽ น้ำมัน/ปั๊ม</option>
+          <option value="road">🛣️ ถนน/การจราจร</option>
+          <option value="tip">💡 เทคนิค/ประหยัดน้ำมัน</option>
+          <option value="news">📢 ข่าวสาร</option>
+          <option value="other">💬 ทั่วไป</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">หัวข้อ *</label>
+        <input class="fi" id="newPostTitle" placeholder="หัวข้อโพสต์ของคุณ">
+      </div>
+      <div class="fg">
+        <label class="fl">เนื้อหา *</label>
+        <textarea class="fi" id="newPostBody" placeholder="เล่าเรื่องราว แบ่งปันข้อมูล หรือถามคำถาม..." style="min-height:100px"></textarea>
+      </div>
+      <div class="fg">
+        <label class="fl">แท็กปั๊ม (ถ้ามี)</label>
+        <input class="fi" id="newPostStation" placeholder="เช่น ปตท. หลักเมือง">
+      </div>
+      <div class="macts">
+        <button class="mcancel" onclick="document.getElementById('newPostOv').classList.remove('on')">ยกเลิก</button>
+        <button class="mok" onclick="submitPost()">📤 โพสต์</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ADMIN SCREEN -->
   <div class="screen" id="s-admin" style="padding-bottom:0">
     <!-- Admin Login -->
@@ -813,6 +893,34 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
     <button class="bni" id="n-tools" onclick="goTo('tools')"><span class="bni-i">📊</span><span>เครื่องมือ</span><span class="bni-dot"></span></button>
     <button class="bni" id="n-chat" onclick="goTo('chat')"><span class="bni-i">💬</span><span>แชท</span><span class="bni-dot"></span></button>
   </nav>
+</div>
+
+<!-- WEATHER MODAL -->
+<div class="overlay" id="weatherOv" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="msheet" style="max-height:80vh">
+    <div class="mhandle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="mttl">🌤️ สภาพอากาศ</div>
+      <button onclick="document.getElementById('weatherOv').classList.remove('on')" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">×</button>
+    </div>
+    <div id="weatherContent" style="min-height:120px;display:flex;align-items:center;justify-content:center">
+      <div style="text-align:center;color:var(--t3)">⏳ กำลังโหลด...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ANNOUNCEMENT MODAL -->
+<div class="overlay" id="annOv" onclick="if(event.target===this)this.classList.remove('on')">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="mttl">📢 ประกาศด่วน</div>
+      <button onclick="document.getElementById('annOv').classList.remove('on')" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">×</button>
+    </div>
+    <div id="annContent">
+      <div style="text-align:center;color:var(--t3);padding:24px;font-size:13px">ไม่มีประกาศในขณะนี้</div>
+    </div>
+  </div>
 </div>
 
 <!-- ADD PLACE MODAL -->
@@ -1049,6 +1157,7 @@ function enterApp(){
   updateHeroGreet();
   doCheckin();
   loadData();
+  loadAnnouncements();
 }
 
 function updateUserBtn(){
@@ -1101,6 +1210,7 @@ function goTo(n){
   const navBtn=document.getElementById('n-'+n);
   if(navBtn) navBtn.classList.add('on');
   if(n==='tools'){renderPriceChart();renderDashChart();renderFavList();renderLeaderboard();renderBadgeCard();}
+  if(n==='posts'){renderPosts();}
   if(n==='chat'){initChat();scrollChat();}
   if(n==='map'){renderEmList();renderRescue();}
 }
@@ -2508,6 +2618,320 @@ function getLeaderboard(){
     .sort((a,b)=>(b.points||0)-(a.points||0))
     .slice(0,10);
 }
+/* ─── WEATHER ─── */
+// ใช้ Open-Meteo API (ฟรี ไม่ต้อง API key)
+// พิกัดเริ่มต้น = สุพรรณบุรี
+async function openWeatherModal(){
+  document.getElementById('weatherOv').classList.add('on');
+  const el=document.getElementById('weatherContent');
+  el.innerHTML='<div style="text-align:center;color:var(--t3)">⏳ กำลังโหลด...</div>';
+  try{
+    const lat=uLat||14.47, lng=uLng||100.12;
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Asia%2FBangkok`);
+    const d=await r.json();
+    const c=d.current;
+    const WC={0:'☀️ ท้องฟ้าแจ่มใส',1:'🌤️ มีเมฆบางส่วน',2:'⛅ มีเมฆปานกลาง',3:'☁️ มีเมฆมาก',45:'🌫️ หมอก',48:'🌫️ หมอกหนา',51:'🌦️ ฝนปรอย',53:'🌦️ ฝนปรอยปานกลาง',61:'🌧️ ฝนเล็กน้อย',63:'🌧️ ฝนปานกลาง',65:'🌧️ ฝนหนัก',80:'🌦️ ฝนตกช่วงสั้น',81:'🌧️ ฝนตกช่วงสั้นปานกลาง',95:'⛈️ พายุฝน',96:'⛈️ พายุฝนลูกเห็บ'};
+    const desc=WC[c.weather_code]||`รหัส ${c.weather_code}`;
+    const now=new Date().toLocaleString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    el.innerHTML=`
+      <div style="text-align:center;padding:8px 0 16px">
+        <div style="font-size:56px;margin-bottom:8px">${desc.split(' ')[0]}</div>
+        <div style="font-family:var(--disp);font-size:36px;font-weight:700;color:var(--t1)">${c.temperature_2m}°C</div>
+        <div style="font-size:14px;color:var(--t2);margin:4px 0">${desc.slice(2)}</div>
+        <div style="display:flex;justify-content:center;gap:20px;margin-top:12px;font-size:12px;color:var(--t3)">
+          <span>💧 ความชื้น ${c.relative_humidity_2m}%</span>
+          <span>💨 ลม ${c.wind_speed_10m} km/h</span>
+        </div>
+        <div style="font-size:10px;color:var(--t3);margin-top:10px">อัปเดต ${now} · ${uLat?'ตำแหน่งของคุณ':'สุพรรณบุรี (ค่าเริ่มต้น)'}</div>
+      </div>
+      <div style="background:var(--sf2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--t2);line-height:1.6">
+        ${c.temperature_2m>=38?'🔴 <b>อากาศร้อนจัด</b> — ระวังน้ำมันเครื่องร้อน ควรตรวจน้ำหล่อเย็น':
+          c.temperature_2m>=33?'🟡 <b>อากาศร้อน</b> — ระวังน้ำมันเครื่องร้อน':
+          c.weather_code>=61&&c.weather_code<=65?'🔵 <b>ฝนตก</b> — ระวังถนนลื่น ควรเติมน้ำมันก่อนออกเดินทาง':
+          c.weather_code===95?'⛈️ <b>พายุฝน</b> — ระวังอันตราย ควรหลีกเลี่ยงการเดินทาง':
+          '🟢 <b>สภาพอากาศปกติ</b> — เหมาะสำหรับการเดินทาง'}
+      </div>`;
+    // อัปเดต quick grid icon
+    const ico=document.getElementById('weatherIco');
+    const lbl=document.getElementById('weatherLbl');
+    if(ico) ico.textContent=desc.split(' ')[0];
+    if(lbl) lbl.textContent=`${c.temperature_2m}°`;
+  }catch(e){
+    el.innerHTML=`<div style="text-align:center;color:var(--t3);padding:20px">❌ โหลดข้อมูลไม่ได้<br><small>${e.message}</small></div>`;
+  }
+}
+
+/* ─── ANNOUNCEMENT ─── */
+let announcements=JSON.parse(localStorage.getItem('fw_announcements')||'[]');
+
+async function openAnnouncementModal(){
+  document.getElementById('annOv').classList.add('on');
+  renderAnnouncements();
+  // โหลดจาก Supabase ถ้ามี table
+  try{
+    const {data}=await sb.from('announcements').select('*').eq('active',true).order('created_at',{ascending:false}).limit(5);
+    if(data?.length){
+      announcements=data;
+      localStorage.setItem('fw_announcements',JSON.stringify(data));
+      renderAnnouncements();
+      updateAnnBadge();
+    }
+  }catch(e){/* ไม่มี table ก็ไม่เป็นไร */}
+}
+
+function renderAnnouncements(){
+  const el=document.getElementById('annContent');if(!el)return;
+  if(!announcements.length){
+    el.innerHTML='<div style="text-align:center;color:var(--t3);padding:24px;font-size:13px">ไม่มีประกาศในขณะนี้ 🎉</div>';
+    return;
+  }
+  const LEVEL_COLOR={urgent:'var(--empty)',warning:'var(--warn)',info:'var(--blue)',normal:'var(--go)'};
+  const LEVEL_ICO={urgent:'🚨',warning:'⚠️',info:'ℹ️',normal:'📢'};
+  el.innerHTML=announcements.map(a=>{
+    const color=LEVEL_COLOR[a.level||'normal']||'var(--go)';
+    const ico=LEVEL_ICO[a.level||'normal']||'📢';
+    const dt=a.created_at?new Date(a.created_at).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+    return `<div style="background:var(--sf2);border-radius:12px;padding:14px;margin-bottom:10px;border-left:3px solid ${color}">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <span style="font-size:16px">${ico}</span>
+        <div style="font-size:13px;font-weight:600;color:var(--t1);flex:1">${a.title||'ประกาศ'}</div>
+        <span style="font-size:10px;color:var(--t3)">${dt}</span>
+      </div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.6">${a.message||''}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateAnnBadge(){
+  const badge=document.getElementById('annBadge');
+  if(!badge) return;
+  const hasUrgent=announcements.some(a=>a.level==='urgent'||a.level==='warning');
+  badge.style.display=announcements.length>0?'block':'none';
+  badge.style.background=hasUrgent?'var(--empty)':'var(--blue)';
+}
+
+// โหลด announcement ตอนเริ่มต้น
+async function loadAnnouncements(){
+  try{
+    const {data}=await sb.from('announcements').select('*').eq('active',true).order('created_at',{ascending:false}).limit(5);
+    if(data?.length){
+      announcements=data;
+      localStorage.setItem('fw_announcements',JSON.stringify(data));
+      updateAnnBadge();
+      // popup อัตโนมัติถ้ามี urgent
+      const urgent=data.find(a=>a.level==='urgent');
+      if(urgent){
+        setTimeout(()=>{
+          document.getElementById('annOv').classList.add('on');
+          renderAnnouncements();
+        },2000);
+      }
+    }
+  }catch(e){/* ไม่มี table ก็ข้ามไป */}
+}
+
+/* ─── POSTS SYSTEM ─── */
+const CAT_LABEL={fuel:'⛽ น้ำมัน',road:'🛣️ ถนน',tip:'💡 เทคนิค',news:'📢 ข่าว',other:'💬 ทั่วไป'};
+const CAT_COLOR={fuel:'#2563eb',road:'#ea580c',tip:'#16a34a',news:'#dc2626',other:'#7c3aed'};
+let postCat='all';
+let postsData=[];
+
+function setPostCat(cat,el){
+  postCat=cat;
+  document.querySelectorAll('#postCatChips .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderPosts();
+}
+
+async function renderPosts(){
+  const el=document.getElementById('postList');if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:24px;color:var(--t3)">⏳ กำลังโหลด...</div>';
+  try{
+    let q=sb.from('community_posts').select('*').order('created_at',{ascending:false}).limit(30);
+    if(postCat!=='all') q=q.eq('category',postCat);
+    const {data,error}=await q;
+    if(error)throw error;
+    postsData=data||[];
+    renderPostList();
+  }catch(e){
+    // fallback local
+    postsData=JSON.parse(localStorage.getItem('fw_posts')||'[]');
+    renderPostList();
+  }
+}
+
+function renderPostList(){
+  const el=document.getElementById('postList');if(!el)return;
+  if(!postsData.length){
+    el.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--t3)">
+      <div style="font-size:40px;margin-bottom:12px">📰</div>
+      <div style="font-size:15px;font-weight:600;color:var(--t2);margin-bottom:8px">ยังไม่มีโพสต์</div>
+      <div style="font-size:12px">กด ✏️ โพสต์ใหม่ เพื่อเริ่มต้น!</div>
+    </div>`;
+    return;
+  }
+  const liked=JSON.parse(localStorage.getItem('fw_liked_posts')||'[]');
+  el.innerHTML=postsData.map(p=>{
+    const cat=CAT_LABEL[p.category]||'💬 ทั่วไป';
+    const color=CAT_COLOR[p.category]||'#7c3aed';
+    const dt=p.created_at?new Date(p.created_at).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+    const isLiked=liked.includes(p.id);
+    return `<div class="post-card" onclick="openPostDetail('${p.id}')">
+      <div class="post-cat-badge" style="background:${color}18;color:${color}">${cat}</div>
+      ${p.station_tag?`<div style="font-size:10px;color:var(--acc);margin-bottom:4px">📍 ${p.station_tag}</div>`:''}
+      <div class="post-title">${p.title||''}</div>
+      <div class="post-body-preview">${p.body||''}</div>
+      <div class="post-meta">
+        <span>👤 ${p.author_name||'ไม่ระบุ'}</span>
+        <span>🕐 ${dt}</span>
+        <span style="margin-left:auto">❤️ ${p.likes||0}</span>
+        <span>💬 ${p.comment_count||0}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openPostDetail(id){
+  const p=postsData.find(x=>String(x.id)===String(id));if(!p)return;
+  const el=document.getElementById('postDetailContent');if(!el)return;
+  const liked=JSON.parse(localStorage.getItem('fw_liked_posts')||'[]');
+  const isLiked=liked.includes(p.id);
+  const cat=CAT_LABEL[p.category]||'💬 ทั่วไป';
+  const color=CAT_COLOR[p.category]||'#7c3aed';
+  const dt=p.created_at?new Date(p.created_at).toLocaleString('th-TH',{weekday:'short',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}):'';
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="post-cat-badge" style="background:${color}18;color:${color}">${cat}</div>
+      <button onclick="document.getElementById('postDetailOv').classList.remove('on')" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer">×</button>
+    </div>
+    ${p.station_tag?`<div style="font-size:11px;color:var(--acc);margin-bottom:8px;font-weight:500">📍 ${p.station_tag}</div>`:''}
+    <div style="font-family:var(--disp);font-size:18px;font-weight:700;color:var(--t1);line-height:1.4;margin-bottom:10px">${p.title||''}</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--bd)">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px">${(p.author_name||'?').charAt(0).toUpperCase()}</div>
+      <div><div style="font-weight:600;color:var(--t2)">${p.author_name||'ไม่ระบุ'}</div><div>${dt}</div></div>
+    </div>
+    <div style="font-size:14px;color:var(--t1);line-height:1.8;white-space:pre-wrap;margin-bottom:20px">${p.body||''}</div>
+    <div style="display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);margin-bottom:16px">
+      <button class="post-action-btn ${isLiked?'liked':''}" onclick="toggleLike('${p.id}',this)">
+        ❤️ ถูกใจ <span id="likeCount-${p.id}">${p.likes||0}</span>
+      </button>
+      <button class="post-action-btn" onclick="sharePost('${p.id}')">🔗 แชร์</button>
+    </div>
+    <!-- Comments -->
+    <div style="font-size:13px;font-weight:600;color:var(--t2);margin-bottom:12px">💬 ความคิดเห็น</div>
+    <div id="commentList-${p.id}" style="margin-bottom:12px">
+      <div style="text-align:center;color:var(--t3);font-size:12px;padding:8px">กำลังโหลดความคิดเห็น...</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <input class="fi" id="commentInput-${p.id}" placeholder="${currentUser?'แสดงความคิดเห็น...':'Login ก่อนแสดงความคิดเห็น'}" ${currentUser?'':'disabled'} style="flex:1;font-size:12px;padding:8px 12px">
+      <button onclick="submitComment('${p.id}')" style="padding:8px 14px;background:var(--acc);color:#fff;border:none;border-radius:var(--rl);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--body)" ${currentUser?'':'disabled'}>ส่ง</button>
+    </div>`;
+  document.getElementById('postDetailOv').classList.add('on');
+  loadComments(p.id);
+}
+
+async function loadComments(postId){
+  const el=document.getElementById('commentList-'+postId);if(!el)return;
+  try{
+    const {data}=await sb.from('post_comments').select('*').eq('post_id',postId).order('created_at',{ascending:true}).limit(20);
+    if(!data?.length){el.innerHTML='<div style="text-align:center;color:var(--t3);font-size:12px;padding:8px">ยังไม่มีความคิดเห็น</div>';return;}
+    el.innerHTML=data.map(c=>{
+      const dt=new Date(c.created_at).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+      return `<div style="background:var(--sf2);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700">${(c.author_name||'?').charAt(0).toUpperCase()}</div>
+          <span style="font-size:11px;font-weight:600;color:var(--t2)">${c.author_name||'ไม่ระบุ'}</span>
+          <span style="font-size:10px;color:var(--t3);margin-left:auto">${dt}</span>
+        </div>
+        <div style="font-size:12px;color:var(--t1)">${c.body||''}</div>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div style="color:var(--t3);font-size:12px;padding:8px;text-align:center">โหลดความคิดเห็นไม่ได้</div>';}
+}
+
+async function submitComment(postId){
+  const inp=document.getElementById('commentInput-'+postId);
+  const body=inp?.value.trim();
+  if(!body||!currentUser){showToast('⚠️ Login ก่อนแสดงความคิดเห็น');return;}
+  try{
+    await sb.from('post_comments').insert({
+      post_id:postId,body,
+      author_name:currentUser.name,author_id:currentUser.id,
+      created_at:new Date().toISOString()
+    });
+    inp.value='';
+    loadComments(postId);
+    // increment comment_count
+    const p=postsData.find(x=>String(x.id)===String(postId));
+    if(p) p.comment_count=(p.comment_count||0)+1;
+    showToast('✅ แสดงความคิดเห็นแล้ว');
+    addPoints('report',2); // +2 คะแนน comment
+  }catch(e){showToast('❌ '+e.message);}
+}
+
+async function toggleLike(postId,btn){
+  const liked=JSON.parse(localStorage.getItem('fw_liked_posts')||'[]');
+  const idx=liked.indexOf(postId);
+  const countEl=document.getElementById('likeCount-'+postId);
+  const p=postsData.find(x=>String(x.id)===String(postId));
+  if(idx===-1){
+    liked.push(postId);
+    btn.classList.add('liked');
+    if(p){p.likes=(p.likes||0)+1;if(countEl)countEl.textContent=p.likes;}
+    try{await sb.from('community_posts').update({likes:(p?.likes||1)}).eq('id',postId);}catch(e){}
+  }else{
+    liked.splice(idx,1);
+    btn.classList.remove('liked');
+    if(p){p.likes=Math.max(0,(p.likes||1)-1);if(countEl)countEl.textContent=p.likes;}
+    try{await sb.from('community_posts').update({likes:(p?.likes||0)}).eq('id',postId);}catch(e){}
+  }
+  localStorage.setItem('fw_liked_posts',JSON.stringify(liked));
+}
+
+function sharePost(id){
+  const p=postsData.find(x=>String(x.id)===String(id));if(!p)return;
+  const txt=`📰 ${p.title}\n${p.body?.slice(0,100)}...\n\nFuelWatch TH — fuelwatch-th.vercel.app`;
+  navigator.clipboard?.writeText(txt).then(()=>showToast('📋 คัดลอกโพสต์แล้ว'));
+}
+
+function openNewPost(){
+  if(!currentUser){showToast('⚠️ Login ก่อนโพสต์');return;}
+  document.getElementById('newPostOv').classList.add('on');
+  setTimeout(()=>document.getElementById('newPostTitle')?.focus(),300);
+}
+
+async function submitPost(){
+  const title=document.getElementById('newPostTitle')?.value.trim();
+  const body=document.getElementById('newPostBody')?.value.trim();
+  const cat=document.getElementById('newPostCat')?.value||'other';
+  const station=document.getElementById('newPostStation')?.value.trim()||null;
+  if(!title||!body){showToast('⚠️ กรอกหัวข้อและเนื้อหาก่อน');return;}
+  if(!currentUser){showToast('⚠️ Login ก่อนโพสต์');return;}
+  const post={
+    title,body,category:cat,station_tag:station,
+    author_name:currentUser.name,author_id:currentUser.id,
+    likes:0,comment_count:0,
+    created_at:new Date().toISOString()
+  };
+  try{
+    const {data,error}=await sb.from('community_posts').insert(post).select().single();
+    if(error)throw error;
+    postsData.unshift(data);
+  }catch(e){
+    // fallback local
+    const local=JSON.parse(localStorage.getItem('fw_posts')||'[]');
+    local.unshift({...post,id:'local_'+Date.now()});
+    localStorage.setItem('fw_posts',JSON.stringify(local));
+    postsData.unshift({...post,id:'local_'+Date.now()});
+  }
+  document.getElementById('newPostOv').classList.remove('on');
+  document.getElementById('newPostTitle').value='';
+  document.getElementById('newPostBody').value='';
+  renderPostList();
+  addPoints('report',10); // +10 คะแนน โพสต์ใหม่
+  showToast('🎉 โพสต์แล้ว! +10 คะแนน');
+}
+
 /* ─── INIT ─── */
 if(currentUser){enterApp();}
 else{document.getElementById('app').style.display='none';}
