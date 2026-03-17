@@ -1,1079 +1,2179 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" data-theme="dark" data-lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#e8311a">
-<title>FuelWatch TH — สถานการณ์น้ำมันและช่วยเหลือฉุกเฉิน</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0b12">
+<title>FuelWatch TH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
+
 <style>
+/* ══════════════════════════════════════════════════
+   DESIGN TOKENS — DARK & LIGHT
+══════════════════════════════════════════════════ */
 :root {
-  --bg:#07080d;--s1:#0e0f16;--s2:#14151f;--s3:#1b1c28;
-  --bd:#222432;--bd2:#2d2f42;--text:#ecedf4;--muted:#52546a;--faint:#1a1b27;
-  --red:#e8311a;--red-d:#c5270f;--rbg:rgba(232,49,26,.10);--rbd:rgba(232,49,26,.28);
-  --green:#22c55e;--gbg:rgba(34,197,94,.10);
-  --yellow:#eab308;--ybg:rgba(234,179,8,.10);
-  --blue:#3b82f6;--bbg:rgba(59,130,246,.10);
-  --amber:#f59e0b;--abg:rgba(245,158,11,.10);
-  --purple:#a855f7;--pbg:rgba(168,85,247,.10);
-  --orange:#f97316;--obg:rgba(249,115,22,.10);
-  --mono:'IBM Plex Mono',monospace;--display:'Bebas Neue',sans-serif;
+  /* Accent — same in both modes */
+  --accent:       #e8311a;
+  --accent-dim:   rgba(232,49,26,.12);
+  --accent-brd:   rgba(232,49,26,.30);
+  --go:           #16a34a;
+  --go-dim:       rgba(22,163,74,.10);
+  --warn:         #d97706;
+  --warn-dim:     rgba(217,119,6,.10);
+  --empty:        #dc2626;
+  --empty-dim:    rgba(220,38,38,.10);
+  --part:         #ea580c;
+  --part-dim:     rgba(234,88,12,.10);
+  --blue:         #2563eb;
+  --blue-dim:     rgba(37,99,235,.10);
+  --teal:         #0891b2;
+  --teal-dim:     rgba(8,145,178,.10);
+
+  /* Typography */
+  --display: 'Outfit', 'Sarabun', sans-serif;
+  --body:    'Sarabun', 'Outfit', sans-serif;
+  --mono:    'JetBrains Mono', monospace;
+
+  /* Radius */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-full: 9999px;
+
+  /* Shadow */
+  --sh-sm: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.08);
+  --sh-md: 0 4px 16px rgba(0,0,0,.15);
+  --sh-lg: 0 8px 32px rgba(0,0,0,.20);
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;min-height:100vh;overflow-x:hidden}
-a{text-decoration:none;color:inherit}
 
-/* TOPBAR */
-.topbar{position:sticky;top:0;z-index:400;background:rgba(7,8,13,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);height:52px;display:flex;align-items:center;padding:0 14px;gap:10px}
-.logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.logo-mark{width:32px;height:32px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 14px rgba(232,49,26,.45);animation:glow 3s ease-in-out infinite}
-@keyframes glow{0%,100%{box-shadow:0 0 14px rgba(232,49,26,.45)}50%{box-shadow:0 0 26px rgba(232,49,26,.7)}}
-.logo-name{font-family:var(--display);font-size:20px;letter-spacing:.5px;line-height:1}
-.logo-name em{color:var(--red);font-style:normal}
-.nav-tabs{display:flex;gap:2px;flex:1;max-width:380px}
-.nav-tab{flex:1;padding:6px 8px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
-.nav-tab:hover{color:var(--text);background:var(--s2)}
-.nav-tab.active.fuel-tab{color:var(--orange);background:var(--obg)}
-.nav-tab.active.rescue-tab{color:var(--red);background:var(--rbg)}
-.crisis-dot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:blink 1.2s ease-in-out infinite;flex-shrink:0}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.topbar-right{display:flex;align-items:center;gap:7px;margin-left:auto}
-.top-search{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:6px 10px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;width:180px;transition:border-color .2s}
-.top-search:focus{border-color:var(--red)}
-.top-search::placeholder{color:var(--muted)}
-.btn{border:none;border-radius:7px;padding:6px 12px;font-family:'Sarabun',sans-serif;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:4px}
-.btn-register{background:var(--rbg);border:1px solid var(--rbd);color:var(--red)}
-.btn-register:hover{background:rgba(232,49,26,.18)}
-.btn-notif{background:var(--s2);border:1px solid var(--bd);color:var(--muted);font-size:16px;padding:5px 9px}
-.btn-notif:hover{border-color:var(--orange);color:var(--orange)}
-.btn-notif.on{color:var(--orange);border-color:var(--orange);background:var(--obg)}
-.catloop{display:flex;align-items:center;gap:4px;color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:1.5px;padding:3px 8px;border:1px solid var(--bd);border-radius:20px;background:var(--s2);transition:all .2s;flex-shrink:0}
-.catloop:hover{color:var(--red);border-color:var(--rbd)}
+/* ── DARK MODE ── */
+[data-theme="dark"] {
+  --bg:       #0a0b12;
+  --bg2:      #0f1018;
+  --surface:  #141520;
+  --surface2: #1a1b2a;
+  --surface3: #20223280;
+  --border:   rgba(255,255,255,.07);
+  --border2:  rgba(255,255,255,.12);
+  --t1:       #f0f1fa;
+  --t2:       #8b91b8;
+  --t3:       #4a4f72;
+  --t4:       #2d3050;
+  color-scheme: dark;
+}
 
-/* PAGES */
-.page{display:none}.page.active{display:block}
+/* ── LIGHT MODE ── */
+[data-theme="light"] {
+  --bg:       #f5f6fa;
+  --bg2:      #eef0f8;
+  --surface:  #ffffff;
+  --surface2: #f0f2fc;
+  --surface3: rgba(240,242,252,.8);
+  --border:   rgba(0,0,0,.07);
+  --border2:  rgba(0,0,0,.13);
+  --t1:       #0f1020;
+  --t2:       #4a5080;
+  --t3:       #9098c0;
+  --t4:       #c8cce0;
+  color-scheme: light;
+  --sh-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --sh-md: 0 4px 16px rgba(0,0,0,.08);
+  --sh-lg: 0 8px 32px rgba(0,0,0,.10);
+}
 
-/* CRISIS BANNER */
-.crisis-banner{background:linear-gradient(135deg,#1a0805 0%,var(--s1) 60%,#050a18 100%);border-bottom:1px solid var(--bd);padding:16px 16px 0;position:relative;overflow:hidden}
-.crisis-banner::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 55% 80% at 0% 50%,rgba(232,49,26,.08) 0%,transparent 70%)}
-.crisis-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
-.crisis-label{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--red)}
-.pulse{width:8px;height:8px;background:var(--red);border-radius:50%;animation:ripple 1.5s ease-out infinite}
-@keyframes ripple{0%{box-shadow:0 0 0 0 rgba(232,49,26,.6)}70%{box-shadow:0 0 0 10px rgba(232,49,26,0)}100%{box-shadow:0 0 0 0 rgba(232,49,26,0)}}
-.crisis-ts{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.ticker-wrap{background:rgba(232,49,26,.08);border:1px solid var(--rbd);border-radius:8px;padding:7px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;overflow:hidden}
-.ticker-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--red);white-space:nowrap;flex-shrink:0}
-.ticker-text{font-size:12px;color:var(--text);white-space:nowrap;animation:scroll-x 30s linear infinite}
-@keyframes scroll-x{0%{transform:translateX(60%)}100%{transform:translateX(-100%)}}
-.big-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:0;padding-bottom:14px}
-@media(max-width:480px){.big-stats{grid-template-columns:repeat(2,1fr)}}
-.bstat{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px 8px;text-align:center;position:relative;overflow:hidden}
-.bstat::before{content:'';position:absolute;inset:0;opacity:.06;border-radius:12px}
-.bstat.c-green::before{background:var(--green)}.bstat.c-orange::before{background:var(--orange)}.bstat.c-yellow::before{background:var(--yellow)}.bstat.c-red::before{background:var(--red)}
-.bstat-n{font-family:var(--mono);font-size:26px;font-weight:600;display:block;line-height:1;margin-bottom:3px}
-.bstat-l{font-size:10px;color:var(--muted)}
-.c-green .bstat-n{color:var(--green)}.c-orange .bstat-n{color:var(--orange)}.c-yellow .bstat-n{color:var(--yellow)}.c-red .bstat-n{color:var(--red)}
+/* ══════════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════════ */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent }
+html { scroll-behavior:smooth; font-size:16px }
+body {
+  background: var(--bg);
+  color: var(--t1);
+  font-family: var(--body);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  transition: background .25s ease, color .25s ease;
+}
+a { color:inherit; text-decoration:none }
+button { cursor:pointer; font-family:var(--body) }
+input,select,textarea { font-family:var(--body) }
 
-/* FUEL NAV */
-.fuel-nav{display:flex;border-bottom:1px solid var(--bd);background:var(--s1);padding:0 14px;gap:0;overflow-x:auto;flex-shrink:0}
-.fuel-nav::-webkit-scrollbar{display:none}
-.fnav-btn{padding:9px 13px;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:4px}
-.fnav-btn:hover{color:var(--text)}.fnav-btn.active{color:var(--orange);border-bottom-color:var(--orange)}
+/* ══════════════════════════════════════════════════
+   SPLASH SCREEN
+══════════════════════════════════════════════════ */
+#splash {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0;
+}
 
-/* SPLIT LAYOUT */
-.fuel-layout{display:flex;height:calc(100vh - 52px - 230px);min-height:380px}
-@media(max-width:700px){.fuel-layout{flex-direction:column;height:auto}}
-.fuel-panel{width:340px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
-@media(max-width:700px){.fuel-panel{width:100%;height:300px;border-right:none;border-bottom:1px solid var(--bd)}}
+.splash-bg {
+  position: absolute; inset: 0; overflow: hidden;
+}
+.splash-bg::before {
+  content: '';
+  position: absolute; inset: -50%;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(232,49,26,.08) 0%, transparent 70%);
+  animation: spbg 4s ease-in-out infinite alternate;
+}
+@keyframes spbg { from{transform:scale(1)} to{transform:scale(1.15)} }
 
-/* FUEL TYPE BAR */
-.fuel-type-bar{padding:8px 10px;border-bottom:1px solid var(--bd);display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
-.ftype-chip{padding:3px 9px;border-radius:14px;border:1px solid var(--bd);background:var(--s2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
-.ftype-chip:hover{color:var(--text);border-color:var(--bd2)}.ftype-chip.active{border-color:var(--orange);background:var(--obg);color:var(--orange)}
+.splash-grid {
+  position: absolute; inset: 0;
+  background-image: 
+    linear-gradient(rgba(232,49,26,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,49,26,.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
 
-/* STATION LIST */
-.station-scroll{flex:1;overflow-y:auto;padding:5px}
-.station-scroll::-webkit-scrollbar{width:3px}.station-scroll::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
-.scard{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:9px 11px;margin-bottom:4px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
-.scard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
-.scard.ok::before{background:var(--green)}.scard.partial::before{background:var(--orange)}.scard.low::before{background:var(--yellow)}.scard.empty::before{background:var(--red)}
-.scard:hover{border-color:var(--bd2);transform:translateX(2px)}.scard.sel{border-color:var(--orange);background:var(--obg)}
-.scard-row1{display:flex;justify-content:space-between;align-items:flex-start;gap:5px;margin-bottom:4px}
-.scard-name{font-weight:700;font-size:12.5px;line-height:1.3;flex:1}
-.sbadge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:9px;flex-shrink:0;font-family:var(--mono)}
-.sbadge.ok{background:var(--gbg);color:var(--green)}.sbadge.partial{background:var(--obg);color:var(--orange)}.sbadge.low{background:var(--ybg);color:var(--yellow)}.sbadge.empty{background:var(--rbg);color:var(--red)}
-.fuel-mini-bars{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px}
-.fmbar{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600}
-.fmbar.ok{background:var(--gbg);color:var(--green)}.fmbar.low{background:var(--ybg);color:var(--yellow)}.fmbar.empty{background:var(--rbg);color:var(--red)}.fmbar.unknown{background:var(--faint);color:var(--muted)}
-.scard-meta{font-size:10px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.splash-inner {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column;
+  align-items: center; text-align: center;
+  animation: spFadeIn .6s ease both;
+}
+@keyframes spFadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+.splash-logo {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--accent), #ff6040);
+  border-radius: var(--r-xl);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 0 0 rgba(232,49,26,.4);
+  animation: logoPulse 2s ease-out infinite;
+}
+@keyframes logoPulse {
+  0%  { box-shadow: 0 0 0 0   rgba(232,49,26,.45) }
+  70% { box-shadow: 0 0 0 20px rgba(232,49,26,0) }
+  100%{ box-shadow: 0 0 0 0   rgba(232,49,26,0) }
+}
+
+.splash-app-name {
+  font-family: var(--display);
+  font-size: clamp(32px, 8vw, 48px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 36px;
+}
+.splash-app-name span { color: var(--accent) }
+
+
+
+.splash-bar-wrap {
+  width: 200px; height: 3px;
+  background: var(--border2); border-radius: var(--r-full);
+  overflow: hidden; margin-bottom: 40px;
+}
+.splash-bar {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), #ff6040);
+  border-radius: var(--r-full);
+  transition: width .1s linear;
+}
+
+.splash-start {
+  display: flex; gap: 10px; flex-direction: column; align-items: center;
+  opacity: 0; transition: opacity .5s ease;
+  pointer-events: none;
+}
+.splash-start.visible { opacity: 1; pointer-events: all }
+
+.btn-guest, .btn-biz {
+  padding: 14px 32px; border-radius: var(--r-lg);
+  font-size: 15px; font-weight: 700; border: none;
+  width: 240px; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-biz {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(232,49,26,.35);
+}
+.btn-biz:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,49,26,.45) }
+.btn-guest {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--t2);
+}
+.btn-guest:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim) }
+
+.splash-divider {
+  font-size: 11px; color: var(--t3);
+  font-family: var(--mono); letter-spacing: 1px;
+}
+
+.splash-credit {
+  position: absolute; bottom: 32px; left: 0; right: 0;
+  text-align: center;
+  animation: spFadeIn .8s .5s ease both;
+}
+.catloop-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: var(--r-full);
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 9px; color: var(--t3);
+  font-family: var(--mono); letter-spacing: 2px;
+  transition: all .2s; text-transform: uppercase;
+}
+.catloop-badge:hover { border-color: var(--accent); color: var(--accent) }
+.catloop-dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; opacity: .7 }
+
+/* ══════════════════════════════════════════════════
+   MAIN APP
+══════════════════════════════════════════════════ */
+#app { display: none; flex-direction: column; min-height: 100dvh }
+#app.visible { display: flex }
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: var(--sh-sm);
+  transition: background .25s, border-color .25s;
+}
+
+.tb-logo {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.tb-icon {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  box-shadow: 0 2px 8px rgba(232,49,26,.3);
+}
+.tb-name {
+  font-family: var(--display);
+  font-size: 18px; font-weight: 800; letter-spacing: -.3px; line-height: 1;
+}
+.tb-name b { color: var(--accent) }
+
+.tb-right {
+  display: flex; align-items: center; gap: 6px; margin-left: auto;
+}
+
+/* Toggle buttons */
+.tb-toggle {
+  display: flex; align-items: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-full); overflow: hidden;
+  transition: all .2s;
+}
+.tbtog-opt {
+  padding: 5px 11px; font-size: 11px; font-weight: 700;
+  background: transparent; border: none; color: var(--t3);
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+  font-family: var(--body);
+  border-radius: var(--r-full);
+  margin: 2px;
+}
+.tbtog-opt.on {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(232,49,26,.3);
+}
+
+.tb-icon-btn {
+  width: 34px; height: 34px; border-radius: var(--r-md);
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; color: var(--t2);
+  cursor: pointer; transition: all .2s; flex-shrink: 0;
+}
+.tb-icon-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim) }
+
+/* ── BOTTOM NAV ── */
+.bnav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  transition: background .25s, border-color .25s;
+}
+.bni {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 3px; padding: 9px 4px; background: none; border: none;
+  color: var(--t3); font-size: 10px; font-weight: 700;
+  cursor: pointer; transition: color .15s; position: relative;
+  font-family: var(--body);
+}
+.bni:hover { color: var(--t2) }
+.bni.on { color: var(--accent) }
+.bni.on::before {
+  content: ''; position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 28px; height: 2.5px;
+  background: var(--accent); border-radius: 0 0 3px 3px;
+}
+.bni-ico { font-size: 20px; line-height: 1 }
+.bni-live { animation: livepulse 2.5s ease-in-out infinite }
+@keyframes livepulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+/* ── SCREENS ── */
+.screen { display: none }
+.screen.on { display: flex; flex-direction: column; flex: 1 }
+
+/* ══════════════════════════════════════════════════
+   SCREEN: FUEL
+══════════════════════════════════════════════════ */
+
+/* HERO */
+.fuel-hero {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  position: relative; overflow: hidden;
+}
+.fuel-hero::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse 50% 120% at 0% 50%, rgba(232,49,26,.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.fh-row1 {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; position: relative; z-index: 1;
+}
+.live-badge {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: var(--r-full);
+  background: rgba(220,38,38,.1); border: 1px solid rgba(220,38,38,.25);
+}
+.live-dot {
+  width: 6px; height: 6px; background: #dc2626; border-radius: 50%;
+  animation: blink 1.3s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.25;transform:scale(.75)} }
+.live-text {
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 2px; color: #dc2626; text-transform: uppercase;
+}
+
+.crisis-alert {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(220,38,38,.06); border: 1px solid rgba(220,38,38,.15);
+  border-radius: var(--r-md); padding: 8px 12px; margin-bottom: 12px;
+  position: relative; z-index: 1; overflow: hidden;
+}
+.ca-icon { font-size: 14px; flex-shrink: 0 }
+.ca-scroll { flex: 1; overflow: hidden }
+.ca-text {
+  font-size: 11.5px; color: var(--t2); white-space: nowrap;
+  animation: scroll-l 35s linear infinite;
+}
+@keyframes scroll-l { 0%{transform:translateX(100%)} 100%{transform:translateX(-100%)} }
+.ca-badge {
+  font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px;
+  color: #dc2626; flex-shrink: 0; text-transform: uppercase;
+}
+
+/* STATS */
+.stat-row {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 6px; position: relative; z-index: 1;
+}
+.stat-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 10px 8px;
+  text-align: center; position: relative; overflow: hidden;
+  transition: transform .15s, box-shadow .15s;
+}
+.stat-card:hover { transform: translateY(-1px); box-shadow: var(--sh-sm) }
+.stat-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+}
+.stat-card.s-go::after  { background: var(--go) }
+.stat-card.s-pt::after  { background: var(--part) }
+.stat-card.s-wn::after  { background: var(--warn) }
+.stat-card.s-em::after  { background: var(--empty) }
+.stat-n {
+  font-family: var(--display);
+  font-size: 26px; font-weight: 800; line-height: 1; display: block; margin-bottom: 2px;
+}
+.stat-card.s-go .stat-n  { color: var(--go) }
+.stat-card.s-pt .stat-n  { color: var(--part) }
+.stat-card.s-wn .stat-n  { color: var(--warn) }
+.stat-card.s-em .stat-n  { color: var(--empty) }
+.stat-l { font-size: 9px; color: var(--t3); font-weight: 600 }
+
+/* PRICE BAR */
+.price-strip {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 8px 14px; display: flex; gap: 6px; overflow-x: auto; align-items: center;
+}
+.price-strip::-webkit-scrollbar { display: none }
+.ps-lbl { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--t3); flex-shrink: 0; text-transform: uppercase }
+.price-chip {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 4px 10px; flex-shrink: 0;
+  transition: border-color .15s;
+}
+.price-chip:hover { border-color: var(--border2) }
+.pc-type { font-size: 10px; font-weight: 700 }
+.pc-val { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--t1) }
+.pc-unit { font-size: 9px; color: var(--t3) }
+
+/* FILTER PILLS */
+.filter-row {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 8px 12px; display: flex; gap: 5px; overflow-x: auto;
+}
+.filter-row::-webkit-scrollbar { display: none }
+.fpill {
+  padding: 5px 13px; border-radius: var(--r-full);
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--t3); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all .15s; flex-shrink: 0; white-space: nowrap;
+}
+.fpill:hover { color: var(--t2); border-color: var(--border2) }
+.fpill.on { border-color: var(--accent); background: var(--accent-dim); color: var(--accent) }
+
+/* SEARCH BAR */
+.search-bar {
+  padding: 8px 12px; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 7px;
+}
+.search-input {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 9px 13px;
+  color: var(--t1); font-size: 13px; outline: none;
+  transition: border-color .2s, box-shadow .2s; min-width: 0;
+}
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim) }
+.search-input::placeholder { color: var(--t3) }
+.search-select {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 9px 11px;
+  color: var(--t2); font-size: 12px; outline: none; cursor: pointer;
+  transition: border-color .2s;
+  -webkit-appearance: none;
+}
+.search-select:focus { border-color: var(--accent) }
+
+/* SPLIT */
+.fuel-split {
+  display: flex; flex: 1; overflow: hidden;
+  min-height: clamp(320px, 50dvh, 600px);
+}
+@media(max-width:680px){ .fuel-split{flex-direction:column} }
+
+.station-panel {
+  width: 300px; flex-shrink: 0;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; overflow: hidden;
+  transition: background .25s, border-color .25s;
+}
+@media(max-width:680px){ .station-panel{width:100%;height:260px;border-right:none;border-bottom:1px solid var(--border)} }
+
+.panel-hdr {
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.panel-title { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--t3); text-transform: uppercase }
+.panel-count { font-family: var(--mono); font-size: 10px; color: var(--t3) }
+
+.station-list { flex: 1; overflow-y: auto; padding: 6px }
+.station-list::-webkit-scrollbar { width: 3px }
+.station-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px }
+
+/* STATION CARD */
+.sc {
+  padding: 10px 12px; border-radius: var(--r-lg);
+  border: 1px solid var(--border); background: var(--surface2);
+  margin-bottom: 5px; cursor: pointer;
+  transition: all .15s; position: relative; overflow: hidden;
+}
+.sc::before { content:''; position:absolute; left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px }
+.sc.ok::before    { background: var(--go) }
+.sc.partial::before{ background: var(--part) }
+.sc.low::before   { background: var(--warn) }
+.sc.empty::before { background: var(--empty) }
+.sc:hover { border-color: var(--border2); transform: translateX(2px); box-shadow: var(--sh-sm) }
+.sc.sel { border-color: var(--accent); background: var(--accent-dim) }
+
+.sc-r1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 5px; margin-bottom: 5px }
+.sc-name { font-size: 12.5px; font-weight: 700; line-height: 1.3; flex: 1; color: var(--t1) }
+.sc-badge { font-family: var(--mono); font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: var(--r-full); flex-shrink: 0 }
+.sc-badge.ok    { background: var(--go-dim);   color: var(--go) }
+.sc-badge.partial{background: var(--part-dim); color: var(--part) }
+.sc-badge.low   { background: var(--warn-dim); color: var(--warn) }
+.sc-badge.empty { background: var(--empty-dim);color: var(--empty) }
+
+.sc-fuels { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 5px }
+.fbar {
+  font-size: 9px; padding: 2px 5px; border-radius: 5px;
+  font-weight: 700; font-family: var(--mono);
+  border: 1px solid transparent;
+}
+.fbar.ok    { background: var(--go-dim);   color: var(--go);   border-color: rgba(22,163,74,.15) }
+.fbar.low   { background: var(--warn-dim); color: var(--warn); border-color: rgba(217,119,6,.15) }
+.fbar.empty { background: var(--empty-dim);color: var(--empty);border-color: rgba(220,38,38,.15) }
+.fbar.unknown{ background: transparent; color: var(--t4); border-color: var(--border) }
+
+.sc-meta { font-size: 10px; color: var(--t3); display: flex; gap: 8px; flex-wrap: wrap }
 
 /* DRAWER */
-.fuel-drawer{background:var(--s1);border-top:2px solid var(--orange);flex-shrink:0;max-height:0;overflow:hidden;transition:max-height .3s ease}
-.fuel-drawer.open{max-height:360px;overflow-y:auto}
-.drawer-inner{padding:11px 13px}
-.drawer-title{font-weight:800;font-size:13px;margin-bottom:2px}
-.drawer-sub{font-size:11px;color:var(--muted);margin-bottom:8px}
-.fuel-status-table{width:100%;border-collapse:collapse;margin-bottom:10px}
-.fuel-status-table th{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);text-align:left;padding:0 5px 5px;border-bottom:1px solid var(--bd)}
-.fuel-status-table td{padding:5px;font-size:12px;border-bottom:1px solid var(--faint);vertical-align:middle}
-.fuel-status-table tr:last-child td{border-bottom:none}
-.schip{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:5px;font-size:10px;font-weight:700}
-.schip.ok{background:var(--gbg);color:var(--green)}.schip.low{background:var(--ybg);color:var(--yellow)}.schip.empty{background:var(--rbg);color:var(--red)}.schip.unknown{background:var(--faint);color:var(--muted)}
-.rpt-title{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin:8px 0 5px}
-.rpt-fuel-btns{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px}
-.rfbtn{padding:3px 8px;background:var(--s3);border:1px solid var(--bd);border-radius:5px;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
-.rfbtn:hover{color:var(--text)}.rfbtn.sel{border-color:var(--orange);background:var(--obg);color:var(--orange)}
-.rpt-status-btns{display:flex;gap:4px;margin-bottom:7px}
-.rsbtn{flex:1;padding:6px 3px;border-radius:6px;border:2px solid transparent;font-family:'Sarabun',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
-.rsbtn.ok{background:var(--gbg);border-color:rgba(34,197,94,.25);color:var(--green)}.rsbtn.low{background:var(--ybg);border-color:rgba(234,179,8,.25);color:var(--yellow)}.rsbtn.empty{background:var(--rbg);border-color:var(--rbd);color:var(--red)}
-.rsbtn:hover{filter:brightness(1.3)}.rsbtn.sel{filter:brightness(1.4);box-shadow:0 3px 10px rgba(0,0,0,.3);transform:translateY(-1px)}
-.rpt-submit{width:100%;padding:8px;background:var(--orange);color:#fff;border:none;border-radius:7px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
-.rpt-submit:hover{background:#e06012}
+.fuel-drawer {
+  background: var(--surface); border-top: 2px solid var(--accent);
+  flex-shrink: 0; max-height: 0; overflow: hidden; transition: max-height .35s ease;
+}
+.fuel-drawer.on { max-height: 380px; overflow-y: auto }
+.dr-inner { padding: 13px 14px }
+.dr-title { font-size: 14px; font-weight: 800; color: var(--t1); margin-bottom: 2px }
+.dr-sub { font-size: 11px; color: var(--t3); margin-bottom: 11px }
+.dr-table { width: 100%; border-collapse: collapse; margin-bottom: 12px }
+.dr-table th { font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px; color: var(--t3); text-align: left; padding: 0 6px 6px; border-bottom: 1px solid var(--border) }
+.dr-table td { padding: 6px; font-size: 12px; border-bottom: 1px solid var(--border); color: var(--t1) }
+.dr-table tr:last-child td { border-bottom: none }
+.status-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: var(--r-full);
+  font-size: 10px; font-weight: 700; font-family: var(--mono);
+}
+.status-chip.ok    { background: var(--go-dim);   color: var(--go) }
+.status-chip.low   { background: var(--warn-dim); color: var(--warn) }
+.status-chip.empty { background: var(--empty-dim);color: var(--empty) }
+.status-chip.unknown{ background: transparent; color: var(--t3); border: 1px solid var(--border) }
+
+.rpt-sect { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--t3); text-transform: uppercase; margin: 10px 0 7px }
+.rpt-fuels { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px }
+.rfbtn {
+  padding: 4px 9px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-md); color: var(--t3); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+}
+.rfbtn.on { border-color: var(--accent); background: var(--accent-dim); color: var(--accent) }
+.rpt-status { display: flex; gap: 6px; margin-bottom: 9px }
+.rstbtn {
+  flex: 1; padding: 8px; border-radius: var(--r-md); border: 1.5px solid transparent;
+  font-size: 12px; font-weight: 800; cursor: pointer; text-align: center;
+  transition: all .15s;
+}
+.rstbtn.ok    { background: var(--go-dim);   border-color: rgba(22,163,74,.2);   color: var(--go) }
+.rstbtn.low   { background: var(--warn-dim); border-color: rgba(217,119,6,.2);   color: var(--warn) }
+.rstbtn.empty { background: var(--empty-dim);border-color: rgba(220,38,38,.25);  color: var(--empty) }
+.rstbtn:hover  { transform: translateY(-1px); filter: brightness(1.15) }
+.rstbtn.on    { filter: brightness(1.3); box-shadow: var(--sh-sm); transform: translateY(-2px) }
+.rpt-submit {
+  width: 100%; padding: 10px; background: var(--accent); color: #fff;
+  border: none; border-radius: var(--r-lg);
+  font-size: 14px; font-weight: 800; cursor: pointer;
+  transition: all .2s; box-shadow: 0 3px 12px rgba(232,49,26,.3);
+}
+.rpt-submit:hover { background: #d62d17; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232,49,26,.4) }
+.rpt-submit:active { transform: scale(.98) }
 
 /* MAP */
-#fuelMap{flex:1;z-index:1;min-height:280px}
-.leaflet-tile-pane{filter:brightness(.55) saturate(.35)}
-.leaflet-popup-content-wrapper{background:var(--s1);border:1px solid var(--bd);border-radius:10px;color:var(--text);box-shadow:0 10px 40px rgba(0,0,0,.7);padding:0}
-.leaflet-popup-content{margin:0;min-width:190px}
-.leaflet-popup-tip{background:var(--s1)}
-.pup{padding:12px 14px}
-.pup-name{font-weight:700;font-size:13px;margin-bottom:2px}
-.pup-brand{font-size:11px;color:var(--muted);margin-bottom:7px}
-.pup-fuels{display:flex;flex-direction:column;gap:3px;margin-bottom:7px}
-.pup-fuel-row{display:flex;justify-content:space-between;align-items:center;font-size:11px}
-.pup-fname{color:var(--muted)}
-.pup-ts{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:7px}
-.pup-btn{width:100%;padding:6px;background:var(--orange);color:#fff;border:none;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+#fuelMap { flex: 1; z-index: 1; min-height: 250px }
+.leaflet-tile-pane { filter: var(--map-filter, brightness(.5) saturate(.3) hue-rotate(200deg)) }
+[data-theme="light"] { --map-filter: saturate(.5) brightness(.9) }
+.leaflet-popup-content-wrapper {
+  background: var(--surface) !important; border: 1px solid var(--border2) !important;
+  border-radius: var(--r-lg) !important; color: var(--t1) !important;
+  box-shadow: var(--sh-lg) !important; padding: 0 !important;
+}
+.leaflet-popup-content { margin: 0 !important; min-width: 200px }
+.leaflet-popup-tip { background: var(--surface) !important }
+.leaflet-popup-close-button { color: var(--t3) !important; top: 7px !important; right: 9px !important }
+.mpop { padding: 13px 15px }
+.mpop-name { font-weight: 800; font-size: 13px; color: var(--t1); margin-bottom: 2px }
+.mpop-brand { font-size: 11px; color: var(--t3); margin-bottom: 8px }
+.mpop-rows { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px }
+.mpop-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px }
+.mpop-ft { color: var(--t3) }
+.mpop-ts { font-family: var(--mono); font-size: 9px; color: var(--t3); margin-bottom: 8px }
+.mpop-btn {
+  width: 100%; padding: 7px; background: var(--accent); color: #fff;
+  border: none; border-radius: var(--r-md); font-size: 12px; font-weight: 800; cursor: pointer;
+}
 
-/* RESCUE PAGE */
-.rescue-hero{background:linear-gradient(135deg,#130504 0%,var(--s1) 55%,#080c14 100%);border-bottom:1px solid var(--bd);padding:22px 16px 18px;text-align:center;position:relative;overflow:hidden}
-.rescue-hero::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(232,49,26,.06) 0%,transparent 70%)}
-.rescue-title{font-family:var(--display);font-size:clamp(28px,6vw,48px);letter-spacing:1px;line-height:.95;margin-bottom:8px}
-.rescue-title span{color:var(--red)}
-.rescue-sub{font-size:13px;color:var(--muted);max-width:380px;margin:0 auto 14px;line-height:1.6}
-.hotlines-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.hl-chip{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:5px 12px;color:var(--text);font-size:12px;font-weight:600;transition:all .15s}
-.hl-chip:hover{border-color:var(--red);background:var(--rbg)}
-.hl-num{font-family:var(--mono);color:var(--red);font-size:12px;font-weight:600}
-.hl-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+/* ══════════════════════════════════════════════════
+   SCREEN: EMERGENCY MAP
+══════════════════════════════════════════════════ */
+.em-header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 12px 14px; flex-shrink: 0;
+}
+.em-row1 { display: flex; align-items: center; gap: 9px; margin-bottom: 10px }
+.em-title { font-family: var(--display); font-size: 20px; font-weight: 800; flex: 1; color: var(--t1) }
+.em-locate {
+  background: var(--accent); color: #fff; border: none;
+  border-radius: var(--r-lg); padding: 8px 14px;
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: 0 2px 10px rgba(232,49,26,.3);
+  transition: all .2s;
+}
+.em-locate:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(232,49,26,.4) }
 
-.rescue-filter{position:sticky;top:52px;z-index:200;background:rgba(7,8,13,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);padding:7px 14px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
-.rfil-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);flex-shrink:0}
-.rfil-chips{display:flex;gap:5px;flex-wrap:wrap;flex:1}
-.rfchip{padding:4px 10px;border-radius:14px;border:1px solid var(--bd);background:var(--s2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:3px}
-.rfchip:hover{color:var(--text);border-color:var(--bd2)}
-.rfchip.active.r{border-color:var(--red);background:var(--rbg);color:var(--red)}
-.rfchip.active.b{border-color:var(--blue);background:var(--bbg);color:var(--blue)}
-.rfchip.active.a{border-color:var(--amber);background:var(--abg);color:var(--amber)}
-.rfchip.active.g{border-color:var(--green);background:var(--gbg);color:var(--green)}
-.rfchip.active.p{border-color:var(--purple);background:var(--pbg);color:var(--purple)}
-.rfchip.active.all{border-color:var(--bd2);color:var(--text);background:var(--s2)}
-.rfchip-cnt{background:rgba(255,255,255,.08);color:var(--muted);border-radius:7px;padding:1px 5px;font-family:var(--mono);font-size:9px}
-.rfchip.active .rfchip-cnt{background:rgba(255,255,255,.15);color:#fff}
-.rescue-search-in{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 9px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:12px;outline:none;width:140px;transition:border-color .2s}
-.rescue-search-in:focus{border-color:var(--red)}
-.rescue-search-in::placeholder{color:var(--muted)}
+.em-chips { display: flex; gap: 5px; overflow-x: auto }
+.em-chips::-webkit-scrollbar { display: none }
+.em-chip {
+  padding: 5px 11px; border-radius: var(--r-full);
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--t3); font-size: 10px; font-weight: 700;
+  cursor: pointer; transition: all .15s; flex-shrink: 0; white-space: nowrap;
+}
+.em-chip:hover { color: var(--t2); border-color: var(--border2) }
+.em-chip.a-all  { border-color: var(--accent); background: var(--accent-dim); color: var(--accent) }
+.em-chip.a-hosp { border-color: var(--empty); background: var(--empty-dim); color: var(--empty) }
+.em-chip.a-pol  { border-color: var(--blue);  background: var(--blue-dim);  color: var(--blue) }
+.em-chip.a-resc { border-color: var(--go);    background: var(--go-dim);    color: var(--go) }
+.em-chip.a-fire { border-color: var(--warn);  background: var(--warn-dim);  color: var(--warn) }
+.em-chip.a-gar  { border-color: var(--teal);  background: var(--teal-dim);  color: var(--teal) }
 
-.rescue-main{max-width:940px;margin:0 auto;padding:18px 12px 80px}
-.rescue-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.rescue-sec-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
-.rescue-count{font-family:var(--mono);font-size:11px;color:var(--muted)}
-.r-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:9px}
+.em-layout { display: flex; flex: 1; overflow: hidden; min-height: 0 }
+@media(max-width:680px){ .em-layout{flex-direction:column} }
+.em-list {
+  width: 280px; flex-shrink: 0;
+  background: var(--surface); border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 5px;
+}
+.em-list::-webkit-scrollbar { width: 3px }
+.em-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px }
+@media(max-width:680px){ .em-list{width:100%;height:240px;border-right:none;border-bottom:1px solid var(--border)} }
 
-.rcard{background:var(--s1);border:1px solid var(--bd);border-radius:12px;overflow:hidden;transition:all .2s;animation:fadeup .25s ease both}
-@keyframes fadeup{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
-.rcard:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 7px 24px rgba(0,0,0,.4)}
-.rcard-strip{height:3px}
-.rcard.rescue .rcard-strip{background:linear-gradient(90deg,var(--red),transparent)}
-.rcard.tow    .rcard-strip{background:linear-gradient(90deg,var(--blue),transparent)}
-.rcard.shop   .rcard-strip{background:linear-gradient(90deg,var(--amber),transparent)}
-.rcard.fuel   .rcard-strip{background:linear-gradient(90deg,var(--green),transparent)}
-.rcard.other  .rcard-strip{background:linear-gradient(90deg,var(--purple),transparent)}
-.rcard-body{padding:12px 13px 10px}
-.rcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:6px}
-.rcard-name{font-weight:800;font-size:13px;line-height:1.3;flex:1}
-.rtype-badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:8px;flex-shrink:0;font-family:var(--mono)}
-.rtype-badge.rescue{background:var(--rbg);color:var(--red);border:1px solid var(--rbd)}
-.rtype-badge.tow   {background:var(--bbg);color:var(--blue);border:1px solid rgba(59,130,246,.25)}
-.rtype-badge.shop  {background:var(--abg);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
-.rtype-badge.fuel  {background:var(--gbg);color:var(--green);border:1px solid rgba(34,197,94,.25)}
-.rtype-badge.other {background:var(--pbg);color:var(--purple);border:1px solid rgba(168,85,247,.25)}
-.rcard-phone{font-family:var(--mono);font-size:17px;font-weight:600;margin-bottom:7px;letter-spacing:-.5px}
-.rcard-tags{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px}
-.rtag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--s3);color:var(--muted);border:1px solid var(--bd)}
-.rcard-meta{display:flex;gap:8px;font-size:11px;color:var(--muted);flex-wrap:wrap;margin-bottom:7px}
-.rcard-meta span{display:flex;align-items:center;gap:2px}
-.rbadges{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px}
-.rbadge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px}
-.rbadge.verified{background:var(--gbg);color:var(--green);border:1px solid rgba(34,197,94,.2)}
-.rbadge.h24{background:var(--rbg);color:var(--red);border:1px solid var(--rbd)}
-.rbadge.free{background:var(--bbg);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
-.rbadge.heavy{background:var(--pbg);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
-.rbadge.quick{background:var(--abg);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
-.rcard-note{font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5}
-.rcard-actions{display:flex;gap:5px}
-.rcall{flex:1;padding:7px;background:var(--red);color:#fff;border:none;border-radius:7px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:3px}
-.rcall:hover{background:var(--red-d)}
-.rline{padding:7px 9px;background:#00b900;color:#fff;border:none;border-radius:7px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
-.rline:hover{background:#009900}
-.rcard-edit{margin-top:6px;font-size:10px;color:var(--muted);font-family:var(--mono)}
-.rcard-edit span{cursor:pointer;text-decoration:underline}
-.rcard-edit span:hover{color:var(--red)}
-.r-empty{text-align:center;padding:44px 16px;color:var(--muted);grid-column:1/-1}
-.r-empty .ei{font-size:40px;margin-bottom:8px}
-.r-empty p{font-size:13px;line-height:1.8}
+.em-card {
+  padding: 10px 12px; border-radius: var(--r-lg);
+  border: 1px solid var(--border); background: var(--surface2);
+  margin-bottom: 5px; cursor: pointer;
+  transition: all .15s; position: relative; overflow: hidden;
+  animation: fadeup .2s ease both;
+}
+@keyframes fadeup { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+.em-card::before { content:''; position:absolute; left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px }
+.em-card.hospital::before { background: var(--empty) }
+.em-card.police::before   { background: var(--blue) }
+.em-card.rescue::before   { background: var(--go) }
+.em-card.fire::before     { background: var(--warn) }
+.em-card.garage::before   { background: var(--teal) }
+.em-card:hover { border-color: var(--border2); transform: translateX(2px); box-shadow: var(--sh-sm) }
+.em-card.sel { border-color: var(--accent); background: var(--accent-dim) }
 
-/* MODAL */
-.overlay{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.8);display:flex;align-items:flex-start;justify-content:center;padding:14px 12px 40px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s}
-.overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--s1);border:1px solid var(--bd2);border-top:3px solid var(--red);border-radius:14px;width:100%;max-width:480px;padding:20px;transform:translateY(20px);transition:transform .3s cubic-bezier(.34,1.4,.64,1);margin-top:6px}
-.overlay.open .modal{transform:translateY(0)}
-.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
-.modal-title{font-weight:800;font-size:17px}
-.modal-close{background:var(--s3);border:1px solid var(--bd);border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--muted);transition:all .15s;flex-shrink:0}
-.modal-close:hover{color:var(--text)}
-.modal-sub{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5}
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
-.fgrid .full{grid-column:1/-1}
-.fg{display:flex;flex-direction:column;gap:4px}
-.flabel{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
-.finput,.fselect,.ftextarea{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;transition:border-color .15s;width:100%}
-.finput:focus,.fselect:focus,.ftextarea:focus{border-color:var(--red)}
-.finput::placeholder,.ftextarea::placeholder{color:var(--muted)}
-.fselect{cursor:pointer;-webkit-appearance:none}
-.ftextarea{resize:vertical;min-height:56px;line-height:1.5}
-.toggles{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
-.tchip{display:flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 9px;cursor:pointer;transition:all .15s;user-select:none;font-size:12px;font-weight:600}
-.tchip input{display:none}
-.tchip:has(input:checked){border-color:var(--red);background:var(--rbg);color:var(--red)}
-.tags-wrap{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 8px;display:flex;flex-wrap:wrap;gap:4px;cursor:text;transition:border-color .15s}
-.tags-wrap:focus-within{border-color:var(--red)}
-.ftag-item{background:var(--s3);border:1px solid var(--bd2);color:var(--text);border-radius:5px;padding:2px 6px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
-.ftag-rm{cursor:pointer;color:var(--muted);font-size:13px;transition:color .1s}
-.ftag-rm:hover{color:var(--red)}
-.ftags-in{background:none;border:none;outline:none;color:var(--text);font-family:'Sarabun',sans-serif;font-size:12px;min-width:70px;flex:1;padding:2px 3px}
-.ftags-hint{font-size:10px;color:var(--muted);margin-top:3px}
-.pin-box{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:11px;margin-bottom:11px}
-.pin-title{font-weight:700;font-size:12px;margin-bottom:2px}
-.pin-desc{font-size:11px;color:var(--muted);margin-bottom:7px;line-height:1.5}
-.pin-row{display:flex;gap:6px}
-.pin-row .finput{letter-spacing:6px;font-family:var(--mono);font-size:15px;text-align:center}
-hr.div{border:none;border-top:1px solid var(--bd);margin:12px 0}
-.modal-actions{display:flex;gap:6px;margin-top:12px}
-.mcancel{flex:1;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
-.mcancel:hover{color:var(--text);border-color:var(--bd2)}
-.msubmit{flex:2;padding:8px;background:var(--red);border:none;border-radius:8px;color:#fff;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:background .15s}
-.msubmit:hover{background:var(--red-d)}
+.ec-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 5px; margin-bottom: 4px }
+.ec-name { font-size: 12.5px; font-weight: 700; line-height: 1.3; flex: 1; color: var(--t1) }
+.ec-type { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: var(--r-full); flex-shrink: 0; font-family: var(--mono) }
+.ec-type.hospital { background: var(--empty-dim); color: var(--empty) }
+.ec-type.police   { background: var(--blue-dim);  color: var(--blue) }
+.ec-type.rescue   { background: var(--go-dim);    color: var(--go) }
+.ec-type.fire     { background: var(--warn-dim);  color: var(--warn) }
+.ec-type.garage   { background: var(--teal-dim);  color: var(--teal) }
 
-/* TOAST */
-.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--s2);border:1px solid var(--bd2);border-left:3px solid var(--red);padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;z-index:9999;pointer-events:none;white-space:nowrap;transition:transform .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 7px 28px rgba(0,0,0,.6)}
-.toast.show{transform:translateX(-50%) translateY(0)}
+.ec-addr { font-size: 10px; color: var(--t3); margin-bottom: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+.ec-meta { font-size: 10px; color: var(--t3); display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 7px; align-items: center }
+.dist-tag {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-family: var(--mono); font-size: 9px; font-weight: 600;
+  background: var(--blue-dim); color: var(--blue);
+  border: 1px solid rgba(37,99,235,.2);
+  border-radius: var(--r-md); padding: 1px 6px;
+}
+.ec-actions { display: flex; gap: 5px }
+.btn-nav {
+  flex: 1; padding: 7px; background: var(--accent); color: #fff; border: none;
+  border-radius: var(--r-md); font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  text-decoration: none; transition: background .15s;
+}
+.btn-nav:hover { background: #d62d17 }
+.btn-call {
+  padding: 7px 10px; background: var(--go-dim); color: var(--go);
+  border: 1px solid rgba(22,163,74,.2); border-radius: var(--r-md);
+  font-size: 11px; font-weight: 800; text-decoration: none;
+  display: flex; align-items: center; gap: 3px; transition: background .15s;
+}
+.btn-call:hover { background: rgba(22,163,74,.15) }
+.btn-gmap {
+  padding: 7px 9px; background: var(--blue-dim); color: var(--blue);
+  border: 1px solid rgba(37,99,235,.2); border-radius: var(--r-md);
+  font-family: var(--mono); font-size: 9px; font-weight: 700;
+  text-decoration: none; display: flex; align-items: center;
+}
 
-/* NOTIF POPUP */
-.notif-popup{position:fixed;top:58px;right:14px;z-index:800;background:var(--s1);border:1px solid var(--rbd);border-left:3px solid var(--red);border-radius:10px;padding:11px 14px;max-width:270px;box-shadow:0 7px 28px rgba(0,0,0,.6);transform:translateX(310px);transition:transform .4s cubic-bezier(.34,1.3,.64,1)}
-.notif-popup.show{transform:translateX(0)}
-.notif-top{display:flex;justify-content:space-between;align-items:flex-start;gap:7px;margin-bottom:4px}
-.notif-title{font-weight:700;font-size:12px;color:var(--red)}
-.notif-close{cursor:pointer;color:var(--muted);font-size:15px;line-height:1}
-.notif-close:hover{color:var(--text)}
-.notif-body{font-size:12px;color:var(--text);line-height:1.4}
-.notif-ts{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px}
+#emMap { flex: 1; min-height: 260px; z-index: 1 }
 
-/* LOADING */
-.loading-overlay{position:fixed;inset:0;background:rgba(7,8,13,.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
-.loading-overlay.hidden{display:none}
-.spinner{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-txt{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:1px}
+/* ══════════════════════════════════════════════════
+   SCREEN: RESCUE DIRECTORY
+══════════════════════════════════════════════════ */
+#s-rescue { overflow-y: auto; padding-bottom: 80px }
 
-@media(max-width:600px){.fgrid{grid-template-columns:1fr}.fgrid .full{grid-column:1}.r-grid{grid-template-columns:1fr}.topbar .top-search{display:none}.catloop{display:none}}
+.rescue-hero {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 18px 16px 16px; position: relative; overflow: hidden;
+}
+.rescue-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(232,49,26,.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.rh-title {
+  font-family: var(--display);
+  font-size: clamp(24px, 5vw, 36px); font-weight: 900;
+  letter-spacing: -.5px; line-height: .95; margin-bottom: 7px;
+  position: relative; z-index: 1;
+}
+.rh-title span { color: var(--accent) }
+.rh-sub { font-size: 12px; color: var(--t3); margin-bottom: 14px; line-height: 1.5; position: relative; z-index: 1 }
+
+.hotlines { display: flex; flex-wrap: wrap; gap: 6px; position: relative; z-index: 1 }
+.hl-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-full); padding: 6px 13px;
+  font-size: 12px; font-weight: 700; color: var(--t1);
+  text-decoration: none; transition: all .15s;
+}
+.hl-btn:hover { border-color: var(--accent); background: var(--accent-dim); color: var(--accent) }
+.hl-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0 }
+.hl-num { font-family: var(--mono); font-size: 13px; font-weight: 700 }
+
+/* Rescue filter */
+.rescue-filter {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 8px 12px; display: flex; gap: 6px; overflow-x: auto; align-items: center;
+  box-shadow: var(--sh-sm);
+}
+.rescue-filter::-webkit-scrollbar { display: none }
+.rs-search {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 6px 10px;
+  color: var(--t1); font-size: 12px; outline: none; width: 120px;
+  transition: border-color .2s, width .3s; flex-shrink: 0;
+}
+.rs-search:focus { border-color: var(--accent); width: 160px }
+.rs-search::placeholder { color: var(--t3) }
+.rfpill {
+  padding: 5px 11px; border-radius: var(--r-full);
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--t3); font-size: 10px; font-weight: 700;
+  cursor: pointer; transition: all .15s; flex-shrink: 0; white-space: nowrap;
+}
+.rfpill:hover { color: var(--t2); border-color: var(--border2) }
+.rfpill.r-all  { border-color: var(--border2); color: var(--t2) }
+.rfpill.r-resc { border-color: var(--empty);  background: var(--empty-dim); color: var(--empty) }
+.rfpill.r-tow  { border-color: var(--blue);   background: var(--blue-dim);  color: var(--blue) }
+.rfpill.r-shop { border-color: var(--warn);   background: var(--warn-dim);  color: var(--warn) }
+.rfpill.r-fuel { border-color: var(--go);     background: var(--go-dim);    color: var(--go) }
+.rfpill.r-other{ border-color: var(--teal);   background: var(--teal-dim);  color: var(--teal) }
+
+.rescue-grid-wrap { padding: 12px; max-width: 1000px; margin: 0 auto }
+.rescue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 10px }
+
+/* RESCUE CARD */
+.r-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-xl); overflow: hidden;
+  transition: all .2s; animation: fadeup .25s ease both;
+  box-shadow: var(--sh-sm);
+}
+.r-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: var(--sh-md) }
+.r-strip { height: 3px }
+.r-card.rescue .r-strip { background: linear-gradient(90deg, var(--empty), transparent) }
+.r-card.tow    .r-strip { background: linear-gradient(90deg, var(--blue), transparent) }
+.r-card.shop   .r-strip { background: linear-gradient(90deg, var(--warn), transparent) }
+.r-card.fuel   .r-strip { background: linear-gradient(90deg, var(--go), transparent) }
+.r-card.other  .r-strip { background: linear-gradient(90deg, var(--teal), transparent) }
+.r-body { padding: 12px 13px 11px }
+.r-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 5px; margin-bottom: 6px }
+.r-name { font-weight: 800; font-size: 13px; line-height: 1.3; flex: 1; color: var(--t1) }
+.r-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: var(--r-full); flex-shrink: 0; font-family: var(--mono) }
+.r-badge.rescue{ background: var(--empty-dim); color: var(--empty); border: 1px solid rgba(220,38,38,.2) }
+.r-badge.tow   { background: var(--blue-dim);  color: var(--blue);  border: 1px solid rgba(37,99,235,.2) }
+.r-badge.shop  { background: var(--warn-dim);  color: var(--warn);  border: 1px solid rgba(217,119,6,.2) }
+.r-badge.fuel  { background: var(--go-dim);    color: var(--go);    border: 1px solid rgba(22,163,74,.2) }
+.r-badge.other { background: var(--teal-dim);  color: var(--teal);  border: 1px solid rgba(8,145,178,.2) }
+
+.r-phone { font-family: var(--mono); font-size: 17px; font-weight: 600; margin-bottom: 6px; color: var(--t1); letter-spacing: -.5px }
+.r-tags { display: flex; gap: 3px; flex-wrap: wrap; margin-bottom: 7px }
+.r-tag { font-size: 9px; padding: 2px 6px; border-radius: var(--r-md); background: var(--surface2); color: var(--t3); border: 1px solid var(--border) }
+.r-meta { display: flex; gap: 8px; font-size: 11px; color: var(--t3); flex-wrap: wrap; margin-bottom: 7px }
+.r-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 9px }
+.rb { display: inline-flex; align-items: center; gap: 3px; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: var(--r-md); font-family: var(--mono) }
+.rb.v  { background: var(--go-dim);   color: var(--go);   border: 1px solid rgba(22,163,74,.2) }
+.rb.h  { background: var(--empty-dim);color: var(--empty);border: 1px solid rgba(220,38,38,.2) }
+.rb.f  { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(37,99,235,.2) }
+.rb.hw { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(8,145,178,.2) }
+.rb.q  { background: var(--warn-dim); color: var(--warn); border: 1px solid rgba(217,119,6,.2) }
+.r-note { font-size: 11px; color: var(--t3); margin-bottom: 9px; line-height: 1.5 }
+.r-actions { display: flex; gap: 5px }
+.r-call {
+  flex: 1; padding: 8px; background: var(--accent); color: #fff; border: none;
+  border-radius: var(--r-md); font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  text-decoration: none; transition: background .15s; cursor: pointer;
+}
+.r-call:hover { background: #d62d17 }
+.r-line { padding: 8px 11px; background: #00b900; color: #fff; border: none; border-radius: var(--r-md); font-size: 12px; font-weight: 800; cursor: pointer; transition: background .15s }
+.r-line:hover { background: #009900 }
+.r-edit-row { margin-top: 7px; font-size: 9px; color: var(--t3); font-family: var(--mono) }
+.r-edit-row span { cursor: pointer; text-decoration: underline }
+.r-edit-row span:hover { color: var(--accent) }
+
+/* FAB */
+.fab {
+  position: fixed; right: 16px; bottom: 80px; z-index: 300;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); color: #fff; border: none;
+  font-size: 24px; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(232,49,26,.45);
+  transition: all .2s; cursor: pointer;
+}
+.fab:hover { transform: scale(1.08); box-shadow: 0 8px 28px rgba(232,49,26,.55) }
+.fab:active { transform: scale(.95) }
+
+/* ══════════════════════════════════════════════════
+   MODAL (Bottom Sheet)
+══════════════════════════════════════════════════ */
+.overlay {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(8px);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.overlay.on { opacity: 1; pointer-events: all }
+.modal-sheet {
+  width: 100%; max-height: 92dvh; overflow-y: auto;
+  background: var(--surface);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  border-top: 1px solid var(--border2);
+  padding: 16px 16px 40px;
+  transform: translateY(100%);
+  transition: transform .35s cubic-bezier(.32,1.4,.52,1);
+}
+.overlay.on .modal-sheet { transform: translateY(0) }
+.modal-handle {
+  width: 40px; height: 4px; background: var(--border2);
+  border-radius: var(--r-full); margin: 0 auto 16px;
+}
+.modal-title { font-size: 18px; font-weight: 800; color: var(--t1); margin-bottom: 4px }
+.modal-sub { font-size: 12px; color: var(--t3); margin-bottom: 20px; line-height: 1.5 }
+
+/* USER TYPE SELECTOR */
+.utype-row { display: flex; gap: 8px; margin-bottom: 20px }
+.utype-card {
+  flex: 1; padding: 14px 10px; border-radius: var(--r-lg);
+  border: 2px solid var(--border); background: var(--surface2);
+  cursor: pointer; text-align: center; transition: all .2s;
+}
+.utype-card:hover { border-color: var(--border2) }
+.utype-card.on { border-color: var(--accent); background: var(--accent-dim) }
+.utype-ico { font-size: 26px; margin-bottom: 5px }
+.utype-name { font-size: 13px; font-weight: 700; color: var(--t1); margin-bottom: 2px }
+.utype-desc { font-size: 10px; color: var(--t3); line-height: 1.4 }
+
+/* FORM */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px }
+.form-grid .full { grid-column: 1 / -1 }
+.fg { display: flex; flex-direction: column; gap: 4px }
+.fl { font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px; color: var(--t3); text-transform: uppercase }
+.fi, .fs, .fta {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 10px 12px;
+  color: var(--t1); font-size: 14px; outline: none; width: 100%;
+  transition: border-color .2s, box-shadow .2s;
+}
+.fi:focus, .fs:focus, .fta:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.fi::placeholder, .fta::placeholder { color: var(--t3) }
+.fs { cursor: pointer; -webkit-appearance: none }
+.fta { resize: vertical; min-height: 60px; line-height: 1.5 }
+
+.toggle-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px }
+.tgl-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 7px 12px; cursor: pointer;
+  user-select: none; font-size: 12px; font-weight: 700; color: var(--t2);
+  transition: all .15s;
+}
+.tgl-chip input { display: none }
+.tgl-chip:has(input:checked) {
+  border-color: var(--accent); background: var(--accent-dim); color: var(--accent);
+}
+
+.tags-wrap {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 7px 10px;
+  display: flex; flex-wrap: wrap; gap: 4px; cursor: text;
+  transition: border-color .2s, box-shadow .2s; margin-bottom: 12px;
+}
+.tags-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim) }
+.ftag-item {
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--t1); border-radius: var(--r-md); padding: 2px 7px;
+  font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 3px;
+}
+.ftag-rm { cursor: pointer; color: var(--t3); font-size: 14px; transition: color .1s }
+.ftag-rm:hover { color: var(--accent) }
+.ftags-in {
+  background: none; border: none; outline: none; color: var(--t1);
+  font-size: 13px; min-width: 80px; flex: 1; padding: 2px 4px; font-family: var(--body);
+}
+
+.pin-box {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 13px; margin-bottom: 14px;
+}
+.pin-title { font-weight: 800; font-size: 13px; color: var(--t1); margin-bottom: 3px }
+.pin-desc { font-size: 11px; color: var(--t3); margin-bottom: 10px; line-height: 1.5 }
+.pin-row { display: flex; gap: 8px }
+.pin-row .fi { letter-spacing: 8px; font-family: var(--mono); font-size: 18px; text-align: center }
+
+.form-sep { border: none; border-top: 1px solid var(--border); margin: 16px 0 }
+
+.modal-actions { display: flex; gap: 8px; margin-top: 14px }
+.btn-cancel {
+  flex: 1; padding: 12px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); color: var(--t3); font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+}
+.btn-cancel:hover { border-color: var(--border2); color: var(--t2) }
+.btn-submit {
+  flex: 2; padding: 12px; background: var(--accent); border: none;
+  border-radius: var(--r-lg); color: #fff; font-size: 15px; font-weight: 800;
+  cursor: pointer; transition: all .2s; box-shadow: 0 3px 12px rgba(232,49,26,.3);
+}
+.btn-submit:hover { background: #d62d17; box-shadow: 0 6px 20px rgba(232,49,26,.4) }
+
+/* ══════════════════════════════════════════════════
+   TOAST + NOTIF
+══════════════════════════════════════════════════ */
+.toast {
+  position: fixed; top: 56px; right: 12px;
+  transform: translateY(-16px);
+  opacity: 0;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-left: 2px solid var(--accent);
+  padding: 7px 13px; border-radius: var(--r-md);
+  font-size: 11px; font-weight: 600; z-index: 9999;
+  pointer-events: none; white-space: nowrap;
+  transition: transform .25s ease, opacity .25s ease;
+  box-shadow: var(--sh-sm); color: var(--t2);
+  max-width: 260px; overflow: hidden; text-overflow: ellipsis;
+}
+.toast.on { transform: translateY(0); opacity: 1 }
+
+.npop {
+  position: fixed; top: 10px; right: 12px; z-index: 700;
+  background: var(--surface); border: 1px solid var(--accent-brd);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-lg); padding: 11px 14px; max-width: 260px;
+  box-shadow: var(--sh-lg); color: var(--t1);
+  transform: translateX(300px); transition: transform .4s cubic-bezier(.34,1.3,.64,1);
+}
+.npop.on { transform: translateX(0) }
+.np-hdr { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px }
+.np-ttl { font-weight: 800; font-size: 12px; color: var(--accent) }
+.np-x { cursor: pointer; color: var(--t3); font-size: 15px; background:none; border:none; padding:0 }
+.np-x:hover { color: var(--t1) }
+.np-body { font-size: 12px; color: var(--t1); line-height: 1.4 }
+.np-ts { font-family: var(--mono); font-size: 9px; color: var(--t3); margin-top: 4px }
+
+/* ══════════════════════════════════════════════════
+   FOOTER CREDIT (bottom of rescue / about)
+══════════════════════════════════════════════════ */
+.app-footer {
+  text-align: center; padding: 20px 16px 10px;
+  border-top: 1px solid var(--border); margin-top: 10px;
+}
+.app-footer .catloop-badge { font-size: 10px }
+.footer-version { font-family: var(--mono); font-size: 9px; color: var(--t4); margin-top: 6px }
+
+/* ══════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════ */
+.empty-state { text-align: center; padding: 32px 16px; color: var(--t3) }
+.es-icon { font-size: 36px; margin-bottom: 8px }
+.es-text { font-size: 13px; line-height: 1.7 }
+
+@media(max-width:420px) {
+  .form-grid { grid-template-columns: 1fr }
+  .form-grid .full { grid-column: 1 }
+  .utype-row { flex-direction: column }
+}
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-txt">กำลังโหลดข้อมูลปั๊มน้ำมัน...</div>
-</div>
+<!-- ════════════════════════════════════════
+     SPLASH SCREEN
+════════════════════════════════════════ -->
+<div id="splash">
+  <div class="splash-bg">
+    <div class="splash-grid"></div>
+  </div>
+  <div class="splash-inner">
+    <div class="splash-logo">⛽</div>
+    <div class="splash-app-name">Fuel<span>Watch</span> TH</div>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="logo">
-    <div class="logo-mark">⛽</div>
-    <div class="logo-name">Fuel<em>Watch</em> TH</div>
+    <div class="splash-bar-wrap">
+      <div class="splash-bar" id="spBar"></div>
+    </div>
+    <div class="splash-start" id="spStart">
+      <button class="btn-biz" onclick="enterApp('biz')">
+        🏢 <span id="sp-biz-txt">สำหรับผู้ประกอบการ / เจ้าของร้าน</span>
+      </button>
+      <div class="splash-divider" id="sp-or">— หรือ —</div>
+      <button class="btn-guest" onclick="enterApp('guest')">
+        👤 <span id="sp-guest-txt">เข้าใช้งานแบบทั่วไป</span>
+      </button>
+    </div>
   </div>
-  <div class="nav-tabs">
-    <button class="nav-tab fuel-tab active" onclick="switchPage('fuel',this)">
-      <div class="crisis-dot"></div>น้ำมัน / วิกฤต
-    </button>
-    <button class="nav-tab rescue-tab" onclick="switchPage('rescue',this)">🆘 ช่วยเหลือ</button>
-  </div>
-  <div class="topbar-right">
-    <input class="top-search" id="globalSearch" placeholder="🔍 ค้นหา..." oninput="onGlobalSearch()">
-    <button class="btn btn-notif" id="notifBtn" onclick="toggleNotif()" title="เปิด/ปิด การแจ้งเตือน">🔔</button>
-    <button class="btn btn-register" onclick="openRegister()">🏢 ลงทะเบียน</button>
-    <a class="catloop" href="#" title="CatLoop Studios">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+  <div class="splash-credit">
+    <div class="catloop-badge">
+      <div class="catloop-dot"></div>
       CATLOOP STUDIOS
-    </a>
+    </div>
   </div>
 </div>
 
-<!-- PAGE: FUEL -->
-<div class="page active" id="page-fuel">
-  <div class="crisis-banner">
-    <div class="crisis-top">
-      <div class="crisis-label"><div class="pulse"></div>⚠️ CRISIS MODE — สถานการณ์น้ำมันแห่งชาติ</div>
-      <div class="crisis-ts" id="crisisTs"></div>
-    </div>
-    <div class="ticker-wrap">
-      <div class="ticker-label">ALERT</div>
-      <div class="ticker-text" id="tickerText">กำลังโหลด...</div>
-    </div>
-    <div class="big-stats">
-      <div class="bstat c-green"><span class="bstat-n" id="bs-ok">—</span><div class="bstat-l">มีน้ำมันครบ</div></div>
-      <div class="bstat c-orange"><span class="bstat-n" id="bs-partial">—</span><div class="bstat-l">มีบางชนิด</div></div>
-      <div class="bstat c-yellow"><span class="bstat-n" id="bs-low">—</span><div class="bstat-l">เหลือน้อย</div></div>
-      <div class="bstat c-red"><span class="bstat-n" id="bs-empty">—</span><div class="bstat-l">หมดแล้ว</div></div>
-    </div>
-  </div>
+<!-- ════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════ -->
+<div id="app">
 
-  <!-- PRICE BAR -->
-  <div style="background:var(--s2);border-bottom:1px solid var(--bd);padding:7px 14px;overflow-x:auto;display:flex;gap:8px;align-items:center;flex-shrink:0;min-height:36px">
-    <span style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);flex-shrink:0">⛽ ราคา 17 มี.ค.69 (PTT)</span>
-    <div id="priceChips" style="display:flex;gap:4px;flex-wrap:nowrap"></div>
-  </div>
-
-  <div class="fuel-nav">
-    <button class="fnav-btn active" onclick="setFuelView('map',this)">🗺️ แผนที่</button>
-    <button class="fnav-btn" onclick="locateMe()">📍 ใกล้ฉัน</button>
-  </div>
-
-  <div class="fuel-layout">
-    <div class="fuel-panel">
-      <!-- SEARCH + BRAND FILTER -->
-      <div style="padding:7px 8px;border-bottom:1px solid var(--bd);background:var(--s1);display:flex;gap:5px;flex-shrink:0">
-        <input id="stationSearch" style="flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 9px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:12px;outline:none;min-width:0" placeholder="🔍 ค้นหาปั๊ม ชื่อ / ที่อยู่..." oninput="searchStations()">
-        <select id="brandFilter" onchange="searchStations()" style="background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 7px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:11px;outline:none;cursor:pointer;flex-shrink:0">
-          <option value="">ทุกแบรนด์</option>
-          <option value="PTT">PTT</option>
-          <option value="Shell">Shell</option>
-          <option value="Bangchak">Bangchak</option>
-          <option value="PT">PT</option>
-          <option value="Caltex">Caltex</option>
-          <option value="Esso">Esso</option>
-        </select>
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="tb-logo">
+      <div class="tb-icon">⛽</div>
+      <div class="tb-name">Fuel<b>Watch</b></div>
+    </div>
+    <div class="tb-right">
+      <!-- Language -->
+      <div class="tb-toggle">
+        <button class="tbtog-opt on" id="lang-th" onclick="setLang('th')">TH</button>
+        <button class="tbtog-opt"    id="lang-en" onclick="setLang('en')">EN</button>
       </div>
-      <div class="fuel-type-bar" id="fuelTypeBar">
-        <div class="ftype-chip active" onclick="setFuelTypeFilter('all',this)">ทั้งหมด</div>
-        <div class="ftype-chip" onclick="setFuelTypeFilter('diesel',this)">ดีเซล</div>
-        <div class="ftype-chip" onclick="setFuelTypeFilter('gasohol95',this)">95</div>
-        <div class="ftype-chip" onclick="setFuelTypeFilter('gasohol91',this)">91</div>
-        <div class="ftype-chip" onclick="setFuelTypeFilter('e20',this)">E20</div>
-        <div class="ftype-chip" onclick="setFuelTypeFilter('e85',this)">E85</div>
-        <div class="ftype-chip" onclick="setFuelTypeFilter('lpg',this)">LPG</div>
+      <!-- Theme -->
+      <div class="tb-toggle">
+        <button class="tbtog-opt on" id="theme-dark" onclick="setTheme('dark')" title="Dark">🌙</button>
+        <button class="tbtog-opt"    id="theme-light" onclick="setTheme('light')" title="Light">☀️</button>
       </div>
-      <div class="station-scroll" id="stationScroll"><div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">กำลังโหลด...</div></div>
-      <div class="fuel-drawer" id="fuelDrawer"><div class="drawer-inner" id="drawerInner"></div></div>
+      <!-- Notif -->
+      <div class="tb-icon-btn" id="notifBtn" onclick="toggleNotif()" title="แจ้งเตือน">🔔</div>
     </div>
-    <div id="fuelMap"></div>
-  </div>
-</div>
+  </header>
 
-<!-- PAGE: RESCUE -->
-<div class="page" id="page-rescue">
-  <div class="rescue-hero">
-    <h1 class="rescue-title">กู้ภัย · รถสไลด์<br><span>อู่ซ่อม · ฉุกเฉิน</span></h1>
-    <p class="rescue-sub">ค้นหาผู้ช่วยในพื้นที่ได้ทันที เจ้าของกิจการลงทะเบียนและอัปเดตข้อมูลเองได้</p>
-    <div class="hotlines-row">
-      <a class="hl-chip" href="tel:1669"><div class="hl-dot" style="background:#ef4444"></div>กู้ชีพ <span class="hl-num">1669</span></a>
-      <a class="hl-chip" href="tel:191"><div class="hl-dot" style="background:#3b82f6"></div>ตำรวจ <span class="hl-num">191</span></a>
-      <a class="hl-chip" href="tel:199"><div class="hl-dot" style="background:#f97316"></div>ดับเพลิง <span class="hl-num">199</span></a>
-      <a class="hl-chip" href="tel:1193"><div class="hl-dot" style="background:#22c55e"></div>พลังงาน <span class="hl-num">1193</span></a>
-      <a class="hl-chip" href="tel:1586"><div class="hl-dot" style="background:#a855f7"></div>ทางหลวง <span class="hl-num">1586</span></a>
+  <!-- ─── SCREEN: FUEL ─── -->
+  <div class="screen on" id="s-fuel" style="padding-bottom:68px">
+
+    <div class="fuel-hero">
+      <div class="fh-row1">
+        <div class="live-badge">
+          <div class="live-dot"></div>
+          <div class="live-text" id="lv-txt">LIVE</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--t3)" id="clk"></div>
+      </div>
+      <div class="crisis-alert">
+        <span class="ca-badge" id="ca-badge">⚠ ALERT</span>
+        <div class="ca-scroll"><div class="ca-text" id="caText">กำลังโหลด...</div></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card s-go"><span class="stat-n" id="bs0">—</span><div class="stat-l" id="sl0">มีครบ</div></div>
+        <div class="stat-card s-pt"><span class="stat-n" id="bs1">—</span><div class="stat-l" id="sl1">บางชนิด</div></div>
+        <div class="stat-card s-wn"><span class="stat-n" id="bs2">—</span><div class="stat-l" id="sl2">เหลือน้อย</div></div>
+        <div class="stat-card s-em"><span class="stat-n" id="bs3">—</span><div class="stat-l" id="sl3">หมดแล้ว</div></div>
+      </div>
+    </div>
+
+    <div class="price-strip">
+      <div class="ps-lbl" id="ps-lbl">ราคาวันนี้</div>
+      <div id="priceRow" style="display:flex;gap:5px;flex-shrink:0"></div>
+    </div>
+
+    <div class="filter-row">
+      <div class="fpill on" onclick="setFtf('all',this)" id="ftf-all" data-th="ทั้งหมด" data-en="All">ทั้งหมด</div>
+      <div class="fpill" onclick="setFtf('diesel',this)" data-th="ดีเซล" data-en="Diesel">ดีเซล</div>
+      <div class="fpill" onclick="setFtf('gasohol95',this)" data-th="95" data-en="95">95</div>
+      <div class="fpill" onclick="setFtf('gasohol91',this)" data-th="91" data-en="91">91</div>
+      <div class="fpill" onclick="setFtf('e20',this)" data-th="E20" data-en="E20">E20</div>
+      <div class="fpill" onclick="setFtf('e85',this)" data-th="E85" data-en="E85">E85</div>
+      <div class="fpill" onclick="setFtf('lpg',this)" data-th="LPG" data-en="LPG">LPG</div>
+    </div>
+
+    <div class="search-bar">
+      <input class="search-input" id="stSearch" placeholder="🔍 ค้นหาปั๊ม..." oninput="renderStList()">
+      <select class="search-select" id="brandSel" onchange="renderStList()">
+        <option value="" data-th="ทุกแบรนด์" data-en="All Brands">ทุกแบรนด์</option>
+        <option>PTT</option><option>Shell</option><option>Bangchak</option>
+        <option>PT</option><option>Caltex</option><option>Esso</option>
+      </select>
+    </div>
+
+    <div class="fuel-split">
+      <div class="station-panel">
+        <div class="panel-hdr">
+          <div class="panel-title" id="pt-lbl">ปั๊มน้ำมัน</div>
+          <div class="panel-count" id="stCnt">0</div>
+        </div>
+        <div class="station-list" id="stList">
+          <div class="empty-state"><div class="es-icon">⛽</div><div class="es-text">กำลังโหลด...</div></div>
+        </div>
+        <div class="fuel-drawer" id="fDrawer">
+          <div class="dr-inner" id="drInner"></div>
+        </div>
+      </div>
+      <div id="fuelMap" style="position:relative"></div>
+      <!-- MAP LEGEND -->
+      <div style="position:absolute;bottom:36px;left:8px;z-index:400;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-md);padding:7px 10px;font-size:10px;font-weight:600;display:flex;flex-direction:column;gap:4px;box-shadow:var(--sh-md);pointer-events:none" id="mapLegend">
+        <div style="font-family:var(--mono);font-size:7px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;margin-bottom:2px" id="leg-ttl">แผนที่</div>
+        <div style="display:flex;align-items:center;gap:5px;color:var(--go)">⛽ <span id="leg-fuel">ปั๊มน้ำมัน</span></div>
+        <div style="display:flex;align-items:center;gap:5px;color:#dc2626">🏥 <span id="leg-hosp">โรงพยาบาล</span></div>
+        <div style="display:flex;align-items:center;gap:5px;color:#2563eb">🚔 <span id="leg-pol">สถานีตำรวจ</span></div>
+        <div style="display:flex;align-items:center;gap:5px;color:#16a34a">🚨 <span id="leg-resc">กู้ภัย</span></div>
+        <div style="display:flex;align-items:center;gap:5px;color:#d97706">🔥 <span id="leg-fire">ดับเพลิง</span></div>
+        <div style="display:flex;align-items:center;gap:5px;color:#0891b2">🔧 <span id="leg-gar">อู่ซ่อม</span></div>
+      </div>
     </div>
   </div>
 
-  <div class="rescue-filter">
-    <span class="rfil-label">กรอง</span>
-    <div class="rfil-chips">
-      <div class="rfchip active all" data-rt="all" onclick="setRescueFilter('all',this,'all')">🔍 ทั้งหมด <span class="rfchip-cnt" id="rcnt-all">0</span></div>
-      <div class="rfchip" data-rt="rescue" onclick="setRescueFilter('rescue',this,'r')">🚨 กู้ภัย <span class="rfchip-cnt" id="rcnt-rescue">0</span></div>
-      <div class="rfchip" data-rt="tow" onclick="setRescueFilter('tow',this,'b')">🚛 รถสไลด์ <span class="rfchip-cnt" id="rcnt-tow">0</span></div>
-      <div class="rfchip" data-rt="shop" onclick="setRescueFilter('shop',this,'a')">🔧 อู่ซ่อม <span class="rfchip-cnt" id="rcnt-shop">0</span></div>
-      <div class="rfchip" data-rt="fuel" onclick="setRescueFilter('fuel',this,'g')">🛢️ น้ำมัน <span class="rfchip-cnt" id="rcnt-fuel">0</span></div>
-      <div class="rfchip" data-rt="other" onclick="setRescueFilter('other',this,'p')">🙋 อาสา <span class="rfchip-cnt" id="rcnt-other">0</span></div>
+  <!-- ─── SCREEN: EMERGENCY MAP ─── -->
+  <div class="screen" id="s-map" style="padding-bottom:68px">
+    <div class="em-header">
+      <div class="em-row1">
+        <div class="em-title" id="em-ttl">🆘 แผนที่ฉุกเฉิน</div>
+        <button class="em-locate" onclick="locateEmMap()" id="em-loc-btn">📍 ใกล้ฉัน</button>
+      </div>
+      <div class="em-chips">
+        <div class="em-chip a-all"  onclick="setEmf('all',this,'a-all')">ทั้งหมด</div>
+        <div class="em-chip"        onclick="setEmf('hospital',this,'a-hosp')" id="ef-hosp">🏥 รพ.</div>
+        <div class="em-chip"        onclick="setEmf('police',this,'a-pol')"    id="ef-pol">🚔 ตำรวจ</div>
+        <div class="em-chip"        onclick="setEmf('rescue',this,'a-resc')"   id="ef-resc">🚨 กู้ภัย</div>
+        <div class="em-chip"        onclick="setEmf('fire',this,'a-fire')"     id="ef-fire">🔥 ดับเพลิง</div>
+        <div class="em-chip"        onclick="setEmf('garage',this,'a-gar')"    id="ef-gar">🔧 อู่ซ่อม</div>
+      </div>
     </div>
-    <input class="rescue-search-in" id="rescueSearch" placeholder="🔍 ชื่อ / พื้นที่..." oninput="renderRescue()">
+    <div class="em-layout" style="flex:1;min-height:0">
+      <div class="em-list" id="emList">
+        <div class="empty-state"><div class="es-icon">📍</div><div class="es-text" id="em-hint">กด "ใกล้ฉัน" เพื่อเรียงตามระยะทาง</div></div>
+      </div>
+      <div id="emMap" style="flex:1;min-height:250px"></div>
+    </div>
   </div>
 
-  <div class="rescue-main">
-    <div class="rescue-header">
-      <div class="rescue-sec-title">รายชื่อผู้ให้บริการ</div>
-      <div class="rescue-count" id="rescueCount"></div>
+  <!-- ─── SCREEN: RESCUE ─── -->
+  <div class="screen" id="s-rescue">
+    <div class="rescue-hero">
+      <div class="rh-title" id="rh-ttl">กู้ภัย · รถสไลด์<br><span>อู่ซ่อม · ฉุกเฉิน</span></div>
+      <div class="rh-sub" id="rh-sub">เจ้าของกิจการลงทะเบียนและอัปเดตข้อมูลเองได้ฟรี</div>
+      <div class="hotlines">
+        <a class="hl-btn" href="tel:1669"><div class="hl-dot" style="background:#dc2626"></div><span>กู้ชีพ</span><span class="hl-num">1669</span></a>
+        <a class="hl-btn" href="tel:191"><div class="hl-dot" style="background:#2563eb"></div><span>ตำรวจ</span><span class="hl-num">191</span></a>
+        <a class="hl-btn" href="tel:199"><div class="hl-dot" style="background:#d97706"></div><span>ดับเพลิง</span><span class="hl-num">199</span></a>
+        <a class="hl-btn" href="tel:1193"><div class="hl-dot" style="background:#16a34a"></div><span>พลังงาน</span><span class="hl-num">1193</span></a>
+      </div>
     </div>
-    <div class="r-grid" id="rescueGrid"><div style="text-align:center;padding:32px;color:var(--muted);grid-column:1/-1">กำลังโหลด...</div></div>
-  </div>
-</div>
 
-<!-- TOAST -->
+    <div class="rescue-filter">
+      <input class="rs-search" id="rsSearch" placeholder="🔍 ค้นหา..." oninput="renderRescue()">
+      <div class="rfpill" onclick="setRf('all',this,'r-all')">ทั้งหมด</div>
+      <div class="rfpill" onclick="setRf('rescue',this,'r-resc')">🚨 กู้ภัย</div>
+      <div class="rfpill" onclick="setRf('tow',this,'r-tow')">🚛 รถสไลด์</div>
+      <div class="rfpill" onclick="setRf('shop',this,'r-shop')">🔧 อู่ซ่อม</div>
+      <div class="rfpill" onclick="setRf('fuel',this,'r-fuel')">🛢️ น้ำมัน</div>
+      <div class="rfpill" onclick="setRf('other',this,'r-other')">🙋 อาสา</div>
+    </div>
+
+    <div class="rescue-grid-wrap">
+      <div class="rescue-grid" id="rescueGrid">
+        <div class="empty-state" style="grid-column:1/-1"><div class="es-icon">🔄</div><div class="es-text">กำลังโหลด...</div></div>
+      </div>
+    </div>
+
+    <div class="app-footer">
+      <div class="catloop-badge">
+        <div class="catloop-dot"></div>
+        CATLOOP STUDIOS
+      </div>
+      <div class="footer-version">FuelWatch TH v2.0 · 2569</div>
+    </div>
+
+    <button class="fab" onclick="openRegModal()" title="ลงทะเบียนกิจการ">＋</button>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bnav">
+    <button class="bni on" id="n-fuel" onclick="goTo('fuel')">
+      <span class="bni-ico bni-live">⛽</span>
+      <span id="nl-fuel">น้ำมัน</span>
+    </button>
+    <button class="bni" id="n-map" onclick="goTo('map')">
+      <span class="bni-ico">🗺️</span>
+      <span id="nl-map">แผนที่ฉุกเฉิน</span>
+    </button>
+    <button class="bni" id="n-rescue" onclick="goTo('rescue')">
+      <span class="bni-ico">🆘</span>
+      <span id="nl-rescue">ช่วยเหลือ</span>
+    </button>
+  </nav>
+
+</div><!-- #app -->
+
+<!-- TOAST + NOTIF -->
 <div class="toast" id="toast"></div>
-
-<!-- NOTIF POPUP -->
-<div class="notif-popup" id="notifPopup">
-  <div class="notif-top">
-    <div class="notif-title" id="notifTitle">🔴 แจ้งเตือน</div>
-    <div class="notif-close" onclick="dismissNotif()">✕</div>
+<div class="npop" id="npop">
+  <div class="np-hdr">
+    <div class="np-ttl" id="npTtl">🔴 แจ้งเตือน</div>
+    <button class="np-x" onclick="document.getElementById('npop').classList.remove('on')">✕</button>
   </div>
-  <div class="notif-body" id="notifBody"></div>
-  <div class="notif-ts" id="notifTs"></div>
+  <div class="np-body" id="npBody"></div>
+  <div class="np-ts" id="npTs"></div>
 </div>
 
 <!-- REGISTER MODAL -->
-<div class="overlay" id="overlay" onclick="closeOverlayOutside(event)">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-title" id="modalTitle">🏢 ลงทะเบียนกิจการ</div>
-      <div class="modal-close" onclick="closeOverlay()">✕</div>
-    </div>
-    <div class="modal-sub" id="modalSub">กรอกข้อมูลกิจการของคุณ ข้อมูลจะขึ้นแสดงทันทีหลังยืนยัน</div>
-    <div class="fgrid">
-      <div class="fg full"><label class="flabel">ชื่อกิจการ / ชื่อทีม *</label><input class="finput" id="f_name" placeholder="เช่น ทีมกู้ภัยบ้านหัวทุ่ง / อู่ช่างนิด"></div>
-      <div class="fg"><label class="flabel">ประเภทบริการ *</label>
-        <select class="fselect" id="f_type">
-          <option value="rescue">🚨 กู้ภัย / EMS</option>
-          <option value="tow">🚛 รถสไลด์</option>
-          <option value="shop">🔧 อู่ซ่อมรถ</option>
-          <option value="fuel">🛢️ จัดหาน้ำมัน</option>
-          <option value="other">🙋 อาสาสมัคร</option>
-        </select></div>
-      <div class="fg"><label class="flabel">เบอร์โทรหลัก *</label><input class="finput" id="f_phone" type="tel" placeholder="0812345678"></div>
-      <div class="fg"><label class="flabel">เบอร์สำรอง</label><input class="finput" id="f_phone2" type="tel" placeholder="0812345679"></div>
-      <div class="fg"><label class="flabel">LINE ID</label><input class="finput" id="f_line" placeholder="@rescue_th"></div>
-      <div class="fg full"><label class="flabel">พื้นที่ให้บริการ *</label><input class="finput" id="f_area" placeholder="เช่น ลาดพร้าว, ทั่วกรุงเทพฯ"></div>
-    </div>
-    <div class="fg" style="margin-bottom:9px">
-      <label class="flabel">บริการ / ความเชี่ยวชาญ (Enter เพื่อเพิ่ม)</label>
-      <div class="tags-wrap" id="tagsWrap" onclick="document.getElementById('tagsRaw').focus()">
-        <div id="tagsList"></div>
-        <input class="ftags-in" id="tagsRaw" placeholder="พิมพ์แล้วกด Enter..." onkeydown="handleTagInput(event)">
+<div class="overlay" id="regOverlay" onclick="closeOverlayOut(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="mTitle">🏢 ลงทะเบียนกิจการ</div>
+    <div class="modal-sub" id="mSub">เลือกประเภทผู้ใช้งาน</div>
+
+    <!-- User type selector -->
+    <div class="utype-row" id="utypeRow">
+      <div class="utype-card on" id="utype-biz" onclick="selectUtype('biz')">
+        <div class="utype-ico">🏢</div>
+        <div class="utype-name" id="ut-biz-nm">ผู้ประกอบการ</div>
+        <div class="utype-desc" id="ut-biz-desc">ปั๊มน้ำมัน / อู่ซ่อม / รถสไลด์ / กู้ภัย<br>ลงทะเบียนเพื่อจัดการข้อมูลร้านค้าของตัวเอง</div>
       </div>
-      <div class="ftags-hint">เช่น รถยนต์ทุกยี่ห้อ · เปิด 24 ชม. · ดีเซล/เบนซิน</div>
-    </div>
-    <div class="toggles">
-      <label class="tchip"><input type="checkbox" id="f_24h"><span>⏰ 24 ชั่วโมง</span></label>
-      <label class="tchip"><input type="checkbox" id="f_free"><span>💚 บริการฟรี</span></label>
-      <label class="tchip"><input type="checkbox" id="f_heavy"><span>🚚 รับรถหนัก</span></label>
-      <label class="tchip"><input type="checkbox" id="f_quick"><span>⚡ ถึงที่เร็ว</span></label>
-    </div>
-    <div class="fg" style="margin-bottom:11px">
-      <label class="flabel">หมายเหตุ</label>
-      <textarea class="ftextarea" id="f_note" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
-    </div>
-    <hr class="div">
-    <div class="pin-box">
-      <div class="pin-title">🔐 รหัส PIN สำหรับแก้ไขข้อมูลในภายหลัง</div>
-      <div class="pin-desc">ตั้งรหัส 4 หลัก เพื่อกลับมาอัปเดตข้อมูลกิจการได้ — เก็บไว้ให้ดีนะครับ</div>
-      <div class="pin-row">
-        <input class="finput" id="f_pin" type="password" maxlength="4" placeholder="· · · ·" inputmode="numeric">
-        <input class="finput" id="f_pin2" type="password" maxlength="4" placeholder="ยืนยัน PIN" inputmode="numeric">
+      <div class="utype-card" id="utype-guest" onclick="selectUtype('guest')">
+        <div class="utype-ico">👤</div>
+        <div class="utype-name" id="ut-guest-nm">บุคคลทั่วไป</div>
+        <div class="utype-desc" id="ut-guest-desc">Report สถานะน้ำมัน<br>ไม่ต้องลงทะเบียน ใช้ได้ทันที</div>
       </div>
     </div>
+
+    <!-- BIZ FORM -->
+    <div id="bizForm">
+      <div class="form-grid">
+        <div class="fg full">
+          <label class="fl" id="fl-name">ชื่อกิจการ *</label>
+          <input class="fi" id="fn" placeholder="เช่น อู่ช่างสมศรี / ปั๊มน้ำมันสุพรรณ">
+        </div>
+        <div class="fg">
+          <label class="fl" id="fl-type">ประเภท *</label>
+          <select class="fs" id="ft">
+            <option value="rescue">🚨 กู้ภัย / EMS</option>
+            <option value="tow">🚛 รถสไลด์ / ลาก</option>
+            <option value="shop">🔧 อู่ซ่อมรถ</option>
+            <option value="fuel">🛢️ จัดหาน้ำมัน</option>
+            <option value="other">🙋 อาสาสมัคร</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl" id="fl-phone">เบอร์โทร *</label>
+          <input class="fi" id="fp" type="tel" placeholder="0812345678">
+        </div>
+        <div class="fg">
+          <label class="fl" id="fl-phone2">เบอร์สำรอง</label>
+          <input class="fi" id="fp2" type="tel" placeholder="เบอร์สำรอง">
+        </div>
+        <div class="fg">
+          <label class="fl">LINE ID</label>
+          <input class="fi" id="fline" placeholder="@line_id">
+        </div>
+        <div class="fg full">
+          <label class="fl" id="fl-area">พื้นที่ให้บริการ *</label>
+          <input class="fi" id="fa" placeholder="เช่น ทั่วสุพรรณบุรี / อ.เมือง">
+        </div>
+      </div>
+
+      <div class="fg" style="margin-bottom:12px">
+        <label class="fl" id="fl-tags">บริการ (กด Enter เพื่อเพิ่ม)</label>
+        <div class="tags-wrap" onclick="document.getElementById('traw').focus()">
+          <div id="tList"></div>
+          <input class="ftags-in" id="traw" placeholder="พิมพ์แล้ว Enter..." onkeydown="handleTag(event)">
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label class="tgl-chip"><input type="checkbox" id="f24">⏰ 24 ชม.</label>
+        <label class="tgl-chip"><input type="checkbox" id="ffree">💚 ฟรี</label>
+        <label class="tgl-chip"><input type="checkbox" id="fhvy">🚚 รถหนัก</label>
+        <label class="tgl-chip"><input type="checkbox" id="ffast">⚡ ถึงเร็ว</label>
+      </div>
+
+      <div class="fg" style="margin-bottom:12px">
+        <label class="fl" id="fl-note">หมายเหตุ</label>
+        <textarea class="fta" id="fnote" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+      </div>
+
+      <hr class="form-sep">
+
+      <div class="pin-box">
+        <div class="pin-title">🔐 <span id="pin-ttl">PIN สำหรับแก้ไขข้อมูลในภายหลัง</span></div>
+        <div class="pin-desc" id="pin-desc">ตั้งรหัส 4 หลัก เพื่อกลับมาอัปเดตข้อมูลกิจการได้</div>
+        <div class="pin-row">
+          <input class="fi" id="fpin" type="password" maxlength="4" placeholder="· · · ·" inputmode="numeric">
+          <input class="fi" id="fpin2" type="password" maxlength="4" placeholder="ยืนยัน PIN" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+
+    <!-- GUEST INFO (no form needed) -->
+    <div id="guestInfo" style="display:none">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:16px;text-align:center">
+        <div style="font-size:32px;margin-bottom:8px">✅</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;color:var(--t1)" id="guest-msg">ไม่ต้องลงทะเบียน!</div>
+        <div style="font-size:13px;color:var(--t3);line-height:1.6" id="guest-desc">คุณสามารถใช้งานได้ทันทีโดยไม่ต้องสมัคร<br>Report น้ำมัน ดูแผนที่ โทรกู้ภัย ได้เลยเลย</div>
+      </div>
+    </div>
+
     <div class="modal-actions">
-      <button class="mcancel" onclick="closeOverlay()">ยกเลิก</button>
-      <button class="msubmit" id="msubmitBtn" onclick="submitListing()">📤 ลงทะเบียน</button>
+      <button class="btn-cancel" onclick="closeOverlay()"><span id="btn-cancel-txt">ยกเลิก</span></button>
+      <button class="btn-submit" id="mBtn" onclick="submitForm()"><span id="btn-submit-txt">📤 ลงทะเบียน</span></button>
     </div>
   </div>
 </div>
 
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
 <script>
-// ═══════════════════════════════════════════
-// SUPABASE CONFIG
-// ═══════════════════════════════════════════
-const SUPABASE_URL  = 'https://axliwktkumzgmqvahtxm.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bGl3a3RrdW16Z21xdmFodHhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MzEwNTAsImV4cCI6MjA4OTMwNzA1MH0.v2aQG_cksA63z2rZ8tGYu8Zo3W9a_k6rvEkVweNqGOs';
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
-
-// ═══════════════════════════════════════════
-// FIREBASE FCM CONFIG
-// ═══════════════════════════════════════════
-const firebaseConfig = {
-  apiKey: "AIzaSyC8bVNHPokNZQRE0HJs1bZDoRyp3uwylf4",
-  authDomain: "fuelwatch-th.firebaseapp.com",
-  projectId: "fuelwatch-th",
-  storageBucket: "fuelwatch-th.firebasestorage.app",
-  messagingSenderId: "306045751415",
-  appId: "1:306045751415:web:00640d774d3c609a593672"
+/* ─── I18N ─────────────────────────────────────── */
+const I18N = {
+  th: {
+    sp_biz: 'สำหรับผู้ประกอบการ / เจ้าของร้าน',
+    sp_guest: 'เข้าใช้งานแบบทั่วไป',
+    sp_or: '— หรือ —',
+    nav_fuel: 'น้ำมัน', nav_map: 'แผนที่ฉุกเฉิน', nav_rescue: 'ช่วยเหลือ',
+    live: 'LIVE', alert: '⚠ ALERT',
+    stat_ok:'มีครบ', stat_pt:'บางชนิด', stat_wn:'เหลือน้อย', stat_em:'หมดแล้ว',
+    ps_lbl: 'ราคาวันนี้ (PTT)',
+    pt_lbl: 'ปั๊มน้ำมัน',
+    srch_ph: 'ค้นหาปั๊ม...',
+    all_brand: 'ทุกแบรนด์',
+    em_ttl: '🆘 แผนที่ฉุกเฉิน',
+    em_loc: '📍 ใกล้ฉัน',
+    em_hint: 'กด "ใกล้ฉัน" เพื่อเรียงตามระยะทาง',
+    ef_all: 'ทั้งหมด', ef_hosp: '🏥 รพ.', ef_pol: '🚔 ตำรวจ', ef_resc: '🚨 กู้ภัย', ef_fire: '🔥 ดับเพลิง', ef_gar: '🔧 อู่ซ่อม',
+    rh_ttl: 'กู้ภัย · รถสไลด์', rh_ttl2: 'อู่ซ่อม · ฉุกเฉิน',
+    rh_sub: 'เจ้าของกิจการลงทะเบียนและอัปเดตข้อมูลเองได้ฟรี',
+    nav_btn: '🗺️ นำทาง', call_btn: '📞 โทร',
+    rpt_sec: 'รายงานสถานะ',
+    rpt_ok: '✅ มีน้ำมัน', rpt_low: '⚠️ น้อย', rpt_empty: '🚫 หมด',
+    rpt_sub: 'ส่ง Report',
+    verified: '✓ ยืนยัน', h24: '⏰ 24 ชม.', free: '💚 ฟรี', heavy: '🚚 รถหนัก', quick: '⚡ เร็ว',
+    edit_txt: '✏️ แก้ไขข้อมูล',
+    m_title: '🏢 ลงทะเบียนกิจการ', m_sub: 'เลือกประเภทผู้ใช้งาน',
+    ut_biz: 'ผู้ประกอบการ', ut_guest: 'บุคคลทั่วไป',
+    ut_biz_desc: 'ปั๊มน้ำมัน / อู่ซ่อม / รถสไลด์ / กู้ภัย\nลงทะเบียนเพื่อจัดการข้อมูลร้านค้าของตัวเอง',
+    ut_guest_desc: 'Report สถานะน้ำมัน\nไม่ต้องลงทะเบียน ใช้ได้ทันที',
+    fl_name:'ชื่อกิจการ *', fl_type:'ประเภท *', fl_phone:'เบอร์โทร *',
+    fl_phone2:'เบอร์สำรอง', fl_area:'พื้นที่ *', fl_tags:'บริการ (กด Enter)', fl_note:'หมายเหตุ',
+    pin_ttl:'PIN สำหรับแก้ไขข้อมูลในภายหลัง',
+    pin_desc:'ตั้งรหัส 4 หลัก เพื่อกลับมาอัปเดตข้อมูลกิจการได้',
+    guest_msg:'ไม่ต้องลงทะเบียน!',
+    guest_desc:'คุณสามารถใช้งานได้ทันทีโดยไม่ต้องสมัคร\nReport น้ำมัน ดูแผนที่ โทรกู้ภัย ได้เลย',
+    cancel:'ยกเลิก', submit:'📤 ลงทะเบียน', ok:'✅ ตกลง',
+    ago_just:'เมื่อกี้', ago_min:'นาทีที่แล้ว', ago_hr:'ชม.ที่แล้ว', ago_day:'วันที่แล้ว',
+    km: 'กม.',
+    toast_no_fuel:'⚠️ เลือกชนิดน้ำมันก่อน',
+    toast_no_stat:'⚠️ เลือกสถานะก่อน',
+    toast_ok:'✅ Report ส่งแล้ว',
+    toast_gps:'📍 กำลังหาตำแหน่ง...',
+    toast_gps_ok:'✅ เรียงตามระยะทางแล้ว',
+    toast_gps_err:'❌ ไม่สามารถเข้าถึง GPS',
+    toast_notif_on:'🔔 เปิดการแจ้งเตือนแล้ว!',
+    toast_notif_off:'🔕 ปิดการแจ้งเตือนแล้ว',
+    toast_reg_ok:'🎉 ลงทะเบียนสำเร็จ!',
+    toast_pin_err:'❌ PIN ไม่ถูกต้อง',
+    no_station:'ไม่พบปั๊มที่ตรงกัน',
+    no_rescue:'ไม่พบรายการ',
+    nearest:'ใกล้สุด',
+  },
+  en: {
+    sp_biz: 'For Business Owners / Operators',
+    sp_guest: 'Continue as Guest (Free)',
+    sp_or: '— or —',
+    nav_fuel: 'Fuel', nav_map: 'Emergency Map', nav_rescue: 'Help',
+    live: 'LIVE', alert: '⚠ ALERT',
+    stat_ok:'Available', stat_pt:'Partial', stat_wn:'Running Low', stat_em:'Empty',
+    ps_lbl: 'Today\'s Price (PTT)',
+    pt_lbl: 'Fuel Stations',
+    srch_ph: 'Search stations...',
+    all_brand: 'All Brands',
+    em_ttl: '🆘 Emergency Map',
+    em_loc: '📍 Near Me',
+    em_hint: 'Tap "Near Me" to sort by distance',
+    ef_all: 'All', ef_hosp: '🏥 Hospital', ef_pol: '🚔 Police', ef_resc: '🚨 Rescue', ef_fire: '🔥 Fire', ef_gar: '🔧 Garage',
+    rh_ttl: 'Rescue · Towing', rh_ttl2: 'Garage · Emergency',
+    rh_sub: 'Business owners can register and update info for free',
+    nav_btn: '🗺️ Navigate', call_btn: '📞 Call',
+    rpt_sec: 'Report Status',
+    rpt_ok: '✅ Available', rpt_low: '⚠️ Low', rpt_empty: '🚫 Empty',
+    rpt_sub: 'Submit Report',
+    verified: '✓ Verified', h24: '⏰ 24hrs', free: '💚 Free', heavy: '🚚 Heavy', quick: '⚡ Quick',
+    edit_txt: '✏️ Edit Info',
+    m_title: '🏢 Register Business', m_sub: 'Select user type',
+    ut_biz: 'Business Owner', ut_guest: 'Guest User',
+    ut_biz_desc: 'Gas station / Garage / Tow / Rescue\nRegister to manage your own listing',
+    ut_guest_desc: 'Report fuel status\nNo registration needed',
+    fl_name:'Business Name *', fl_type:'Type *', fl_phone:'Phone *',
+    fl_phone2:'Alt. Phone', fl_area:'Service Area *', fl_tags:'Services (Enter to add)', fl_note:'Notes',
+    pin_ttl:'PIN to edit info later',
+    pin_desc:'Set a 4-digit PIN to update your listing',
+    guest_msg:'No registration needed!',
+    guest_desc:'Start using right away\nReport fuel, view map, call rescue',
+    cancel:'Cancel', submit:'📤 Register', ok:'✅ Done',
+    ago_just:'just now', ago_min:'min ago', ago_hr:'hr ago', ago_day:'day ago',
+    km: 'km',
+    toast_no_fuel:'⚠️ Select fuel type first',
+    toast_no_stat:'⚠️ Select status first',
+    toast_ok:'✅ Report submitted',
+    toast_gps:'📍 Finding location...',
+    toast_gps_ok:'✅ Sorted by distance',
+    toast_gps_err:'❌ Cannot access GPS',
+    toast_notif_on:'🔔 Notifications enabled!',
+    toast_notif_off:'🔕 Notifications disabled',
+    toast_reg_ok:'🎉 Registration complete!',
+    toast_pin_err:'❌ Incorrect PIN',
+    no_station:'No stations found',
+    no_rescue:'No listings found',
+    nearest:'Nearest',
+  }
 };
-const VAPID_KEY = 'BO6AGSc8HaUvVcy9Bjb_mpi8wAaPh1cb7h16dNKCvDbhYsJJggElXG1f9YTcvhhDK2sEgAHq0wtkWsGsx2PQpLk';
+let LANG = 'th';
+let THEME = 'dark';
 
-firebase.initializeApp(firebaseConfig);
-let messaging = null;
-try { messaging = firebase.messaging(); } catch(e) {}
+function t(key) { return I18N[LANG][key] || key }
 
-// ═══════════════════════════════════════════
-// CONSTANTS
-// ═══════════════════════════════════════════
-const FUEL_LABELS = {
-  diesel:'ดีเซล B7',gasohol91:'91',gasohol95:'95',
-  e20:'E20',e85:'E85',premium95:'พรีเมียม',lpg:'LPG'
-};
-const FT_ALL = Object.keys(FUEL_LABELS);
-const STATUS_CFG = {
-  ok:     {label:'มีน้ำมัน', dot:'🟢',color:'var(--green)'},
-  low:    {label:'เหลือน้อย',dot:'🟡',color:'var(--yellow)'},
-  empty:  {label:'หมดแล้ว', dot:'🔴',color:'var(--red)'},
-  partial:{label:'มีบางชนิด',dot:'🟠',color:'var(--orange)'},
-  unknown:{label:'ไม่ทราบ', dot:'⚪',color:'var(--muted)'},
-};
-const TYPE_CFG = {
-  rescue:{label:'กู้ภัย',icon:'🚨'},tow:{label:'รถสไลด์',icon:'🚛'},
-  shop:{label:'อู่ซ่อม',icon:'🔧'},fuel:{label:'จัดหาน้ำมัน',icon:'🛢️'},other:{label:'อาสาสมัคร',icon:'🙋'},
-};
-
-// ═══════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════
-let fuelMap,markers={},userMarker=null;
-let stations=[],activeFilterFt='all',selectedSid=null,reportFuel=null,reportStatus=null;
-let rescueFilter='all',editingId=null,formTags=[];
-let rescueListings=[];
-let notifEnabled=false;
-
-// ═══════════════════════════════════════════
-// PAGE SWITCH
-// ═══════════════════════════════════════════
-function switchPage(p,btn){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  btn.classList.add('active');
-  if(p==='rescue')renderRescue();
-  if(p==='fuel'&&fuelMap)setTimeout(()=>fuelMap.invalidateSize(),100);
+function setLang(lang) {
+  LANG = lang;
+  document.documentElement.setAttribute('data-lang', lang);
+  document.getElementById('lang-th').classList.toggle('on', lang==='th');
+  document.getElementById('lang-en').classList.toggle('on', lang==='en');
+  applyI18N();
 }
 
-// ═══════════════════════════════════════════
-// MAP
-// ═══════════════════════════════════════════
-function initMap(){
-  fuelMap=L.map('fuelMap',{center:[13.756,100.567],zoom:11,zoomControl:false});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(fuelMap);
-  L.control.zoom({position:'bottomright'}).addTo(fuelMap);
+function applyI18N() {
+  // Nav
+  document.getElementById('nl-fuel').textContent    = t('nav_fuel');
+  document.getElementById('nl-map').textContent     = t('nav_map');
+  document.getElementById('nl-rescue').textContent  = t('nav_rescue');
+  // Live / ticker labels
+  document.getElementById('lv-txt').textContent     = t('live');
+  document.getElementById('ca-badge').textContent   = t('alert');
+  // Stats
+  document.getElementById('sl0').textContent = t('stat_ok');
+  document.getElementById('sl1').textContent = t('stat_pt');
+  document.getElementById('sl2').textContent = t('stat_wn');
+  document.getElementById('sl3').textContent = t('stat_em');
+  // Price
+  document.getElementById('ps-lbl').textContent = t('ps_lbl');
+  // Panel
+  document.getElementById('pt-lbl').textContent = t('pt_lbl');
+  document.getElementById('stSearch').placeholder = t('srch_ph');
+  // Filter pills text
+  document.querySelectorAll('.fpill').forEach(el => {
+    const key = el.dataset[LANG]; if(key) el.textContent = key;
+  });
+  // EM map
+  document.getElementById('em-ttl').textContent    = t('em_ttl');
+  document.getElementById('em-loc-btn').textContent = t('em_loc');
+  document.getElementById('em-hint').textContent   = t('em_hint');
+  document.getElementById('ef-hosp').textContent   = t('ef_hosp');
+  document.getElementById('ef-pol').textContent    = t('ef_pol');
+  document.getElementById('ef-resc').textContent   = t('ef_resc');
+  document.getElementById('ef-fire').textContent   = t('ef_fire');
+  document.getElementById('ef-gar').textContent    = t('ef_gar');
+  // Rescue hero
+  document.getElementById('rh-sub').textContent    = t('rh_sub');
+  // Modal
+  document.getElementById('mTitle').textContent    = t('m_title');
+  document.getElementById('mSub').textContent      = t('m_sub');
+  document.getElementById('ut-biz-nm').textContent  = t('ut_biz');
+  document.getElementById('ut-guest-nm').textContent = t('ut_guest');
+  document.getElementById('fl-name').textContent   = t('fl_name');
+  document.getElementById('fl-type').textContent   = t('fl_type');
+  document.getElementById('fl-phone').textContent  = t('fl_phone');
+  document.getElementById('fl-phone2').textContent = t('fl_phone2');
+  document.getElementById('fl-area').textContent   = t('fl_area');
+  document.getElementById('fl-tags').textContent   = t('fl_tags');
+  document.getElementById('fl-note').textContent   = t('fl_note');
+  document.getElementById('pin-ttl').textContent   = t('pin_ttl');
+  document.getElementById('pin-desc').textContent  = t('pin_desc');
+  document.getElementById('guest-msg').textContent = t('guest_msg');
+  document.getElementById('btn-cancel-txt').textContent = t('cancel');
+  document.getElementById('btn-submit-txt').textContent = t('submit');
+  // Splash (if visible)
+  document.getElementById('sp-biz-txt').textContent = t('sp_biz');
+  document.getElementById('sp-guest-txt').textContent = t('sp_guest');
+  document.getElementById('sp-or').textContent     = t('sp_or');
+  // Re-render lists
+  renderStList();
+  renderRescue();
+  renderEmList();
+  // Map legend
+  const legTh = {ttl:'แผนที่',fuel:'ปั๊มน้ำมัน',hosp:'โรงพยาบาล',pol:'สถานีตำรวจ',resc:'กู้ภัย',fire:'ดับเพลิง',gar:'อู่ซ่อม'};
+  const legEn = {ttl:'MAP',fuel:'Fuel Station',hosp:'Hospital',pol:'Police',resc:'Rescue',fire:'Fire Dept.',gar:'Garage'};
+  const lg = LANG==='th' ? legTh : legEn;
+  const setLeg = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
+  setLeg('leg-ttl',lg.ttl); setLeg('leg-fuel',lg.fuel); setLeg('leg-hosp',lg.hosp);
+  setLeg('leg-pol',lg.pol); setLeg('leg-resc',lg.resc); setLeg('leg-fire',lg.fire); setLeg('leg-gar',lg.gar);
 }
 
-function makePinIcon(status,size=30){
-  const c={ok:'#22c55e',partial:'#f97316',low:'#eab308',empty:'#e8311a',unknown:'#3a4560'}[status]||'#3a4560';
-  const svg=`<svg width="${size}" height="${size+10}" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg"><path d="M15 0C6.7 0 0 6.7 0 15c0 13 15 25 15 25S30 28 30 15C30 6.7 23.3 0 15 0z" fill="${c}"/><circle cx="15" cy="15" r="7" fill="rgba(0,0,0,.22)"/><text x="15" y="20" text-anchor="middle" font-size="9" fill="white">⛽</text></svg>`;
+function setTheme(theme) {
+  THEME = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-dark').classList.toggle('on', theme==='dark');
+  document.getElementById('theme-light').classList.toggle('on', theme==='light');
+  document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#0a0b12' : '#f5f6fa';
+}
+
+/* ─── SPLASH ─────────────────────────────────────── */
+let userMode = 'guest';
+
+window.addEventListener('load', () => {
+  const bar = document.getElementById('spBar');
+  let w = 0;
+  const iv = setInterval(() => {
+    w += 4;
+    bar.style.width = Math.min(w, 95) + '%';
+    if(w >= 95) {
+      clearInterval(iv);
+      bar.style.width = '100%';
+      setTimeout(showSplashStart, 200);
+    }
+  }, 30);
+});
+
+function showSplashStart() {
+  document.getElementById('spStart').classList.add('visible');
+}
+
+function enterApp(mode) {
+  userMode = mode;
+  const bar = document.getElementById('spBar');
+  bar.style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('splash').style.opacity = '0';
+    document.getElementById('splash').style.transition = 'opacity .4s ease';
+    document.getElementById('app').classList.add('visible');
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+      initFuelMap();
+      loadData();
+    }, 400);
+  }, 200);
+  if(mode === 'biz') showToast('🏢 ยินดีต้อนรับผู้ประกอบการ');
+}
+
+/* ─── NAV ────────────────────────────────────────── */
+function goTo(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.bni').forEach(b => b.classList.remove('on'));
+  document.getElementById('s-'+name).classList.add('on');
+  document.getElementById('n-'+name).classList.add('on');
+  if(name==='map'){ if(!emapInit) setTimeout(initEmMap,80); else eMap.invalidateSize(); }
+  if(name==='rescue') renderRescue();
+  if(name==='fuel' && fMap) setTimeout(()=>fMap.invalidateSize(),80);
+}
+
+/* ─── CONSTANTS ────────────────────────────────────── */
+const FL = {diesel:'ดีเซล',gasohol91:'91',gasohol95:'95',e20:'E20',e85:'E85',premium95:'พรีเมียม',lpg:'LPG'};
+const FL_EN = {diesel:'Diesel',gasohol91:'91',gasohol95:'95',e20:'E20',e85:'E85',premium95:'Premium',lpg:'LPG'};
+const FT = Object.keys(FL);
+const SC_TH = { ok:'มีน้ำมัน',low:'เหลือน้อย',empty:'หมดแล้ว',partial:'มีบางชนิด',unknown:'ไม่ทราบ' };
+const SC_EN = { ok:'Available',low:'Running Low',empty:'Empty',partial:'Partial',unknown:'Unknown' };
+const TC_TH = {rescue:{l:'กู้ภัย',i:'🚨'},tow:{l:'รถสไลด์',i:'🚛'},shop:{l:'อู่ซ่อม',i:'🔧'},fuel:{l:'น้ำมัน',i:'🛢️'},other:{l:'อาสา',i:'🙋'}};
+const TC_EN = {rescue:{l:'Rescue',i:'🚨'},tow:{l:'Tow',i:'🚛'},shop:{l:'Garage',i:'🔧'},fuel:{l:'Fuel',i:'🛢️'},other:{l:'Volunteer',i:'🙋'}};
+const ETC_TH = {hospital:{l:'โรงพยาบาล',i:'🏥',c:'#dc2626'},police:{l:'ตำรวจ',i:'🚔',c:'#2563eb'},rescue:{l:'กู้ภัย',i:'🚨',c:'#16a34a'},fire:{l:'ดับเพลิง',i:'🔥',c:'#d97706'},garage:{l:'อู่ซ่อม',i:'🔧',c:'#0891b2'}};
+const ETC_EN = {hospital:{l:'Hospital',i:'🏥',c:'#dc2626'},police:{l:'Police',i:'🚔',c:'#2563eb'},rescue:{l:'Rescue',i:'🚨',c:'#16a34a'},fire:{l:'Fire Dept.',i:'🔥',c:'#d97706'},garage:{l:'Garage',i:'🔧',c:'#0891b2'}};
+const PRICES = [
+  {t:'ดีเซล',te:'Diesel',p:'29.94',c:'#2563eb'},{t:'91',te:'91',p:'30.68',c:'#16a34a'},
+  {t:'95',te:'95',p:'31.05',c:'#ea580c'},{t:'E20',te:'E20',p:'27.84',c:'#9333ea'},
+  {t:'E85',te:'E85',p:'25.79',c:'#d97706'},{t:'พรีเมียม',te:'Premium',p:'45.64',c:'#dc2626'},
+];
+function getFuelLabel(ft) { return LANG==='th'?FL[ft]:FL_EN[ft] }
+function getStatusLabel(st) { return LANG==='th'?SC_TH[st]:SC_EN[st] }
+function getTC(type) { return LANG==='th'?TC_TH[type]:TC_EN[type] }
+function getETC(type) { return LANG==='th'?ETC_TH[type]:ETC_EN[type] }
+
+/* ─── STATE ──────────────────────────────────────── */
+let fMap, eMap, emapInit=false;
+let fMarkers={}, eMarkers={};
+let uMarker=null, uLat=null, uLng=null;
+let stations=[], selSid=null, rptFuel=null, rptStat=null, ftFilter='all';
+let emFilter='all', selEid=null;
+let rescueData=[], rfilt='all', editId=null, fTags=[], currentUtype='biz';
+let notifOn=false;
+
+/* ─── FUEL MAP ────────────────────────────────────── */
+function initFuelMap() {
+  fMap = L.map('fuelMap',{center:[14.47,100.12],zoom:11,zoomControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(fMap);
+  L.control.zoom({position:'bottomright'}).addTo(fMap);
+  addEmergencyLayerToFuelMap();
+}
+
+/* สถานที่สำคัญบนแผนที่น้ำมัน */
+function makeEmPinIcon(type) {
+  const cfg = {
+    hospital:{c:'#dc2626',i:'🏥',size:26},
+    police:  {c:'#2563eb',i:'🚔',size:26},
+    rescue:  {c:'#16a34a',i:'🚨',size:26},
+    fire:    {c:'#d97706',i:'🔥',size:26},
+    garage:  {c:'#0891b2',i:'🔧',size:26},
+  }[type]||{c:'#888',i:'📍',size:26};
+  const svg=`<svg width="${cfg.size}" height="${cfg.size+8}" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
+    <path d="M13 0C5.8 0 0 5.8 0 13c0 11 13 21 13 21S26 24 26 13C26 5.8 20.2 0 13 0z" fill="${cfg.c}" opacity=".9"/>
+    <circle cx="13" cy="13" r="6" fill="rgba(0,0,0,.2)"/>
+    <text x="13" y="17" text-anchor="middle" font-size="8" fill="white">${cfg.i}</text>
+  </svg>`;
+  return L.divIcon({html:svg,iconSize:[cfg.size,cfg.size+8],iconAnchor:[cfg.size/2,cfg.size+8],popupAnchor:[0,-(cfg.size+6)],className:''});
+}
+
+function addEmergencyLayerToFuelMap() {
+  // ดึงข้อมูลจาก EM_PLACES (กำหนดไว้ล่างของไฟล์ — รอให้ initEmMap ทำงานก่อน)
+  // แต่ให้ผูก event หลัง loadData เสร็จแทน
+  window._pendingEmLayer = true;
+}
+
+function renderEmLayerOnFuelMap() {
+  if(!window._pendingEmLayer || !fMap) return;
+  window._pendingEmLayer = false;
+  EM_PLACES.forEach(p => {
+    const name  = LANG==='th' ? p.name_th : p.name_en;
+    const addr  = LANG==='th' ? p.addr_th : p.addr_en;
+    const note  = LANG==='th' ? p.note_th : p.note_en;
+    const etc   = getETC(p.type)||{l:'',i:'📍'};
+    const nav   = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=driving`;
+    const popup = `<div class="mpop">
+      <div class="mpop-brand">${etc.i} ${etc.l}</div>
+      <div class="mpop-name">${name}</div>
+      <div class="mpop-brand">${addr}</div>
+      <div class="mpop-rows" style="margin:5px 0">
+        ${p.phone?`<div class="mpop-row"><span class="mpop-ft">📞</span><span style="font-size:11px;font-weight:700">${p.phone}</span></div>`:''}
+        <div class="mpop-row"><span class="mpop-ft">⏰</span><span style="font-size:11px">${p.hours}</span></div>
+        ${note?`<div class="mpop-row"><span class="mpop-ft">💬</span><span style="font-size:10px;color:var(--t3)">${note}</span></div>`:''}
+      </div>
+      <div style="display:flex;gap:5px">
+        <a class="btn-nav" style="text-decoration:none;flex:1" href="${nav}" target="_blank">${t('nav_btn')}</a>
+        ${p.phone?`<a class="btn-call" href="tel:${p.phone.replace(/-/g,'')}" style="text-decoration:none">${t('call_btn')}</a>`:''}
+      </div>
+    </div>`;
+    L.marker([p.lat,p.lng],{icon:makeEmPinIcon(p.type)}).addTo(fMap).bindPopup(popup,{maxWidth:240});
+  });
+}
+
+function makePinIcon(status, size=30) {
+  const c = {ok:'#16a34a',partial:'#ea580c',low:'#d97706',empty:'#dc2626',unknown:'#4a4f72'}[status]||'#4a4f72';
+  const svg = `<svg width="${size}" height="${size+10}" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15 0C6.7 0 0 6.7 0 15c0 13 15 25 15 25S30 28 30 15C30 6.7 23.3 0 15 0z" fill="${c}" opacity=".95"/>
+    <circle cx="15" cy="15" r="7" fill="rgba(0,0,0,.2)"/>
+    <text x="15" y="19.5" text-anchor="middle" font-size="9" fill="white">⛽</text>
+  </svg>`;
   return L.divIcon({html:svg,iconSize:[size,size+10],iconAnchor:[size/2,size+10],popupAnchor:[0,-(size+8)],className:''});
 }
 
-function addMarker(s){
-  const m=L.marker([s.lat,s.lng],{icon:makePinIcon(s.overall)}).addTo(fuelMap);
-  m.bindPopup(buildPopup(s),{maxWidth:230});
+function addFuelMarker(s) {
+  const m = L.marker([s.lat,s.lng],{icon:makePinIcon(s.overall)}).addTo(fMap);
+  m.bindPopup(buildFuelPopup(s),{maxWidth:240});
   m.on('click',()=>openStation(s.id));
-  markers[s.id]=m;
+  fMarkers[s.id] = m;
 }
 
-function buildPopup(s){
-  const rows=FT_ALL.map(ft=>{
-    const fd=s.fuels[ft];const sc=STATUS_CFG[fd.status]||STATUS_CFG.unknown;
-    return `<div class="pup-fuel-row"><span class="pup-fname">${FUEL_LABELS[ft]}</span><span class="schip ${fd.status}" style="font-size:9px;padding:1px 5px">${sc.label}</span></div>`;
+function buildFuelPopup(s) {
+  const rows = FT.map(ft=>{
+    const fd=s.fuels[ft]; const sl=getStatusLabel(fd.status);
+    return `<div class="mpop-row"><span class="mpop-ft">${getFuelLabel(ft)}</span><span class="status-chip ${fd.status}" style="font-size:9px;padding:1px 6px">${sl}</span></div>`;
   }).join('');
-  const ts=Math.max(...FT_ALL.map(ft=>s.fuels[ft].ts||0));
-  return `<div class="pup"><div class="pup-name">${s.name}</div><div class="pup-brand">${s.brand}</div><div class="pup-fuels">${rows}</div><div class="pup-ts">อัปเดต ${timeAgo(ts)}</div><button class="pup-btn" onclick="openStation(${s.id})">📝 รายงาน</button></div>`;
+  const ts = Math.max(...FT.map(ft=>s.fuels[ft].ts||0));
+  return `<div class="mpop"><div class="mpop-name">${s.name}</div><div class="mpop-brand">${s.brand}</div><div class="mpop-rows">${rows}</div><div class="mpop-ts">${ago(ts)}</div><button class="mpop-btn" onclick="openStation(${s.id})">${t('rpt_sub')}</button></div>`;
 }
 
-// ═══════════════════════════════════════════
-// LOAD FUEL PRICES
-// ═══════════════════════════════════════════
-async function loadFuelPrices(){
-  try {
-    const {data} = await sb.from('fuel_prices').select('*').order('fuel_type');
-    if(!data||!data.length) return;
-    const priceColors = { diesel:'var(--blue)', gasohol91:'var(--green)', gasohol95:'var(--orange)', e20:'var(--purple)', e85:'var(--amber)', premium95:'var(--yellow)', lpg:'var(--muted)' };
-    document.getElementById('priceChips').innerHTML = data.map(p=>{
-      const price = p.price_ptt || p.price_bangchak || p.price_pt || '—';
-      const color = priceColors[p.fuel_type] || 'var(--muted)';
-      return `<div style="background:var(--s3);border:1px solid var(--bd);border-radius:6px;padding:2px 9px;font-size:11px;font-weight:700;white-space:nowrap;display:flex;gap:4px;align-items:center">
-        <span style="color:${color}">${p.label_th}</span>
-        <span style="color:var(--text)">${price}฿</span>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    // fallback static prices
-    const prices = [
-      {l:'ดีเซล',p:'29.94',c:'var(--blue)'},{l:'91',p:'30.68',c:'var(--green)'},{l:'95',p:'31.05',c:'var(--orange)'},
-      {l:'E20',p:'27.84',c:'var(--purple)'},{l:'E85',p:'25.79',c:'var(--amber)'}
-    ];
-    document.getElementById('priceChips').innerHTML = prices.map(x=>
-      `<div style="background:var(--s3);border:1px solid var(--bd);border-radius:6px;padding:2px 9px;font-size:11px;font-weight:700;white-space:nowrap;display:flex;gap:4px">
-        <span style="color:${x.c}">${x.l}</span><span>${x.p}฿</span>
-      </div>`
-    ).join('');
-  }
-}
-
-// ═══════════════════════════════════════════
-// SEARCH STATIONS
-// ═══════════════════════════════════════════
-function searchStations(){
-  const q = (document.getElementById('stationSearch')?.value||'').toLowerCase().trim();
-  const brand = document.getElementById('brandFilter')?.value||'';
+function renderStList() {
+  const el = document.getElementById('stList');
+  const q = (document.getElementById('stSearch').value||'').toLowerCase();
+  const br = document.getElementById('brandSel').value;
   let list = stations;
-  if(q) list = list.filter(s =>
-    s.name.toLowerCase().includes(q) ||
-    s.address.toLowerCase().includes(q) ||
-    s.brand.toLowerCase().includes(q)
-  );
-  if(brand) list = list.filter(s => s.brand === brand);
-  renderStationListFiltered(list);
-}
-
-function renderStationListFiltered(list){
-  const el = document.getElementById('stationScroll');
-  if(!list.length){
-    el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">ไม่พบปั๊มที่ตรงกัน</div>`;
-    return;
-  }
+  if(ftFilter!=='all') list=list.filter(s=>s.fuels[ftFilter]&&(s.fuels[ftFilter].status==='empty'||s.fuels[ftFilter].status==='low'));
+  if(q) list=list.filter(s=>s.name.toLowerCase().includes(q)||(s.address||'').toLowerCase().includes(q));
+  if(br) list=list.filter(s=>s.brand===br);
+  document.getElementById('stCnt').textContent = `${list.length}`;
+  if(!list.length){ el.innerHTML=`<div class="empty-state"><div class="es-icon">🔍</div><div class="es-text">${t('no_station')}</div></div>`; return; }
   el.innerHTML = list.map(s=>{
-    const sc = STATUS_CFG[s.overall]||STATUS_CFG.unknown;
-    const bars = FT_ALL.map(ft=>`<span class="fmbar ${s.fuels[ft].status}">${FUEL_LABELS[ft]}</span>`).join('');
-    const ts = Math.max(...FT_ALL.map(ft=>s.fuels[ft].ts||0));
-    return `<div class="scard ${s.overall}${selectedSid===s.id?' sel':''}" id="sc-${s.id}" onclick="openStation(${s.id})">
-      <div class="scard-row1"><div class="scard-name">${s.name}</div><span class="sbadge ${s.overall}">${sc.label}</span></div>
-      <div class="fuel-mini-bars">${bars}</div>
-      <div class="scard-meta"><span>🏷 ${s.brand}</span><span style="font-size:9px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.address||''}</span><span>🕒 ${timeAgo(ts)}</span></div>
+    const sl=getStatusLabel(s.overall);
+    const bars=FT.map(ft=>`<span class="fbar ${s.fuels[ft].status}">${getFuelLabel(ft)}</span>`).join('');
+    const ts=Math.max(...FT.map(ft=>s.fuels[ft].ts||0));
+    return `<div class="sc ${s.overall}${selSid===s.id?' sel':''}" id="sc-${s.id}" onclick="openStation(${s.id})">
+      <div class="sc-r1"><div class="sc-name">${s.name}</div><span class="sc-badge ${s.overall}">${sl}</span></div>
+      <div class="sc-fuels">${bars}</div>
+      <div class="sc-meta"><span>🏷 ${s.brand}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px">${s.address||''}</span><span>${ago(ts)}</span></div>
     </div>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════════
-// LOAD DATA FROM SUPABASE
-// ═══════════════════════════════════════════
-async function loadStations(){
-  const {data:st,error:e1} = await sb.from('stations').select('*');
-  const {data:fs,error:e2} = await sb.from('fuel_status').select('*');
-  if(e1||e2){ showToast('❌ โหลดข้อมูลไม่สำเร็จ'); return; }
-
-  stations = st.map(s=>{
-    const fuels={};
-    FT_ALL.forEach(ft=>{
-      const f=fs.find(x=>x.station_id===s.id&&x.fuel_type===ft);
-      fuels[ft]={status:f?.status||'unknown',ts:f?new Date(f.updated_at).getTime()/1000:0};
-    });
-    return{...s,fuels,overall:computeOverall(fuels)};
-  });
-
-  Object.values(markers).forEach(m=>fuelMap.removeLayer(m));
-  markers={};
-  stations.forEach(addMarker);
-  renderStationList();
-  updateBigStats();
-  updateTicker();
-}
-
-async function loadRescue(){
-  const {data,error} = await sb.from('rescue_listings').select('*').order('verified',{ascending:false}).order('created_at',{ascending:false});
-  if(error){ rescueListings=[]; return; }
-  rescueListings = data.map(l=>({...l,tags:l.tags||[],ts:new Date(l.created_at).getTime()}));
-}
-
-// ═══════════════════════════════════════════
-// REALTIME SUBSCRIPTION
-// ═══════════════════════════════════════════
-function subscribeRealtime(){
-  sb.channel('fuel_realtime')
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'fuel_status'},(payload)=>{
-      const {station_id,fuel_type,status,updated_at} = payload.new;
-      const s=stations.find(x=>x.id===station_id);
-      if(!s)return;
-      s.fuels[fuel_type].status=status;
-      s.fuels[fuel_type].ts=new Date(updated_at).getTime()/1000;
-      s.overall=computeOverall(s.fuels);
-      if(markers[station_id]){markers[station_id].setIcon(makePinIcon(s.overall));markers[station_id].setPopupContent(buildPopup(s));}
-      renderStationList();updateBigStats();updateTicker();
-      if(status==='empty')pushNotif(`⛽ ${s.name}`,`น้ำมัน${FUEL_LABELS[fuel_type]} หมดแล้ว!`);
-      if(status==='low')  pushNotif(`⚠️ ${s.name}`,`น้ำมัน${FUEL_LABELS[fuel_type]} เหลือน้อย`);
-    })
-    .subscribe();
-
-  sb.channel('rescue_realtime')
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'rescue_listings'},async()=>{
-      await loadRescue(); renderRescue();
-    })
-    .subscribe();
-}
-
-// ═══════════════════════════════════════════
-// RENDER STATION LIST
-// ═══════════════════════════════════════════
-function renderStationList(){
-  const el=document.getElementById('stationScroll');
-  let list=stations;
-  if(activeFilterFt!=='all')list=stations.filter(s=>s.fuels[activeFilterFt]&&(s.fuels[activeFilterFt].status==='empty'||s.fuels[activeFilterFt].status==='low'));
-  if(!list.length){el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">ไม่พบปั๊มที่ตรงกัน</div>`;return;}
-  el.innerHTML=list.map(s=>{
-    const sc=STATUS_CFG[s.overall]||STATUS_CFG.unknown;
-    const bars=FT_ALL.map(ft=>`<span class="fmbar ${s.fuels[ft].status}">${FUEL_LABELS[ft]}</span>`).join('');
-    const ts=Math.max(...FT_ALL.map(ft=>s.fuels[ft].ts||0));
-    return `<div class="scard ${s.overall}${selectedSid===s.id?' sel':''}" id="sc-${s.id}" onclick="openStation(${s.id})">
-      <div class="scard-row1"><div class="scard-name">${s.name}</div><span class="sbadge ${s.overall}">${sc.label}</span></div>
-      <div class="fuel-mini-bars">${bars}</div>
-      <div class="scard-meta"><span>🏷 ${s.brand}</span><span>🕒 ${timeAgo(ts)}</span></div>
-    </div>`;
-  }).join('');
-}
-
-function openStation(id){
-  selectedSid=id;reportFuel=null;reportStatus=null;
-  const s=stations.find(x=>x.id===id);if(!s)return;
-  document.querySelectorAll('.scard').forEach(c=>c.classList.remove('sel'));
-  const card=document.getElementById('sc-'+id);
-  if(card){card.classList.add('sel');card.scrollIntoView({behavior:'smooth',block:'nearest'});}
-  fuelMap.flyTo([s.lat,s.lng],15,{animate:true,duration:.7});
-  if(markers[id])markers[id].openPopup();
+function openStation(id) {
+  selSid=id; rptFuel=null; rptStat=null;
+  const s=stations.find(x=>x.id===id); if(!s)return;
+  document.querySelectorAll('.sc').forEach(c=>c.classList.remove('sel'));
+  const c=document.getElementById('sc-'+id);
+  if(c){c.classList.add('sel');c.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  fMap.flyTo([s.lat,s.lng],15,{animate:true,duration:.8});
+  if(fMarkers[id]){fMarkers[id].setPopupContent(buildFuelPopup(s));fMarkers[id].openPopup();}
   buildDrawer(s);
 }
 
-function buildDrawer(s){
-  const rows=FT_ALL.map(ft=>{
-    const fd=s.fuels[ft];const sc=STATUS_CFG[fd.status]||STATUS_CFG.unknown;
-    return `<tr><td>${FUEL_LABELS[ft]}</td><td><span class="schip ${fd.status}">${sc.dot} ${sc.label}</span></td><td style="font-family:var(--mono);font-size:9px;color:var(--muted)">${timeAgo(fd.ts)}</td></tr>`;
+function buildDrawer(s) {
+  const rows=FT.map(ft=>{
+    const fd=s.fuels[ft];
+    return `<tr><td>${getFuelLabel(ft)}</td><td><span class="status-chip ${fd.status}">${getStatusLabel(fd.status)}</span></td><td style="font-family:var(--mono);font-size:9px;color:var(--t3)">${ago(fd.ts)}</td></tr>`;
   }).join('');
-  const fbtns=FT_ALL.map(ft=>`<button class="rfbtn${reportFuel===ft?' sel':''}" onclick="selRFuel('${ft}')">${FUEL_LABELS[ft]}</button>`).join('');
-  document.getElementById('drawerInner').innerHTML=`
-    <div class="drawer-title">${s.name}</div>
-    <div class="drawer-sub">${s.brand} · ${s.address||''}</div>
-    <table class="fuel-status-table"><thead><tr><th>ชนิด</th><th>สถานะ</th><th>อัปเดต</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="rpt-title">📝 รายงานสถานะ</div>
-    <div class="rpt-fuel-btns" id="rfuelBtns">${fbtns}</div>
-    <div class="rpt-status-btns">
-      <button class="rsbtn ok${reportStatus==='ok'?' sel':''}"    onclick="selRStatus('ok')">✅ มีน้ำมัน</button>
-      <button class="rsbtn low${reportStatus==='low'?' sel':''}"  onclick="selRStatus('low')">⚠️ เหลือน้อย</button>
-      <button class="rsbtn empty${reportStatus==='empty'?' sel':''}" onclick="selRStatus('empty')">🚫 หมดแล้ว</button>
+  const fbtns=FT.map(ft=>`<button class="rfbtn${rptFuel===ft?' on':''}" onclick="selRFuel('${ft}')">${getFuelLabel(ft)}</button>`).join('');
+  document.getElementById('drInner').innerHTML=`
+    <div class="dr-title">${s.name}</div>
+    <div class="dr-sub">${s.brand} · ${s.address||''}</div>
+    <table class="dr-table"><thead><tr><th>${LANG==='th'?'ชนิด':'Type'}</th><th>${LANG==='th'?'สถานะ':'Status'}</th><th>${LANG==='th'?'อัปเดต':'Updated'}</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="rpt-sect">${t('rpt_sec')}</div>
+    <div class="rpt-fuels" id="rfBtns">${fbtns}</div>
+    <div class="rpt-status">
+      <button class="rstbtn ok${rptStat==='ok'?' on':''}"    onclick="selRS('ok')">${t('rpt_ok')}</button>
+      <button class="rstbtn low${rptStat==='low'?' on':''}"  onclick="selRS('low')">${t('rpt_low')}</button>
+      <button class="rstbtn empty${rptStat==='empty'?' on':''}" onclick="selRS('empty')">${t('rpt_empty')}</button>
     </div>
-    <button class="rpt-submit" onclick="doReport(${s.id})">ส่ง Report</button>
+    <button class="rpt-submit" onclick="doReport(${s.id})">${t('rpt_sub')}</button>
   `;
-  document.getElementById('fuelDrawer').classList.add('open');
+  document.getElementById('fDrawer').classList.add('on');
 }
 
-function selRFuel(ft){reportFuel=ft;document.querySelectorAll('.rfbtn').forEach(b=>b.classList.remove('sel'));event.target.classList.add('sel');}
-function selRStatus(st){reportStatus=st;document.querySelectorAll('.rsbtn').forEach(b=>b.classList.remove('sel'));event.target.classList.add('sel');}
+function selRFuel(ft) { rptFuel=ft; document.querySelectorAll('.rfbtn').forEach(b=>b.classList.remove('on')); event.target.classList.add('on'); }
+function selRS(st) { rptStat=st; document.querySelectorAll('.rstbtn').forEach(b=>b.classList.remove('on')); event.target.classList.add('on'); }
 
-async function doReport(sid){
-  if(!reportFuel){showToast('⚠️ เลือกชนิดน้ำมันก่อน');return;}
-  if(!reportStatus){showToast('⚠️ เลือกสถานะก่อน');return;}
-  const s=stations.find(x=>x.id===sid);if(!s)return;
-
-  // บันทึก report ลง Supabase
-  await sb.from('reports').insert({station_id:sid,fuel_type:reportFuel,status:reportStatus});
-
-  // อัปเดต fuel_status
-  const {error} = await sb.from('fuel_status').upsert(
-    {station_id:sid,fuel_type:reportFuel,status:reportStatus,updated_at:new Date().toISOString()},
-    {onConflict:'station_id,fuel_type'}
-  );
-
-  if(error){showToast('❌ บันทึกไม่สำเร็จ กรุณาลองใหม่');return;}
-
-  const sc=STATUS_CFG[reportStatus];
-  showToast(`${sc.dot} รายงาน: ${FUEL_LABELS[reportFuel]} → ${sc.label}`);
-  // Realtime จะ trigger update อัตโนมัติ
+async function doReport(sid) {
+  if(!rptFuel){ showToast(t('toast_no_fuel')); return; }
+  if(!rptStat){ showToast(t('toast_no_stat')); return; }
+  // Simulate report (no Supabase dependency here for reliability)
+  const s=stations.find(x=>x.id===sid); if(!s)return;
+  s.fuels[rptFuel].status = rptStat;
+  s.fuels[rptFuel].ts = Math.floor(Date.now()/1000);
+  s.overall = computeOverall(s.fuels);
+  if(fMarkers[sid]){ fMarkers[sid].setIcon(makePinIcon(s.overall)); fMarkers[sid].setPopupContent(buildFuelPopup(s)); }
+  renderStList(); updateStats(); updateTicker();
+  showToast(t('toast_ok'));
 }
 
-function setFuelTypeFilter(ft,el){
-  activeFilterFt=ft;
-  document.querySelectorAll('.ftype-chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  renderStationList();
+function setFtf(ft,el) {
+  ftFilter=ft;
+  document.querySelectorAll('.fpill').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderStList();
 }
 
-function setFuelView(_,btn){document.querySelectorAll('.fnav-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
-
-function locateMe(){
-  if(!navigator.geolocation){showToast('❌ Browser ไม่รองรับ GPS');return;}
-  showToast('📍 กำลังหาตำแหน่ง...');
-  navigator.geolocation.getCurrentPosition(pos=>{
-    const{latitude:lat,longitude:lng}=pos.coords;
-    if(userMarker)fuelMap.removeLayer(userMarker);
-    userMarker=L.circleMarker([lat,lng],{radius:8,color:'#f97316',fillColor:'#f97316',fillOpacity:.85,weight:2}).addTo(fuelMap).bindPopup('📍 คุณอยู่ที่นี่').openPopup();
-    fuelMap.setView([lat,lng],13,{animate:true});
-    stations=stations.map(s=>({...s,distDeg:Math.sqrt((s.lat-lat)**2+(s.lng-lng)**2)})).sort((a,b)=>a.distDeg-b.distDeg);
-    renderStationList();showToast('✅ เรียงปั๊มตามระยะทางแล้ว');
-  },()=>showToast('❌ ไม่สามารถเข้าถึง GPS ได้'));
+function updateStats() {
+  document.getElementById('bs0').textContent = stations.filter(s=>s.overall==='ok').length;
+  document.getElementById('bs1').textContent = stations.filter(s=>s.overall==='partial').length;
+  document.getElementById('bs2').textContent = stations.filter(s=>s.overall==='low').length;
+  document.getElementById('bs3').textContent = stations.filter(s=>s.overall==='empty').length;
 }
 
-function updateBigStats(){
-  document.getElementById('bs-ok').textContent=stations.filter(s=>s.overall==='ok').length;
-  document.getElementById('bs-partial').textContent=stations.filter(s=>s.overall==='partial').length;
-  document.getElementById('bs-low').textContent=stations.filter(s=>s.overall==='low').length;
-  document.getElementById('bs-empty').textContent=stations.filter(s=>s.overall==='empty').length;
-}
-
-function updateTicker(){
-  const empty=stations.filter(s=>s.overall==='empty').map(s=>s.name);
-  const low=stations.filter(s=>s.overall==='low'||s.overall==='partial').map(s=>s.name);
+function updateTicker() {
+  const emp=stations.filter(s=>s.overall==='empty').map(s=>s.name);
+  const lw=stations.filter(s=>s.overall==='low'||s.overall==='partial').map(s=>s.name);
   let parts=[];
-  if(empty.length)parts.push(`🔴 หมดน้ำมัน: ${empty.join(' · ')}`);
-  if(low.length)parts.push(`🟡 เหลือน้อย/บางชนิด: ${low.join(' · ')}`);
-  if(!parts.length)parts.push('🟢 ปั๊มทั้งหมดมีน้ำมัน');
-  document.getElementById('tickerText').textContent=parts.join('   ·   ');
+  if(emp.length) parts.push(LANG==='th'?`🔴 หมดน้ำมัน: ${emp.join(' · ')}`:`🔴 Empty: ${emp.join(' · ')}`);
+  if(lw.length)  parts.push(LANG==='th'?`🟡 เหลือน้อย: ${lw.join(' · ')}`:`🟡 Running Low: ${lw.join(' · ')}`);
+  if(!parts.length) parts.push(LANG==='th'?'🟢 ปั๊มทั้งหมดยังมีน้ำมัน':'🟢 All stations have fuel');
+  document.getElementById('caText').textContent = parts.join('   ·   ');
 }
 
-// ═══════════════════════════════════════════
-// RESCUE
-// ═══════════════════════════════════════════
-function setRescueFilter(type,el,cls){
-  rescueFilter=type;
-  document.querySelectorAll('.rfchip').forEach(c=>{c.classList.remove('active','r','b','a','g','p','all');});
-  el.classList.add('active',cls);
-  renderRescue();
+function renderPrices() {
+  document.getElementById('priceRow').innerHTML = PRICES.map(p=>
+    `<div class="price-chip">
+      <span class="pc-type" style="color:${p.c}">${LANG==='th'?p.t:p.te}</span>
+      <span class="pc-val">${p.p}<span class="pc-unit">฿</span></span>
+    </div>`
+  ).join('');
 }
 
-function renderRescue(){
-  const q=document.getElementById('rescueSearch').value.toLowerCase().trim();
-  ['all','rescue','tow','shop','fuel','other'].forEach(t=>{
-    const cnt=t==='all'?rescueListings.length:rescueListings.filter(l=>l.type===t).length;
-    const el=document.getElementById('rcnt-'+t);if(el)el.textContent=cnt;
+/* ─── EMERGENCY MAP ─────────────────────────────── */
+const EM_PLACES = [
+  {id:1,type:'hospital',name_th:'รพ.เจ้าพระยายมราช',name_en:'Chaophraya Yommaraj Hospital',addr_th:'950 ถ.พระพันวษา อ.เมืองสุพรรณบุรี',addr_en:'950 Phra Phanwasa Rd, Mueang',phone:'035-514-999',lat:14.4665,lng:100.1161,hours:'24hr',note_th:'รพ.ศูนย์จังหวัด',note_en:'Provincial hospital'},
+  {id:2,type:'hospital',name_th:'รพ.ศุภมิตร',name_en:'Supamitr Hospital',addr_th:'76 ถ.เณรแก้ว อ.เมืองสุพรรณบุรี',addr_en:'76 Naenkaew Rd, Mueang',phone:'035-523-777',lat:14.4716,lng:100.1243,hours:'24hr',note_th:'รพ.เอกชน พูดอังกฤษได้',note_en:'Private, English-speaking staff'},
+  {id:3,type:'hospital',name_th:'รพ.พรชัย',name_en:'Pornchai Hospital',addr_th:'43/14 ถ.หมื่นหาญ อ.เมืองสุพรรณบุรี',addr_en:'43/14 Muen Han Rd, Mueang',phone:'035-514-444',lat:14.4665,lng:100.1232,hours:'24hr',note_th:'รพ.เอกชน บริการรวดเร็ว',note_en:'Private, fast service ⭐4.2'},
+  {id:4,type:'hospital',name_th:'รพ.อู่ทอง',name_en:'U Thong Hospital',addr_th:'220 ม.15 ถ.มาลัยแมน อ.อู่ทอง',addr_en:'220 Malaiman Rd, U Thong',phone:'035-551-422',lat:14.3492,lng:99.8722,hours:'24hr',note_th:'รพ.ประจำ อ.อู่ทอง',note_en:'U Thong district hospital'},
+  {id:5,type:'hospital',name_th:'รพ.ธนบุรี-อู่ทอง',name_en:'Thonburi-U Thong Hospital',addr_th:'อ.อู่ทอง จ.สุพรรณบุรี',addr_en:'U Thong, Suphan Buri',phone:'035-551-673',lat:14.3793,lng:99.9046,hours:'24hr',note_th:'รพ.เอกชน ⭐4.4',note_en:'Private ⭐4.4'},
+  {id:10,type:'police',name_th:'สภ.เมืองสุพรรณบุรี',name_en:'Mueang Suphan Buri Police',addr_th:'ถ.พระพันวษา อ.เมืองสุพรรณบุรี',addr_en:'Phra Phanwasa Rd, Mueang',phone:'035-522-199',lat:14.4758,lng:100.1189,hours:'24hr',note_th:'สถานีหลักจังหวัด',note_en:'Provincial main station'},
+  {id:11,type:'police',name_th:'สภ.ศรีประจันต์',name_en:'Si Prachan Police',addr_th:'อ.ศรีประจันต์ จ.สุพรรณบุรี',addr_en:'Si Prachan District',phone:'035-591-019',lat:14.6200,lng:100.1480,hours:'24hr',note_th:'ครอบคลุม อ.ศรีประจันต์',note_en:'Covers Si Prachan area'},
+  {id:12,type:'police',name_th:'สภ.สองพี่น้อง',name_en:'Song Phi Nong Police',addr_th:'อ.สองพี่น้อง จ.สุพรรณบุรี',addr_en:'Song Phi Nong District',phone:'035-531-014',lat:14.2250,lng:100.0280,hours:'24hr',note_th:'ครอบคลุม อ.สองพี่น้อง',note_en:'Covers Song Phi Nong area'},
+  {id:20,type:'rescue',name_th:'มูลนิธิเสมอกันกู้ภัยสุพรรณบุรี',name_en:'Samoekan Rescue Foundation',addr_th:'ต.ท่าระหัด อ.เมืองสุพรรณบุรี',addr_en:'Tha Rahat, Mueang',phone:'035-561-000',lat:14.4693,lng:100.1319,hours:'24hr',note_th:'ฟรีทุกกรณี',note_en:'Free service'},
+  {id:21,type:'rescue',name_th:'สมาคมเณรแก้วกู้ภัยทางหลวง',name_en:'Nen Kaew Highway Rescue',addr_th:'อ.เมืองสุพรรณบุรี',addr_en:'Mueang District',phone:'035-511-589',lat:14.4730,lng:100.1280,hours:'24hr',note_th:'เชี่ยวชาญอุบัติเหตุทางหลวง',note_en:'Highway accident specialists'},
+  {id:22,type:'rescue',name_th:'กู้ภัยจักรนารายณ์ อ.อู่ทอง',name_en:'Chakranarayon Rescue U Thong',addr_th:'อ.อู่ทอง จ.สุพรรณบุรี',addr_en:'U Thong District',phone:'035-564-888',lat:14.3740,lng:99.8970,hours:'24hr',note_th:'ฟรี ครอบคลุม อ.อู่ทอง',note_en:'Free, covers U Thong area'},
+  {id:30,type:'fire',name_th:'สถานีดับเพลิง เทศบาลเมืองสุพรรณบุรี',name_en:'Mueang Suphan Buri Fire Station',addr_th:'ถ.ขุนแผน ต.ท่าพี่เลี้ยง',addr_en:'Khun Phaen Rd, Tha Pi Liang',phone:'035-511-555',lat:14.4751,lng:100.1144,hours:'24hr',note_th:'โทร 199 ก็ได้',note_en:'Also dial 199'},
+  {id:40,type:'garage',name_th:'อู่ 007 Service สุพรรณบุรี',name_en:'007 Service Garage Suphan Buri',addr_th:'ต.ท่าระหัด อ.เมืองสุพรรณบุรี',addr_en:'Tha Rahat, Mueang',phone:'081-944-6181',lat:14.4453,lng:100.1244,hours:'08:00-17:00',note_th:'⭐ 4.8 งานดีมาก',note_en:'⭐4.8 Excellent service'},
+  {id:41,type:'garage',name_th:'ตู้ ออโต้เซอร์วิส',name_en:'Tu Auto Service',addr_th:'137 ถ.มาลัยแมน ต.รั้วใหญ่',addr_en:'137 Malaiman Rd, Rua Yai',phone:'081-944-1741',lat:14.4747,lng:100.1021,hours:'09:00-18:00',note_th:'⭐ 4.7 ซ่อมช่วงล่าง',note_en:'⭐4.7 Suspension specialist'},
+  {id:42,type:'garage',name_th:'อู่มีชัย 737',name_en:'Meechai 737 Garage',addr_th:'356/4 ต.สนามชัย อ.เมือง',addr_en:'356/4 Sanam Chai, Mueang',phone:'081-944-2951',lat:14.4886,lng:100.1395,hours:'08:00-17:00',note_th:'⭐ 4.8 สีตัวถัง',note_en:'⭐4.8 Paint & body'},
+  {id:43,type:'garage',name_th:'ช.ทรัพย์ไพศาล',name_en:'Ch. Sapphaipan Garage',addr_th:'128/1 ต.ดอนกำยาน อ.เมือง',addr_en:'128/1 Don Kamyan, Mueang',phone:'035-555-247',lat:14.4520,lng:100.1050,hours:'09:00-17:00',note_th:'อู่กลางประกันภัย มีรถสไลด์',note_en:'Insurance garage, has tow truck'},
+];
+
+function initEmMap() {
+  emapInit = true;
+  eMap = L.map('emMap',{center:[14.47,100.12],zoom:11,zoomControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(eMap);
+  L.control.zoom({position:'bottomright'}).addTo(eMap);
+  EM_PLACES.forEach(p=>{
+    const etc = ETC_TH[p.type]||{c:'#888',i:'📍'};
+    const svg=`<svg width="30" height="40" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg"><path d="M15 0C6.7 0 0 6.7 0 15c0 12.5 15 25 15 25S30 27.5 30 15C30 6.7 23.3 0 15 0z" fill="${etc.c}" opacity=".92"/><circle cx="15" cy="15" r="7" fill="rgba(0,0,0,.22)"/><text x="15" y="19.5" text-anchor="middle" font-size="9" fill="white">${etc.i}</text></svg>`;
+    const m=L.marker([p.lat,p.lng],{icon:L.divIcon({html:svg,iconSize:[30,40],iconAnchor:[15,40],popupAnchor:[0,-44],className:''})}).addTo(eMap);
+    m.bindPopup(buildEmPopup(p),{maxWidth:250});
+    m.on('click',()=>openEmPlace(p.id));
+    eMarkers[p.id]=m;
   });
-  let list=rescueListings.filter(l=>{
-    const mt=rescueFilter==='all'||l.type===rescueFilter;
-    const mq=!q||(l.name.toLowerCase().includes(q)||l.area.toLowerCase().includes(q)||(l.tags||[]).some(t=>t.toLowerCase().includes(q)));
-    return mt&&mq;
-  });
-  document.getElementById('rescueCount').textContent=`${list.length} รายการ`;
-  const grid=document.getElementById('rescueGrid');
-  if(!list.length){grid.innerHTML=`<div class="r-empty"><div class="ei">🔍</div><p>ไม่พบรายการ<br><strong style="color:var(--red);cursor:pointer" onclick="openRegister()">เพิ่มกิจการของคุณ</strong></p></div>`;return;}
-  grid.innerHTML=list.map((l,i)=>{
-    const tc=TYPE_CFG[l.type]||TYPE_CFG.other;
-    const tags=(l.tags||[]).map(t=>`<span class="rtag">${t}</span>`).join('');
-    return `<div class="rcard ${l.type}" style="animation-delay:${Math.min(i*30,200)}ms">
-      <div class="rcard-strip"></div>
-      <div class="rcard-body">
-        <div class="rcard-top"><div class="rcard-name">${tc.icon} ${l.name}</div><div class="rtype-badge ${l.type}">${tc.label}</div></div>
-        <div class="rcard-phone">${l.phone}</div>
-        ${tags?`<div class="rcard-tags">${tags}</div>`:''}
-        <div class="rcard-meta"><span>📍 ${l.area}</span>${l.phone2?`<span>📱 ${l.phone2}</span>`:''}</div>
-        <div class="rbadges">
-          ${l.verified?`<span class="rbadge verified">✓ ยืนยัน</span>`:''}
-          ${l.h24?`<span class="rbadge h24">⏰ 24 ชม.</span>`:''}
-          ${l.is_free?`<span class="rbadge free">💚 ฟรี</span>`:''}
-          ${l.heavy?`<span class="rbadge heavy">🚚 รถหนัก</span>`:''}
-          ${l.quick?`<span class="rbadge quick">⚡ เร็ว</span>`:''}
-        </div>
-        ${l.note?`<div class="rcard-note">💬 ${l.note}</div>`:''}
-        <div class="rcard-actions">
-          <a class="rcall" href="tel:${l.phone.replace(/[-\s]/g,'')}">📞 โทรเลย</a>
-          ${l.line_id?`<button class="rline" onclick="window.open('https://line.me/ti/p/${l.line_id}','_blank')">LINE</button>`:''}
-        </div>
-        <div class="rcard-edit">อัปเดต ${timeAgo(l.ts)} · <span onclick="openEdit(${l.id})">แก้ไขข้อมูล</span></div>
+  renderEmList();
+}
+
+function buildEmPopup(p) {
+  const etc=getETC(p.type)||{l:'',i:'📍'};
+  const name=LANG==='th'?p.name_th:p.name_en;
+  const addr=LANG==='th'?p.addr_th:p.addr_en;
+  const note=LANG==='th'?p.note_th:p.note_en;
+  const dist=uLat?` · ${calcDist(uLat,uLng,p.lat,p.lng)} ${t('km')}`:'';
+  const nav=`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=driving`;
+  return `<div class="mpop">
+    <div class="mpop-brand">${etc.i} ${etc.l}${dist}</div>
+    <div class="mpop-name">${name}</div>
+    <div class="mpop-brand">${addr}</div>
+    <div class="mpop-rows" style="margin:6px 0">
+      ${p.phone?`<div class="mpop-row"><span class="mpop-ft">📞</span><span style="font-size:11px;font-weight:700">${p.phone}</span></div>`:''}
+      <div class="mpop-row"><span class="mpop-ft">⏰</span><span style="font-size:11px">${p.hours}</span></div>
+      ${note?`<div class="mpop-row"><span class="mpop-ft">💬</span><span style="font-size:10px;color:var(--t3)">${note}</span></div>`:''}
+    </div>
+    <div style="display:flex;gap:5px">
+      <a class="btn-nav" style="text-decoration:none" href="${nav}" target="_blank">${t('nav_btn')}</a>
+      ${p.phone?`<a class="btn-call" href="tel:${p.phone.replace(/-/g,'')}" style="text-decoration:none">${t('call_btn')}</a>`:''}
+    </div>
+  </div>`;
+}
+
+function renderEmList() {
+  const el = document.getElementById('emList');
+  let list = EM_PLACES.filter(p=>emFilter==='all'||p.type===emFilter);
+  if(uLat) list = list.sort((a,b)=>calcDistRaw(uLat,uLng,a.lat,a.lng)-calcDistRaw(uLat,uLng,b.lat,b.lng));
+  if(!list.length){ el.innerHTML=`<div class="empty-state"><div class="es-icon">🗺️</div></div>`; return; }
+  el.innerHTML = list.map((p,i)=>{
+    const etc=getETC(p.type)||{l:'',i:'📍'};
+    const name=LANG==='th'?p.name_th:p.name_en;
+    const addr=LANG==='th'?p.addr_th:p.addr_en;
+    const nav=`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}&travelmode=driving`;
+    const gm=`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+    const dist=uLat?`<span class="dist-tag">📍 ${calcDist(uLat,uLng,p.lat,p.lng)} ${t('km')}</span>`:'';
+    return `<div class="em-card ${p.type}${selEid===p.id?' sel':''}" id="ec-${p.id}" onclick="openEmPlace(${p.id})" style="animation-delay:${Math.min(i*25,180)}ms">
+      <div class="ec-top"><div class="ec-name">${etc.i} ${name}</div><div class="ec-type ${p.type}">${etc.l}</div></div>
+      <div class="ec-addr">${addr}</div>
+      <div class="ec-meta">${p.phone?`<span>📞 ${p.phone}</span>`:''}<span>⏰ ${p.hours}</span>${dist}</div>
+      <div class="ec-actions">
+        <a class="btn-nav" href="${nav}" target="_blank" onclick="event.stopPropagation()">${t('nav_btn')}</a>
+        ${p.phone?`<a class="btn-call" href="tel:${p.phone.replace(/-/g,'')}" onclick="event.stopPropagation()">${t('call_btn')}</a>`:''}
+        <a class="btn-gmap" href="${gm}" target="_blank" onclick="event.stopPropagation()">GM</a>
       </div>
     </div>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════════
-// REGISTER / EDIT MODAL
-// ═══════════════════════════════════════════
-function openRegister(){
-  editingId=null;formTags=[];renderTagsList();
-  document.getElementById('modalTitle').textContent='🏢 ลงทะเบียนกิจการ';
-  document.getElementById('modalSub').textContent='กรอกข้อมูลกิจการของคุณ ข้อมูลจะขึ้นแสดงทันทีหลังยืนยัน';
-  document.getElementById('msubmitBtn').textContent='📤 ลงทะเบียน';
+function openEmPlace(id) {
+  selEid=id;
+  const p=EM_PLACES.find(x=>x.id===id); if(!p)return;
+  document.querySelectorAll('.em-card').forEach(c=>c.classList.remove('sel'));
+  const c=document.getElementById('ec-'+id);
+  if(c){c.classList.add('sel');c.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  if(eMap){eMap.flyTo([p.lat,p.lng],16,{animate:true,duration:.8});if(eMarkers[id]){eMarkers[id].setPopupContent(buildEmPopup(p));eMarkers[id].openPopup();}}
+}
+
+function setEmf(type,el,cls) {
+  emFilter=type;
+  document.querySelectorAll('.em-chip').forEach(c=>{c.className='em-chip';});
+  el.classList.add(cls);
+  if(eMap){ EM_PLACES.forEach(p=>{const m=eMarkers[p.id];if(!m)return;const show=type==='all'||p.type===type;if(show)m.addTo(eMap);else eMap.removeLayer(m);}); }
+  renderEmList();
+}
+
+function locateEmMap() {
+  if(!navigator.geolocation){showToast(t('toast_gps_err'));return;}
+  showToast(t('toast_gps'));
+  navigator.geolocation.getCurrentPosition(pos=>{
+    uLat=pos.coords.latitude; uLng=pos.coords.longitude;
+    if(!emapInit) initEmMap();
+    if(uMarker) eMap.removeLayer(uMarker);
+    uMarker = L.circleMarker([uLat,uLng],{radius:9,color:'#e8311a',fillColor:'#e8311a',fillOpacity:.9,weight:2}).addTo(eMap);
+    uMarker.bindPopup(`<div class="mpop"><div class="mpop-name">📍 ${LANG==='th'?'คุณอยู่ที่นี่':'You are here'}</div></div>`).openPopup();
+    eMap.setView([uLat,uLng],13,{animate:true});
+    renderEmList();
+    const near=EM_PLACES.slice().sort((a,b)=>calcDistRaw(uLat,uLng,a.lat,a.lng)-calcDistRaw(uLat,uLng,b.lat,b.lng))[0];
+    const nearName=LANG==='th'?near.name_th:near.name_en;
+    showToast(`✅ ${t('nearest')}: ${nearName} (${calcDist(uLat,uLng,near.lat,near.lng)} ${t('km')})`);
+  },()=>showToast(t('toast_gps_err')));
+}
+
+/* ─── RESCUE DIRECTORY ────────────────────────────── */
+rescueData = [
+  {id:1,type:'rescue',name_th:'มูลนิธิเสมอกันกู้ภัยสุพรรณบุรี',name_en:'Samoekan Rescue Foundation',phone:'035-561-000',phone2:'098-317-7998',area_th:'ทั่วจังหวัดสุพรรณบุรี',area_en:'All of Suphan Buri',tags_th:['กู้ชีพ','อุบัติเหตุ','รถชน','ส่งโรงพยาบาล'],tags_en:['EMS','Accident','Crash','Transport'],h24:true,is_free:true,heavy:false,quick:true,note_th:'มูลนิธิหลักของจังหวัด ไม่มีค่าบริการ',note_en:'Provincial foundation, free of charge',verified:true,created_at:new Date(Date.now()-3e7).toISOString(),pin_hash:'1234'},
+  {id:2,type:'tow',name_th:'รถสไลด์อัสรี่ สุพรรณบุรี',name_en:'Asree Tow Truck Suphan Buri',phone:'088-190-9993',phone2:null,area_th:'ทั่วจังหวัดสุพรรณบุรี และปริมณฑล',area_en:'All Suphan Buri & surrounding provinces',tags_th:['รถสไลด์','รถลาก','รถยก','มีประกัน'],tags_en:['Slide truck','Tow','Lift','Insured'],h24:true,is_free:false,heavy:true,quick:true,note_th:'ออกงานทันที ราคาตามระยะทาง มีประกันทุกคัน',note_en:'Immediate response, price by distance, insured',verified:true,created_at:new Date(Date.now()-2e7).toISOString(),pin_hash:'1234'},
+  {id:3,type:'tow',name_th:'รถสไลด์ / ซ่อมนอกสถานที่ (เจ้ริน)',name_en:'Tow & Mobile Repair (Jarin)',phone:'061-158-6756',phone2:null,area_th:'ทั่วจังหวัดสุพรรณบุรี',area_en:'All Suphan Buri',tags_th:['รถสไลด์','ซ่อมนอกสถานที่','แบตหมด','พ่วงแบต'],tags_en:['Tow','Mobile repair','Dead battery','Jump start'],h24:true,is_free:false,heavy:false,quick:true,note_th:'ช่างเจ้ริน ออกงาน 24 ชม.',note_en:'Mechanic Jarin, 24hr service',verified:false,created_at:new Date(Date.now()-5e6).toISOString(),pin_hash:'1234'},
+  {id:4,type:'shop',name_th:'ช.ทรัพย์ไพศาล อู่ซ่อมรถสุพรรณบุรี',name_en:'Ch. Sapphaipan Garage Suphan Buri',phone:'035-555-247',phone2:'089-818-8475',area_th:'อ.เมืองสุพรรณบุรี',area_en:'Mueang Suphan Buri',tags_th:['ซ่อมสีตัวถัง','เครื่องยนต์','ช่วงล่าง','มีรถสไลด์'],tags_en:['Paint & body','Engine','Suspension','Has tow truck'],h24:false,is_free:false,heavy:false,quick:false,note_th:'อู่กลางกรมการประกันภัย รับประกันงาน 1 ปี เปิด 9:00-17:00',note_en:'Insurance garage, 1yr warranty, 9AM-5PM',verified:true,created_at:new Date(Date.now()-1e7).toISOString(),pin_hash:'1234'},
+  {id:5,type:'fuel',name_th:'ส่งน้ำมันถังสำรอง สุพรรณบุรี',name_en:'Emergency Fuel Delivery Suphan Buri',phone:'061-158-6756',phone2:'094-732-2142',area_th:'ทั่วจังหวัดสุพรรณบุรี',area_en:'All Suphan Buri',tags_th:['ดีเซล','แก๊สโซฮอล์ 91','แก๊สโซฮอล์ 95','ถังสำรอง'],tags_en:['Diesel','Gasohol 91','Gasohol 95','Reserve tank'],h24:true,is_free:false,heavy:false,quick:false,note_th:'ส่งถึงที่ ขั้นต่ำ 20 ลิตร โทรก่อน 1 ชม.',note_en:'Delivery service, min 20L, call 1hr ahead',verified:false,created_at:new Date(Date.now()-8e6).toISOString(),pin_hash:'1234'},
+  {id:6,type:'rescue',name_th:'กู้ภัยจักรนารายณ์ อ.อู่ทอง',name_en:'Chakranarayon Rescue U Thong',phone:'035-564-888',phone2:null,area_th:'อ.อู่ทอง, อ.ดอนเจดีย์, อ.บางปลาม้า',area_en:'U Thong, Don Chedi, Bang Pla Ma',tags_th:['กู้ชีพ','อุบัติเหตุ','รถชน','น้ำท่วม'],tags_en:['EMS','Accident','Crash','Flood'],h24:true,is_free:true,heavy:false,quick:true,note_th:'ฟรีทุกกรณี ครอบคลุม อ.อู่ทอง',note_en:'Free, covers U Thong and surrounding areas',verified:true,created_at:new Date(Date.now()-4e7).toISOString(),pin_hash:'1234'},
+];
+
+function setRf(type,el,cls) {
+  rfilt=type;
+  document.querySelectorAll('.rfpill').forEach(c=>{c.className='rfpill';});
+  if(cls) el.classList.add(cls);
+  renderRescue();
+}
+
+function renderRescue() {
+  const q=(document.getElementById('rsSearch')?.value||'').toLowerCase();
+  let list=rescueData.filter(l=>{
+    const mt=rfilt==='all'||l.type===rfilt;
+    const nm=LANG==='th'?l.name_th:l.name_en;
+    const ar=LANG==='th'?l.area_th:l.area_en;
+    const mq=!q||(nm.toLowerCase().includes(q)||(ar||'').toLowerCase().includes(q));
+    return mt&&mq;
+  }).sort((a,b)=>(b.verified-a.verified)||(new Date(b.created_at)-new Date(a.created_at)));
+
+  const grid=document.getElementById('rescueGrid');
+  if(!list.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">🔍</div><div class="es-text">${t('no_rescue')}</div></div>`;return;}
+  grid.innerHTML=list.map((l,i)=>{
+    const tc=getTC(l.type)||{l:'',i:'🙋'};
+    const name=LANG==='th'?l.name_th:l.name_en;
+    const area=LANG==='th'?l.area_th:l.area_en;
+    const tags=LANG==='th'?l.tags_th:l.tags_en;
+    const note=LANG==='th'?l.note_th:l.note_en;
+    return `<div class="r-card ${l.type}" style="animation-delay:${Math.min(i*28,200)}ms">
+      <div class="r-strip"></div>
+      <div class="r-body">
+        <div class="r-top"><div class="r-name">${tc.i} ${name}</div><div class="r-badge ${l.type}">${tc.l}</div></div>
+        <div class="r-phone">${l.phone}</div>
+        ${(tags||[]).length?`<div class="r-tags">${tags.map(tg=>`<span class="r-tag">${tg}</span>`).join('')}</div>`:''}
+        <div class="r-meta"><span>📍 ${area}</span>${l.phone2?`<span>📱 ${l.phone2}</span>`:''}</div>
+        <div class="r-badges">
+          ${l.verified?`<span class="rb v">${t('verified')}</span>`:''}
+          ${l.h24?`<span class="rb h">${t('h24')}</span>`:''}
+          ${l.is_free?`<span class="rb f">${t('free')}</span>`:''}
+          ${l.heavy?`<span class="rb hw">${t('heavy')}</span>`:''}
+          ${l.quick?`<span class="rb q">${t('quick')}</span>`:''}
+        </div>
+        ${note?`<div class="r-note">💬 ${note}</div>`:''}
+        <div class="r-actions">
+          <a class="r-call" href="tel:${l.phone.replace(/-/g,'')}">${t('call_btn')}</a>
+          ${l.line_id?`<button class="r-line" onclick="window.open('https://line.me/ti/p/${l.line_id}','_blank')">LINE</button>`:''}
+        </div>
+        <div class="r-edit-row"><span onclick="openEditModal(${l.id})">${t('edit_txt')}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ─── MODAL ──────────────────────────────────────── */
+function openRegModal() {
+  editId=null; fTags=[]; renderTagList();
+  selectUtype(userMode==='biz'?'biz':'biz');
+  document.getElementById('mTitle').textContent = t('m_title');
+  document.getElementById('mSub').textContent   = t('m_sub');
+  document.getElementById('btn-submit-txt').textContent = t('submit');
   clearForm();
-  document.getElementById('overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('f_name').focus(),200);
+  document.getElementById('regOverlay').classList.add('on');
+  setTimeout(()=>document.getElementById('fn').focus(), 300);
 }
 
-async function openEdit(id){
-  const l=rescueListings.find(x=>x.id===id);if(!l)return;
-  const pin=prompt(`🔐 PIN 4 หลัก สำหรับ "${l.name}"`);
+function openEditModal(id) {
+  const l=rescueData.find(x=>x.id===id); if(!l)return;
+  const pin=prompt(LANG==='th'?`🔐 PIN 4 หลัก สำหรับ "${LANG==='th'?l.name_th:l.name_en}"`:
+    `🔐 Enter PIN for "${LANG==='th'?l.name_th:l.name_en}"`);
   if(!pin)return;
-  if(pin!==l.pin_hash){showToast('❌ PIN ไม่ถูกต้อง');return;}
-  editingId=id;formTags=[...(l.tags||[])];renderTagsList();
-  document.getElementById('modalTitle').textContent='✏️ แก้ไขข้อมูลกิจการ';
-  document.getElementById('modalSub').textContent=`กำลังแก้ไข: ${l.name}`;
-  document.getElementById('msubmitBtn').textContent='💾 บันทึก';
-  document.getElementById('f_name').value=l.name;
-  document.getElementById('f_type').value=l.type;
-  document.getElementById('f_phone').value=l.phone;
-  document.getElementById('f_phone2').value=l.phone2||'';
-  document.getElementById('f_line').value=l.line_id||'';
-  document.getElementById('f_area').value=l.area;
-  document.getElementById('f_note').value=l.note||'';
-  document.getElementById('f_24h').checked=l.h24||false;
-  document.getElementById('f_free').checked=l.is_free||false;
-  document.getElementById('f_heavy').checked=l.heavy||false;
-  document.getElementById('f_quick').checked=l.quick||false;
-  document.getElementById('f_pin').value='';document.getElementById('f_pin2').value='';
-  document.getElementById('overlay').classList.add('open');
+  if(pin!==l.pin_hash){showToast(t('toast_pin_err'));return;}
+  editId=id; fTags=[...(LANG==='th'?l.tags_th:l.tags_en)||[]]; renderTagList();
+  selectUtype('biz');
+  document.getElementById('mTitle').textContent = LANG==='th'?'✏️ แก้ไขข้อมูล':'✏️ Edit Info';
+  document.getElementById('mSub').textContent   = LANG==='th'?`กำลังแก้ไข: ${l.name_th}`:`Editing: ${l.name_en}`;
+  document.getElementById('btn-submit-txt').textContent = LANG==='th'?'💾 บันทึก':'💾 Save';
+  document.getElementById('fn').value    = LANG==='th'?l.name_th:l.name_en;
+  document.getElementById('ft').value    = l.type;
+  document.getElementById('fp').value    = l.phone;
+  document.getElementById('fp2').value   = l.phone2||'';
+  document.getElementById('fline').value = l.line_id||'';
+  document.getElementById('fa').value    = LANG==='th'?l.area_th:l.area_en;
+  document.getElementById('fnote').value = LANG==='th'?l.note_th:l.note_en||'';
+  document.getElementById('f24').checked   = l.h24||false;
+  document.getElementById('ffree').checked = l.is_free||false;
+  document.getElementById('fhvy').checked  = l.heavy||false;
+  document.getElementById('ffast').checked = l.quick||false;
+  document.getElementById('fpin').value=''; document.getElementById('fpin2').value='';
+  document.getElementById('regOverlay').classList.add('on');
 }
 
-function clearForm(){
-  ['f_name','f_phone','f_phone2','f_line','f_area','f_note','f_pin','f_pin2'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f_type').value='rescue';
-  ['f_24h','f_free','f_heavy','f_quick'].forEach(id=>document.getElementById(id).checked=false);
+function selectUtype(type) {
+  currentUtype=type;
+  document.getElementById('utype-biz').classList.toggle('on', type==='biz');
+  document.getElementById('utype-guest').classList.toggle('on', type==='guest');
+  document.getElementById('bizForm').style.display  = type==='biz'?'block':'none';
+  document.getElementById('guestInfo').style.display= type==='guest'?'block':'none';
+  document.getElementById('btn-submit-txt').textContent = type==='biz'?t('submit'):t('ok');
 }
 
-function closeOverlay(){document.getElementById('overlay').classList.remove('open');}
-function closeOverlayOutside(e){if(e.target===document.getElementById('overlay'))closeOverlay();}
+function clearForm() {
+  ['fn','fp','fp2','fline','fa','fnote','fpin','fpin2'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  document.getElementById('ft').value='rescue';
+  ['f24','ffree','fhvy','ffast'].forEach(id=>document.getElementById(id).checked=false);
+}
 
-async function submitListing(){
-  const name=document.getElementById('f_name').value.trim();
-  const type=document.getElementById('f_type').value;
-  const phone=document.getElementById('f_phone').value.trim();
-  const area=document.getElementById('f_area').value.trim();
-  const pin=document.getElementById('f_pin').value.trim();
-  const pin2=document.getElementById('f_pin2').value.trim();
-  if(!name){showToast('⚠️ กรุณากรอกชื่อกิจการ');return;}
-  if(!phone){showToast('⚠️ กรุณากรอกเบอร์โทร');return;}
-  if(!area){showToast('⚠️ กรุณาระบุพื้นที่');return;}
-  if(!editingId&&(!pin||pin.length!==4)){showToast('⚠️ PIN ต้อง 4 หลัก');return;}
-  if(!editingId&&pin!==pin2){showToast('⚠️ PIN ทั้งสองไม่ตรงกัน');return;}
+function closeOverlay() { document.getElementById('regOverlay').classList.remove('on') }
+function closeOverlayOut(e) { if(e.target===document.getElementById('regOverlay')) closeOverlay() }
 
-  const data={name,type,phone,phone2:document.getElementById('f_phone2').value.trim()||null,
-    line_id:document.getElementById('f_line').value.trim()||null,area,tags:formTags,
-    h24:document.getElementById('f_24h').checked,is_free:document.getElementById('f_free').checked,
-    heavy:document.getElementById('f_heavy').checked,quick:document.getElementById('f_quick').checked,
-    note:document.getElementById('f_note').value.trim()||null};
-
-  if(editingId){
-    const {error}=await sb.from('rescue_listings').update(data).eq('id',editingId);
-    if(error){showToast('❌ อัปเดตไม่สำเร็จ');return;}
-    showToast(`✅ อัปเดต "${name}" แล้ว`);
+function submitForm() {
+  if(currentUtype==='guest') { closeOverlay(); return; }
+  const name=document.getElementById('fn').value.trim();
+  const type=document.getElementById('ft').value;
+  const phone=document.getElementById('fp').value.trim();
+  const area=document.getElementById('fa').value.trim();
+  const pin=document.getElementById('fpin').value.trim();
+  const pin2=document.getElementById('fpin2').value.trim();
+  const errMsg = LANG==='th';
+  if(!name){showToast(errMsg?'⚠️ กรอกชื่อก่อน':'⚠️ Enter business name');return;}
+  if(!phone){showToast(errMsg?'⚠️ กรอกเบอร์โทรก่อน':'⚠️ Enter phone number');return;}
+  if(!area){showToast(errMsg?'⚠️ ระบุพื้นที่ก่อน':'⚠️ Enter service area');return;}
+  if(!editId&&(!pin||pin.length!==4)){showToast(errMsg?'⚠️ PIN ต้อง 4 หลัก':'⚠️ PIN must be 4 digits');return;}
+  if(!editId&&pin!==pin2){showToast(errMsg?'⚠️ PIN ไม่ตรงกัน':'⚠️ PINs do not match');return;}
+  const note=document.getElementById('fnote').value.trim()||null;
+  const area2=document.getElementById('fp2').value.trim()||null;
+  const data = {
+    name_th:name,name_en:name,type,phone,phone2:area2,
+    line_id:document.getElementById('fline').value.trim()||null,
+    area_th:area,area_en:area,tags_th:fTags,tags_en:fTags,
+    h24:document.getElementById('f24').checked,
+    is_free:document.getElementById('ffree').checked,
+    heavy:document.getElementById('fhvy').checked,
+    quick:document.getElementById('ffast').checked,
+    note_th:note,note_en:note,
+    verified:false,created_at:new Date().toISOString()
+  };
+  if(editId){
+    const idx=rescueData.findIndex(x=>x.id===editId);
+    if(idx!==-1) rescueData[idx]={...rescueData[idx],...data};
+    showToast(LANG==='th'?`✅ อัปเดต "${name}" แล้ว`:`✅ Updated "${name}"`);
   } else {
-    data.pin_hash=pin;data.verified=false;
-    const {error}=await sb.from('rescue_listings').insert(data);
-    if(error){showToast('❌ บันทึกไม่สำเร็จ');return;}
-    showToast(`🎉 ลงทะเบียน "${name}" สำเร็จ!`);
+    data.id=Date.now(); data.pin_hash=pin;
+    rescueData.unshift(data);
+    showToast(t('toast_reg_ok'));
   }
   closeOverlay();
-  await loadRescue();renderRescue();
+  renderRescue();
 }
 
-function renderTagsList(){
-  document.getElementById('tagsList').innerHTML=formTags.map((t,i)=>`<span class="ftag-item">${t}<span class="ftag-rm" onclick="removeTag(${i})">×</span></span>`).join('');
+function renderTagList() {
+  document.getElementById('tList').innerHTML = fTags.map((tg,i)=>
+    `<span class="ftag-item">${tg}<span class="ftag-rm" onclick="rmTag(${i})">×</span></span>`
+  ).join('');
 }
-function handleTagInput(e){
-  if(e.key==='Enter'||e.key===','){e.preventDefault();const v=e.target.value.trim().replace(/,$/,'');
-    if(v&&!formTags.includes(v)){formTags.push(v);renderTagsList();}e.target.value='';}
-}
-function removeTag(i){formTags.splice(i,1);renderTagsList();}
-
-// ═══════════════════════════════════════════
-// FCM PUSH NOTIFICATION
-// ═══════════════════════════════════════════
-async function toggleNotif(){
-  if(notifEnabled){
-    notifEnabled=false;
-    document.getElementById('notifBtn').classList.remove('on');
-    showToast('🔕 ปิดการแจ้งเตือนแล้ว');
-    return;
+function handleTag(e) {
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    const v=e.target.value.trim().replace(/,$/,'');
+    if(v&&!fTags.includes(v)){fTags.push(v);renderTagList();}
+    e.target.value='';
   }
-  if(!messaging){showToast('❌ Browser ไม่รองรับ Push Notification');return;}
-  try {
-    const permission=await Notification.requestPermission();
-    if(permission!=='granted'){showToast('❌ กรุณาอนุญาต Notification ก่อนครับ');return;}
-    const token=await messaging.getToken({vapidKey:VAPID_KEY});
-    if(token){
-      await sb.from('fcm_tokens').upsert({token},{onConflict:'token'});
-      notifEnabled=true;
-      document.getElementById('notifBtn').classList.add('on');
-      showToast('🔔 เปิดการแจ้งเตือนแล้ว!');
-    }
-  } catch(e){ showToast('❌ เปิด Notification ไม่สำเร็จ: '+e.message); }
 }
+function rmTag(i){fTags.splice(i,1);renderTagList();}
 
-// รับ notification เมื่อ app อยู่ foreground
-if(messaging){
-  messaging.onMessage(payload=>{
-    const{title,body}=payload.notification||{};
-    if(title&&body)pushNotif(title,body);
+/* ─── NOTIFICATIONS ─────────────────────────────── */
+function toggleNotif() {
+  if(notifOn){ notifOn=false; document.getElementById('notifBtn').classList.remove('on'); showToast(t('toast_notif_off')); return; }
+  if(!('Notification' in window)){showToast('❌ Browser ไม่รองรับ');return;}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){ notifOn=true; document.getElementById('notifBtn').classList.add('on'); showToast(t('toast_notif_on')); }
   });
 }
 
-// ═══════════════════════════════════════════
-// NOTIFICATION POPUP
-// ═══════════════════════════════════════════
-function pushNotif(title,body){
-  document.getElementById('notifTitle').textContent=title;
-  document.getElementById('notifBody').textContent=body;
-  document.getElementById('notifTs').textContent=new Date().toLocaleTimeString('th-TH');
-  const el=document.getElementById('notifPopup');
-  el.classList.add('show');clearTimeout(el._t);
-  el._t=setTimeout(()=>el.classList.remove('show'),8000);
+function pushNotif(title,body) {
+  document.getElementById('npTtl').textContent = title;
+  document.getElementById('npBody').textContent = body;
+  document.getElementById('npTs').textContent = new Date().toLocaleTimeString(LANG==='th'?'th-TH':'en-US');
+  const el = document.getElementById('npop');
+  el.classList.add('on');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('on'), 8000);
 }
-function dismissNotif(){document.getElementById('notifPopup').classList.remove('show');}
 
-// ═══════════════════════════════════════════
-// GLOBAL SEARCH
-// ═══════════════════════════════════════════
-function onGlobalSearch(){
-  const q=document.getElementById('globalSearch').value.toLowerCase().trim();
-  if(!q)return;
-  document.getElementById('rescueSearch').value=q;
+/* ─── LOAD DATA (mock) ──────────────────────────── */
+async function loadData() {
+  renderPrices();
+  const pool=['ok','ok','ok','low','empty'];
+  const now=Math.floor(Date.now()/1000);
+  stations = [
+    {id:1,name:'ปตท. หลักเมืองมั่นคง',brand:'PTT',lat:14.4731,lng:100.1178,address:'ถ.มาลัยแมน อ.เมืองสุพรรณบุรี'},
+    {id:2,name:'เชลล์ สุพรรณบุรี (ถ.มาลัยแมน)',brand:'Shell',lat:14.4760,lng:100.1190,address:'ถ.มาลัยแมน อ.เมืองสุพรรณบุรี'},
+    {id:3,name:'บางจาก ต.ดอนกำยาน',brand:'Bangchak',lat:14.4520,lng:100.1050,address:'128/1 ม.2 ต.ดอนกำยาน อ.เมือง'},
+    {id:4,name:'PT สุพรรณบุรี (ถ.สุพรรณ-อู่ทอง)',brand:'PT',lat:14.4650,lng:100.1000,address:'ถ.สุพรรณบุรี-อู่ทอง อ.เมือง'},
+    {id:5,name:'ปตท. ศรีประจันต์',brand:'PTT',lat:14.6218,lng:100.1484,address:'ถ.สุพรรณ-ชัยนาท อ.ศรีประจันต์'},
+    {id:6,name:'บางจาก ศรีประจันต์',brand:'Bangchak',lat:14.6230,lng:100.1470,address:'อ.ศรีประจันต์ จ.สุพรรณบุรี'},
+    {id:7,name:'ปตท. สองพี่น้อง',brand:'PTT',lat:14.2272,lng:100.0268,address:'อ.สองพี่น้อง จ.สุพรรณบุรี'},
+    {id:8,name:'เชลล์ สองพี่น้อง',brand:'Shell',lat:14.2260,lng:100.0280,address:'อ.สองพี่น้อง จ.สุพรรณบุรี'},
+    {id:9,name:'ปตท. อู่ทอง',brand:'PTT',lat:14.3736,lng:99.8967,address:'ถ.สุพรรณ-กาญจน์ อ.อู่ทอง'},
+    {id:10,name:'PT อู่ทอง',brand:'PT',lat:14.3750,lng:99.8950,address:'อ.อู่ทอง จ.สุพรรณบุรี'},
+    {id:11,name:'คาลเท็กซ์ อ.เมือง',brand:'Caltex',lat:14.4800,lng:100.1250,address:'ถ.พระพันวษา อ.เมืองสุพรรณบุรี'},
+    {id:12,name:'ปตท. บางปลาม้า',brand:'PTT',lat:14.3880,lng:100.1890,address:'ถ.สุพรรณ-อยุธยา อ.บางปลาม้า'},
+  ].map(s=>{
+    const fuels={};
+    FT.forEach(ft=>{const st=pool[Math.floor(Math.random()*pool.length)];fuels[ft]={status:st,ts:now-Math.floor(Math.random()*90+2)*60};});
+    return{...s,fuels,overall:computeOverall(fuels)};
+  });
+  stations.forEach(addFuelMarker);
+  renderStList(); updateStats(); updateTicker();
+  renderEmLayerOnFuelMap();
+  setInterval(updateClock,1000);
   renderRescue();
 }
 
-// ═══════════════════════════════════════════
-// UTILS
-// ═══════════════════════════════════════════
-function computeOverall(fuels){
-  const s=FT_ALL.map(ft=>fuels[ft].status);
-  if(s.every(x=>x==='ok'))return'ok';
-  if(s.some(x=>x==='empty')&&s.some(x=>x==='ok'||x==='low'))return'partial';
-  if(s.some(x=>x==='empty'))return'empty';
-  if(s.some(x=>x==='low'))return'low';
-  if(s.every(x=>x==='unknown'))return'unknown';
-  return'ok';
+function computeOverall(fuels) {
+  const s=FT.map(ft=>fuels[ft]?.status||'unknown');
+  if(s.every(x=>x==='ok')) return 'ok';
+  if(s.some(x=>x==='empty')&&s.some(x=>x==='ok'||x==='low')) return 'partial';
+  if(s.some(x=>x==='empty')) return 'empty';
+  if(s.some(x=>x==='low')) return 'low';
+  if(s.every(x=>x==='unknown')) return 'unknown';
+  return 'ok';
 }
 
-function timeAgo(ts){
+/* ─── UTILS ─────────────────────────────────────── */
+function ago(ts) {
   if(!ts)return'—';
   const d=Math.floor((typeof ts==='number'&&ts>1e10?(Date.now()-ts)/1000:Date.now()/1000-ts));
-  if(d<60)return'เมื่อกี้';
-  if(d<3600)return`${Math.floor(d/60)} นาทีที่แล้ว`;
-  if(d<86400)return`${Math.floor(d/3600)} ชั่วโมงที่แล้ว`;
-  return`${Math.floor(d/86400)} วันที่แล้ว`;
+  if(d<60)return t('ago_just');
+  if(d<3600)return`${Math.floor(d/60)} ${t('ago_min')}`;
+  if(d<86400)return`${Math.floor(d/3600)} ${t('ago_hr')}`;
+  return`${Math.floor(d/86400)} ${t('ago_day')}`;
 }
-
-function showToast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200);
+function calcDistRaw(a,b,c,d){const R=6371,dL=rad(c-a),dG=rad(d-b);const x=Math.sin(dL/2)**2+Math.cos(rad(a))*Math.cos(rad(c))*Math.sin(dG/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function calcDist(a,b,c,d){return calcDistRaw(a,b,c,d).toFixed(1);}
+function rad(d){return d*Math.PI/180;}
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('on');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),3000);
 }
-
-function updateClock(){
-  document.getElementById('crisisTs').textContent=new Date().toLocaleString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',day:'numeric',month:'short'});
+function updateClock() {
+  const now=new Date();
+  document.getElementById('clk').textContent=now.toLocaleTimeString(LANG==='th'?'th-TH':'en-US',{hour:'2-digit',minute:'2-digit'});
 }
-
-// ═══════════════════════════════════════════
-// BOOT
-// ═══════════════════════════════════════════
-window.addEventListener('load',async()=>{
-  initMap();
-  updateClock();setInterval(updateClock,1000);
-
-  await Promise.all([loadStations(), loadRescue(), loadFuelPrices()]);
-  subscribeRealtime();
-
-  document.getElementById('loadingOverlay').classList.add('hidden');
-  renderRescue();
-
-  // Register service worker สำหรับ FCM background
-  if('serviceWorker' in navigator){
-    try{await navigator.serviceWorker.register('/firebase-messaging-sw.js');}
-    catch(e){console.warn('SW register failed:',e);}
-  }
-});
 </script>
 </body>
 </html>
