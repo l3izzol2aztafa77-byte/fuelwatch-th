@@ -184,7 +184,7 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 .sc-grid:active{transform:scale(.98)}
 .sc-grid .sc-accent{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--rl) 0 0 var(--rl)}
 .sc-grid.ok .sc-accent{background:var(--go)}.sc-grid.low .sc-accent{background:var(--warn)}.sc-grid.empty .sc-accent{background:var(--empty)}.sc-grid.partial .sc-accent{background:var(--part)}
-.sc-brand-logo{width:32px;height:32px;border-radius:8px;object-fit:contain;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;flex-shrink:0}
+.sc-brand-logo{width:36px;height:36px;border-radius:8px;background:var(--sf);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;flex-shrink:0;overflow:hidden;border:1px solid var(--bd);box-shadow:var(--sh1);padding:3px}
 .sc-grid-name{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3;margin-bottom:5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .sc-grid-fuels{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:6px}
 .sc-grid-fuels .fb{font-size:9px;padding:1px 5px}
@@ -1260,6 +1260,14 @@ function renderSt(){
   if(!list.length){el.innerHTML=`<div style="text-align:center;padding:32px;color:var(--t3);font-size:13px">ไม่พบปั๊มที่ตรงกัน</div>`;el.className='st-list';return;}
   el.className='st-grid';
   const BRAND_ICO={PTT:'🔴',Shell:'🐚',Bangchak:'🌿',PT:'🅿️',Caltex:'⭐',Esso:'🐯'};
+  const BRAND_LOGO={
+    PTT:'https://upload.wikimedia.org/wikipedia/en/thumb/4/4e/PTT_logo.svg/80px-PTT_logo.svg.png',
+    Shell:'https://upload.wikimedia.org/wikipedia/en/thumb/e/e8/Shell_logo.svg/80px-Shell_logo.svg.png',
+    Bangchak:'https://upload.wikimedia.org/wikipedia/th/thumb/3/3b/Bangchak_Logo.png/80px-Bangchak_Logo.png',
+    PT:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/PT_Logo_2019.png/80px-PT_Logo_2019.png',
+    Caltex:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Caltex_logo.svg/80px-Caltex_logo.svg.png',
+    Esso:'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Esso_textlogo.svg/80px-Esso_textlogo.svg.png'
+  };
   el.innerHTML=list.map(s=>{
     const bars=FT.map(ft=>{const fd=s.fuels[ft];return `<span class="fb ${fd.status}">${FL[ft]}</span>`;}).join('');
     const ts=Math.max(...FT.map(ft=>s.fuels[ft].ts||0));
@@ -1271,7 +1279,9 @@ function renderSt(){
     return `<div class="sc-grid ${s.overall}" id="sc-${s.id}">
       <div class="sc-accent"></div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <div class="sc-brand-logo brand-${s.brand}">${ico}</div>
+        <div class="sc-brand-logo brand-${s.brand}">
+          ${BRAND_LOGO[s.brand]?`<img src="${BRAND_LOGO[s.brand]}" style="width:100%;height:100%;object-fit:contain;border-radius:6px" onerror="this.parentElement.innerHTML='${ico}'">`:`<span>${ico}</span>`}
+        </div>
         <div style="flex:1;min-width:0">
           <div class="sc-grid-name">${s.name}</div>
           <span class="pill ${s.overall}" style="font-size:9px">${slabel(s.overall)}</span>
