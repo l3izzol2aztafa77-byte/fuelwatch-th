@@ -203,7 +203,13 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 .sc-rpt:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-dim)}
 .sc-fav{width:34px;height:34px;background:var(--sf2);border:1.5px solid var(--bd2);border-radius:var(--rl);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .15s;flex-shrink:0}
 .sc-fav.on{background:var(--gold-dim)}
-/* INLINE REPORT PANEL */
+/* GLOBAL FAB เพิ่มสถานที่ */
+.fab-add{position:fixed;right:16px;bottom:88px;z-index:310;width:52px;height:52px;border-radius:16px;background:var(--acc);color:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(255,59,31,.4);transition:all .18s;cursor:pointer;flex-direction:column;gap:0}
+.fab-add:hover{transform:scale(1.06);box-shadow:0 8px 24px rgba(255,59,31,.45)}.fab-add:active{transform:scale(.96)}
+/* PLACE TYPE BUTTONS */
+.place-type-btn{background:var(--sf2);border:1.5px solid var(--bd2);border-radius:var(--rm);padding:10px 6px;text-align:center;cursor:pointer;transition:all .15s;font-family:var(--body)}
+.place-type-btn:hover{border-color:var(--bd3)}
+.place-type-btn.on{border-color:var(--acc);background:var(--acc-dim)}
 .rpt-panel{display:none;margin-top:10px;padding:12px 14px;background:var(--sf2);border-radius:var(--rl);border:1.5px solid var(--bd2)}
 .rpt-panel.on{display:block;animation:fadeIn .18s ease}
 .rpt-close{float:right;background:none;border:none;font-size:18px;color:var(--t3);cursor:pointer;line-height:1;padding:0;margin-top:-2px}
@@ -438,6 +444,7 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
       </div>
       <div class="tb-ibtn" id="nBtn" onclick="toggleNotif()">🔔</div>
       <div id="userBtn" onclick="openUserMenu()"></div>
+      <div class="tb-ibtn" id="adminNavBtn" onclick="goTo('admin')" title="Admin Panel" style="display:none;font-size:13px;color:var(--warn)">⚙️</div>
     </div>
   </header>
 
@@ -620,6 +627,58 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
     </div>
   </div>
 
+  <!-- ADMIN SCREEN -->
+  <div class="screen" id="s-admin" style="padding-bottom:0">
+    <!-- Admin Login -->
+    <div id="adminLoginPanel" style="padding:32px 20px;max-width:400px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:40px;margin-bottom:10px">🔐</div>
+        <div style="font-family:var(--disp);font-size:20px;font-weight:700;color:var(--t1);margin-bottom:4px">Admin Panel</div>
+        <div style="font-size:13px;color:var(--t3)">จัดการสถานที่ที่รอการยืนยัน</div>
+      </div>
+      <div class="fg"><label class="fl">Admin Password</label>
+        <input class="fi" id="adminPwInline" type="password" placeholder="กรอก Admin Password" onkeydown="if(event.key==='Enter')doAdminLoginInline()">
+      </div>
+      <button class="btn-acc" style="width:100%;padding:12px;font-size:14px;margin-top:4px" onclick="doAdminLoginInline()">🔐 เข้าสู่ Admin</button>
+    </div>
+    <!-- Admin Dashboard -->
+    <div id="adminDashPanel" style="display:none">
+      <!-- Stats -->
+      <div style="padding:14px 16px;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-family:var(--disp);font-size:16px;font-weight:700;flex:1">⚙️ Admin Dashboard</div>
+        <div id="adm-stat-pending" style="padding:4px 12px;background:var(--blue-dim);color:var(--blue);border-radius:var(--rf);font-size:11px;font-weight:600;font-family:var(--mono)">⏳ 0 รออนุมัติ</div>
+        <div id="adm-stat-dup" style="padding:4px 12px;background:var(--warn-dim);color:var(--warn);border-radius:var(--rf);font-size:11px;font-weight:600;font-family:var(--mono)">⚠️ 0 ซ้ำ</div>
+        <button class="btn-sf" style="font-size:11px;padding:5px 10px" onclick="loadAdminPlaces()">🔄</button>
+        <button class="btn-sf" style="font-size:11px;padding:5px 10px;color:var(--empty)" onclick="adminLogout()">ออก</button>
+      </div>
+      <!-- Tabs -->
+      <div style="padding:8px 16px;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;gap:5px">
+        <button class="chip on" id="adm-tab-pending" onclick="switchAdminTab('pending',this)">⏳ รออนุมัติ</button>
+        <button class="chip" id="adm-tab-approved" onclick="switchAdminTab('approved',this)">✅ อนุมัติแล้ว</button>
+        <button class="chip" id="adm-tab-rejected" onclick="switchAdminTab('rejected',this)">❌ ปฏิเสธ</button>
+        <button class="chip" id="adm-tab-all" onclick="switchAdminTab('all',this)">📋 ทั้งหมด</button>
+      </div>
+      <!-- Search -->
+      <div class="search-row" style="padding-top:8px;padding-bottom:8px">
+        <input class="search-inp" id="admSearch" placeholder="ค้นหาชื่อ หรือ ที่อยู่..." oninput="renderAdminPlaces()" style="flex:1">
+        <select class="fi" id="admTypeFilter" onchange="renderAdminPlaces()" style="min-width:100px;flex-shrink:0;font-size:12px;padding:8px 10px;border-radius:var(--rf)">
+          <option value="">ทุกประเภท</option>
+          <option value="fuel">⛽ ปั๊มน้ำมัน</option>
+          <option value="garage">🔧 อู่/ปะยาง</option>
+          <option value="hospital">🏥 รพ./คลินิก</option>
+          <option value="rescue">🚨 กู้ภัย</option>
+          <option value="police">🚔 ตำรวจ</option>
+          <option value="food">🍜 ร้านอาหาร</option>
+          <option value="hotel">🏨 ที่พัก</option>
+          <option value="ev">⚡ EV</option>
+          <option value="pharmacy">💊 ร้านยา</option>
+          <option value="other">📦 อื่นๆ</option>
+        </select>
+      </div>
+      <div id="adminPlaceList" style="padding:0 16px 80px"></div>
+    </div>
+  </div>
+
   <nav class="bnav">
     <button class="bni on" id="n-fuel" onclick="goTo('fuel')"><span class="bni-i bni-live">⛽</span><span>น้ำมัน</span><span class="bni-dot"></span></button>
     <button class="bni" id="n-map" onclick="goTo('map')"><span class="bni-i">🆘</span><span>ฉุกเฉิน</span><span class="bni-dot"></span></button>
@@ -627,6 +686,69 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
     <button class="bni" id="n-tools" onclick="goTo('tools')"><span class="bni-i">📊</span><span>เครื่องมือ</span><span class="bni-dot"></span></button>
     <button class="bni" id="n-chat" onclick="goTo('chat')"><span class="bni-i">💬</span><span>แชท</span><span class="bni-dot"></span></button>
   </nav>
+  <!-- GLOBAL FAB เพิ่มสถานที่ -->
+  <button class="fab-add" id="fabAdd" onclick="openAddPlace()" title="เพิ่มสถานที่">
+    <span style="font-size:22px;line-height:1">＋</span>
+  </button>
+</div>
+
+<!-- ADD PLACE MODAL -->
+<div class="overlay" id="addPlaceOv" onclick="if(event.target===this)closeAddPlace()">
+  <div class="msheet" id="addPlaceSheet">
+    <div class="mhandle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="mttl">📍 เพิ่มสถานที่</div>
+      <button onclick="closeAddPlace()" style="background:none;border:none;font-size:20px;color:var(--t3);cursor:pointer;padding:0">×</button>
+    </div>
+    <div class="msub">ช่วยกันเพิ่มข้อมูลให้ชุมชน — ทีมงานตรวจสอบก่อนแสดง</div>
+
+    <!-- ประเภท -->
+    <div class="fg">
+      <label class="fl">ประเภทสถานที่ *</label>
+      <div id="placeTypeSel" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:4px">
+        <div class="place-type-btn on" data-type="fuel" onclick="selPlaceType(this)"><div style="font-size:18px">⛽</div><div style="font-size:10px;margin-top:2px">ปั๊มน้ำมัน</div></div>
+        <div class="place-type-btn" data-type="garage" onclick="selPlaceType(this)"><div style="font-size:18px">🔧</div><div style="font-size:10px;margin-top:2px">อู่/ปะยาง</div></div>
+        <div class="place-type-btn" data-type="hospital" onclick="selPlaceType(this)"><div style="font-size:18px">🏥</div><div style="font-size:10px;margin-top:2px">รพ./คลินิก</div></div>
+        <div class="place-type-btn" data-type="rescue" onclick="selPlaceType(this)"><div style="font-size:18px">🚨</div><div style="font-size:10px;margin-top:2px">กู้ภัย</div></div>
+        <div class="place-type-btn" data-type="police" onclick="selPlaceType(this)"><div style="font-size:18px">🚔</div><div style="font-size:10px;margin-top:2px">ตำรวจ</div></div>
+        <div class="place-type-btn" data-type="food" onclick="selPlaceType(this)"><div style="font-size:18px">🍜</div><div style="font-size:10px;margin-top:2px">ร้านอาหาร</div></div>
+        <div class="place-type-btn" data-type="hotel" onclick="selPlaceType(this)"><div style="font-size:18px">🏨</div><div style="font-size:10px;margin-top:2px">ที่พัก</div></div>
+        <div class="place-type-btn" data-type="ev" onclick="selPlaceType(this)"><div style="font-size:18px">⚡</div><div style="font-size:10px;margin-top:2px">ชาร์จ EV</div></div>
+        <div class="place-type-btn" data-type="pharmacy" onclick="selPlaceType(this)"><div style="font-size:18px">💊</div><div style="font-size:10px;margin-top:2px">ร้านยา</div></div>
+        <div class="place-type-btn" data-type="convenience" onclick="selPlaceType(this)"><div style="font-size:18px">🏪</div><div style="font-size:10px;margin-top:2px">ร้านสะดวก</div></div>
+        <div class="place-type-btn" data-type="atm" onclick="selPlaceType(this)"><div style="font-size:18px">🏧</div><div style="font-size:10px;margin-top:2px">ATM/ธนาคาร</div></div>
+        <div class="place-type-btn" data-type="other" onclick="selPlaceType(this)"><div style="font-size:18px">📦</div><div style="font-size:10px;margin-top:2px">อื่นๆ</div></div>
+      </div>
+    </div>
+
+    <!-- ชื่อ + ข้อมูลหลัก -->
+    <div class="fg2">
+      <div class="fg full"><label class="fl">ชื่อสถานที่ *</label><input class="fi" id="apName" placeholder="เช่น ปตท. หน้าวัดใหญ่" oninput="checkDupName()"></div>
+      <div id="dupWarn" style="display:none;grid-column:1/-1;background:#fef3c7;border:1px solid #f59e0b;border-radius:var(--rm);padding:8px 12px;font-size:12px;color:#92400e;line-height:1.5"></div>
+      <div class="fg"><label class="fl">เบอร์โทร</label><input class="fi" id="apPhone" type="tel" placeholder="0XX-XXX-XXXX"></div>
+      <div class="fg"><label class="fl">เว็บไซต์ / LINE ID</label><input class="fi" id="apContact" placeholder="@line_id หรือ URL"></div>
+      <div class="fg full"><label class="fl">ที่อยู่ / ทำเลที่ตั้ง *</label><input class="fi" id="apAddr" placeholder="เช่น 123 ถ.มาลัยแมน ต.รั้วใหญ่ อ.เมืองสุพรรณบุรี"></div>
+      <div class="fg"><label class="fl">Latitude *</label><input class="fi" id="apLat" type="number" step="0.000001" placeholder="14.XXXXXX"></div>
+      <div class="fg"><label class="fl">Longitude *</label><input class="fi" id="apLng" type="number" step="0.000001" placeholder="100.XXXXXX"></div>
+    </div>
+
+    <!-- GPS auto-fill -->
+    <button class="btn-sf" style="width:100%;margin-bottom:12px;font-size:12px" onclick="fillGPS()">📍 ใช้ตำแหน่ง GPS ของฉัน</button>
+
+    <div class="fg2">
+      <div class="fg"><label class="fl">เวลาเปิด</label><input class="fi" id="apOpen" placeholder="08:00"></div>
+      <div class="fg"><label class="fl">เวลาปิด (ว่าง=24ชม.)</label><input class="fi" id="apClose" placeholder="18:00"></div>
+      <div class="fg full"><label class="fl">หมายเหตุ / รายละเอียดเพิ่มเติม</label><textarea class="fi" id="apNote" placeholder="เช่น มีที่จอดรถ, เปิดทุกวัน, บริการ 24 ชม. ฯลฯ" style="min-height:60px"></textarea></div>
+    </div>
+
+    <!-- ผู้เพิ่ม -->
+    <div id="apUserInfo" style="background:var(--sf2);border-radius:var(--rm);padding:8px 12px;font-size:12px;color:var(--t2);margin-bottom:12px;display:flex;align-items:center;gap:6px"></div>
+
+    <div class="macts">
+      <button class="mcancel" onclick="closeAddPlace()">ยกเลิก</button>
+      <button class="mok" onclick="submitAddPlace()">📤 ส่งข้อมูล</button>
+    </div>
+  </div>
 </div>
 
 <!-- CLAIM MODAL -->
@@ -787,6 +909,7 @@ function enterApp(){
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('app').style.display='flex';
   updateUserBtn();
+  checkAdminBtn();
   loadData();
 }
 
@@ -1672,6 +1795,334 @@ function distR(a,b,c,d){const R=6371,dL=r(c-a),dG=r(d-b);const x=Math.sin(dL/2)*
 function dist1(a,b,c,d){return distR(a,b,c,d).toFixed(1);}
 function r(d){return d*Math.PI/180;}
 let tt;function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),3000);}
+
+/* ─── ADD PLACE SYSTEM ─── */
+const PLACE_TYPE_LABEL={
+  fuel:'ปั๊มน้ำมัน',garage:'อู่/ปะยาง',hospital:'รพ./คลินิก',rescue:'กู้ภัย',
+  police:'ตำรวจ/ป้อม',food:'ร้านอาหาร',hotel:'ที่พัก/โรงแรม',ev:'จุดชาร์จ EV',
+  pharmacy:'ร้านยา',convenience:'ร้านสะดวกซื้อ',atm:'ATM/ธนาคาร',other:'อื่นๆ'
+};
+const PLACE_TYPE_ICON={
+  fuel:'⛽',garage:'🔧',hospital:'🏥',rescue:'🚨',police:'🚔',
+  food:'🍜',hotel:'🏨',ev:'⚡',pharmacy:'💊',convenience:'🏪',atm:'🏧',other:'📦'
+};
+let curPlaceType='fuel';
+let dupCheckTimer=null;
+
+function openAddPlace(){
+  document.getElementById('addPlaceOv').classList.add('on');
+  // แสดงข้อมูลผู้ใช้
+  const info=document.getElementById('apUserInfo');
+  if(currentUser){
+    info.innerHTML=`<span style="color:var(--go)">✅</span> เพิ่มในนาม <b>${currentUser.name}</b>${currentUser.bizInfo?' — '+currentUser.bizInfo.name:''}`;
+  } else {
+    info.innerHTML=`<span style="color:var(--warn)">⚠️</span> กำลังเพิ่มแบบไม่ระบุตัวตน — <span style="color:var(--acc);cursor:pointer;text-decoration:underline" onclick="location.reload()">Login ก่อน</span>เพื่อให้ข้อมูลน่าเชื่อถือมากขึ้น`;
+  }
+  setTimeout(()=>document.getElementById('apName')?.focus(),350);
+}
+
+function closeAddPlace(){
+  document.getElementById('addPlaceOv').classList.remove('on');
+  // reset form
+  ['apName','apPhone','apContact','apAddr','apLat','apLng','apOpen','apClose','apNote'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('dupWarn').style.display='none';
+  selPlaceType(document.querySelector('.place-type-btn[data-type="fuel"]'));
+}
+
+function selPlaceType(el){
+  curPlaceType=el.dataset.type;
+  document.querySelectorAll('.place-type-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function fillGPS(){
+  if(!navigator.geolocation){showToast('❌ Browser ไม่รองรับ GPS');return;}
+  showToast('📍 กำลังหาตำแหน่ง...');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    document.getElementById('apLat').value=pos.coords.latitude.toFixed(6);
+    document.getElementById('apLng').value=pos.coords.longitude.toFixed(6);
+    showToast('✅ ใส่พิกัดแล้ว');
+  },()=>showToast('❌ ไม่สามารถเข้าถึง GPS'));
+}
+
+async function checkDupName(){
+  clearTimeout(dupCheckTimer);
+  const name=document.getElementById('apName').value.trim();
+  if(name.length<3){document.getElementById('dupWarn').style.display='none';return;}
+  dupCheckTimer=setTimeout(async()=>{
+    try{
+      const {data}=await sb.from('community_places')
+        .select('id,name,status').ilike('name','%'+name+'%').limit(3);
+      const warn=document.getElementById('dupWarn');
+      if(data&&data.length){
+        warn.style.display='block';
+        warn.innerHTML=`⚠️ พบชื่อที่คล้ายกัน: ${data.map(d=>`<b>${d.name}</b> (${d.status==='approved'?'✅ อนุมัติแล้ว':'⏳ รอตรวจสอบ'})`).join(', ')} — ถ้าเป็นสถานที่เดียวกัน กรุณาอย่าเพิ่มซ้ำ`;
+      } else {
+        warn.style.display='none';
+      }
+    }catch(e){/* ignore */}
+  },600);
+}
+
+async function submitAddPlace(){
+  const name=document.getElementById('apName').value.trim();
+  const addr=document.getElementById('apAddr').value.trim();
+  const lat=parseFloat(document.getElementById('apLat').value)||null;
+  const lng=parseFloat(document.getElementById('apLng').value)||null;
+
+  if(!name){showToast('⚠️ กรอกชื่อสถานที่ก่อน');return;}
+  if(!addr){showToast('⚠️ กรอกที่อยู่ก่อน');return;}
+  if(!lat||!lng){showToast('⚠️ ต้องใส่พิกัด GPS ด้วยครับ');return;}
+
+  // ตรวจชื่อซ้ำอีกครั้ง (ตรงทั้งหมด)
+  let isDup=false, dupStatus='';
+  try{
+    const {data}=await sb.from('community_places')
+      .select('id,name,status').ilike('name',name).limit(1);
+    if(data&&data.length){isDup=true;dupStatus=data[0].status;}
+  }catch(e){}
+
+  const payload={
+    name,
+    type:curPlaceType,
+    type_label:PLACE_TYPE_LABEL[curPlaceType]||'อื่นๆ',
+    phone:document.getElementById('apPhone').value.trim()||null,
+    contact:document.getElementById('apContact').value.trim()||null,
+    address:addr,lat,lng,
+    hours_open:document.getElementById('apOpen').value.trim()||null,
+    hours_close:document.getElementById('apClose').value.trim()||null,
+    note:document.getElementById('apNote').value.trim()||null,
+    added_by:currentUser?.name||'ผู้ใช้ทั่วไป',
+    added_by_id:currentUser?.id||null,
+    status: isDup ? 'pending_dup' : (currentUser?.bizInfo ? 'pending' : 'pending'),
+    is_duplicate_flag: isDup,
+    created_at:new Date().toISOString()
+  };
+
+  try{
+    const {error}=await sb.from('community_places').insert(payload);
+    if(error) throw error;
+    closeAddPlace();
+    if(isDup){
+      showToast('⏳ ชื่อซ้ำ — ส่งให้ Admin ตรวจสอบแล้ว');
+    } else {
+      showToast('🎉 ส่งข้อมูลแล้ว รอ Admin อนุมัติ');
+    }
+  }catch(err){
+    // fallback: บันทึก local ถ้า table ยังไม่มี
+    const local=JSON.parse(localStorage.getItem('fw_pending_places')||'[]');
+    local.push({...payload,local_only:true});
+    localStorage.setItem('fw_pending_places',JSON.stringify(local));
+    closeAddPlace();
+    showToast('📝 บันทึกไว้แล้ว (จะซิงค์เมื่อ Admin รัน SQL)');
+  }
+}
+
+/* ─── ADMIN SYSTEM ─── */
+const ADMIN_PW='FuelWatch@Admin2569'; // เปลี่ยนได้ตรงนี้เลยครับพี่
+let adminAuthed=!!sessionStorage.getItem('fw_admin_ok');
+let adminPlaces=[];
+let admCurTab='pending';
+const ADM_TYPE_ICO={fuel:'⛽',garage:'🔧',hospital:'🏥',rescue:'🚨',police:'🚔',food:'🍜',hotel:'🏨',ev:'⚡',pharmacy:'💊',convenience:'🏪',atm:'🏧',other:'📦'};
+const ADM_TYPE_LBL={fuel:'ปั๊มน้ำมัน',garage:'อู่/ปะยาง',hospital:'รพ./คลินิก',rescue:'กู้ภัย',police:'ตำรวจ',food:'ร้านอาหาร',hotel:'ที่พัก',ev:'ชาร์จ EV',pharmacy:'ร้านยา',convenience:'สะดวกซื้อ',atm:'ATM',other:'อื่นๆ'};
+
+// แสดงปุ่ม admin ใน topbar ถ้า login แล้ว
+function checkAdminBtn(){
+  const btn=document.getElementById('adminNavBtn');
+  if(btn) btn.style.display=adminAuthed?'flex':'none';
+}
+
+function doAdminLoginInline(){
+  const pw=document.getElementById('adminPwInline')?.value;
+  if(pw===ADMIN_PW){
+    sessionStorage.setItem('fw_admin_ok','1');
+    adminAuthed=true;
+    document.getElementById('adminLoginPanel').style.display='none';
+    document.getElementById('adminDashPanel').style.display='block';
+    checkAdminBtn();
+    loadAdminPlaces();
+    showToast('✅ เข้าสู่ Admin แล้ว');
+  } else {
+    showToast('❌ Password ไม่ถูกต้อง');
+    document.getElementById('adminPwInline').value='';
+  }
+}
+
+function adminLogout(){
+  sessionStorage.removeItem('fw_admin_ok');
+  adminAuthed=false;
+  document.getElementById('adminLoginPanel').style.display='block';
+  document.getElementById('adminDashPanel').style.display='none';
+  document.getElementById('adminPwInline').value='';
+  checkAdminBtn();
+  goTo('fuel');
+  showToast('👋 ออกจาก Admin แล้ว');
+}
+
+// Override goTo เพื่อ handle admin tab
+const _origGoTo=goTo;
+function goTo(n){
+  if(n==='admin'){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+    document.querySelectorAll('.bni').forEach(b=>b.classList.remove('on'));
+    document.getElementById('s-admin').classList.add('on');
+    // ถ้า login แล้ว แสดง dashboard
+    if(adminAuthed){
+      document.getElementById('adminLoginPanel').style.display='none';
+      document.getElementById('adminDashPanel').style.display='block';
+      loadAdminPlaces();
+    } else {
+      document.getElementById('adminLoginPanel').style.display='block';
+      document.getElementById('adminDashPanel').style.display='none';
+      setTimeout(()=>document.getElementById('adminPwInline')?.focus(),300);
+    }
+    return;
+  }
+  _origGoTo(n);
+}
+
+async function loadAdminPlaces(){
+  try{
+    const {data,error}=await sb.from('community_places')
+      .select('*').order('created_at',{ascending:false});
+    if(error) throw error;
+    adminPlaces=data||[];
+  }catch(e){
+    // fallback local
+    adminPlaces=JSON.parse(localStorage.getItem('fw_pending_places')||'[]')
+      .map((p,i)=>({...p,id:'local_'+i}));
+  }
+  updateAdminStats();
+  renderAdminPlaces();
+}
+
+function updateAdminStats(){
+  const pend=adminPlaces.filter(p=>p.status==='pending'||p.status==='pending_dup').length;
+  const dup=adminPlaces.filter(p=>p.is_duplicate_flag||p.status==='pending_dup').length;
+  document.getElementById('adm-stat-pending').textContent=`⏳ ${pend} รออนุมัติ`;
+  document.getElementById('adm-stat-dup').textContent=`⚠️ ${dup} ซ้ำ`;
+}
+
+function switchAdminTab(tab,el){
+  admCurTab=tab;
+  document.querySelectorAll('#s-admin .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderAdminPlaces();
+}
+
+function renderAdminPlaces(){
+  const q=(document.getElementById('admSearch')?.value||'').toLowerCase();
+  const ft=document.getElementById('admTypeFilter')?.value||'';
+  let list=adminPlaces.filter(p=>{
+    const ms=admCurTab==='all'?true:admCurTab==='pending'?(p.status==='pending'||p.status==='pending_dup'):p.status===admCurTab;
+    return ms&&(!ft||p.type===ft)&&(!q||(p.name||'').toLowerCase().includes(q)||(p.address||'').toLowerCase().includes(q));
+  });
+  const el=document.getElementById('adminPlaceList');
+  if(!list.length){
+    el.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--t3)"><div style="font-size:40px;margin-bottom:12px">${admCurTab==='pending'?'🎉':'📋'}</div><div style="font-size:15px;font-weight:600;color:var(--t2);margin-bottom:6px">${admCurTab==='pending'?'ไม่มีรายการรออนุมัติ':'ไม่พบรายการ'}</div></div>`;
+    return;
+  }
+  el.innerHTML=list.map(p=>buildAdminCard(p)).join('');
+}
+
+function buildAdminCard(p){
+  const ico=ADM_TYPE_ICO[p.type]||'📍';
+  const lbl=ADM_TYPE_LBL[p.type]||p.type_label||'อื่นๆ';
+  const gm=p.lat&&p.lng?`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`:'';
+  const st=p.status||'pending';
+  const isPend=st==='pending'||st==='pending_dup';
+  const stColor={pending:'var(--blue)',pending_dup:'var(--warn)',approved:'var(--go)',rejected:'var(--t3)'}[st]||'var(--t3)';
+  const stLabel={pending:'⏳ รออนุมัติ',pending_dup:'⚠️ ชื่อซ้ำ',approved:'✅ อนุมัติแล้ว',rejected:'❌ ปฏิเสธ'}[st]||st;
+  const added=p.created_at?new Date(p.created_at).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+
+  return `<div style="background:var(--sf);border-radius:var(--rx);padding:14px;margin-bottom:10px;border:1px solid var(--bd);border-left:3px solid ${stColor};animation:fadeIn .2s ease">
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${ico}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px">
+          <div style="font-size:14px;font-weight:600;color:var(--t1)">${escHtml(p.name)}</div>
+          <span style="padding:2px 8px;border-radius:var(--rf);font-size:10px;font-weight:600;background:${stColor}18;color:${stColor}">${stLabel}</span>
+          <span style="padding:2px 8px;border-radius:var(--rf);font-size:10px;background:var(--sf2);color:var(--t2)">${ico} ${lbl}</span>
+        </div>
+        <div style="font-size:11px;color:var(--t3);display:flex;gap:8px;flex-wrap:wrap">
+          <span>📍 ${escHtml(p.address||'ไม่ระบุ')}</span>
+          ${p.phone?`<span>📞 ${p.phone}</span>`:''}
+          ${p.lat&&p.lng?`<span style="font-family:var(--mono)">${p.lat?.toFixed(4)}, ${p.lng?.toFixed(4)}</span>`:''}
+          <span>👤 ${escHtml(p.added_by||'ไม่ระบุ')} · ${added}</span>
+        </div>
+      </div>
+    </div>
+    ${p.is_duplicate_flag?`<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:var(--rm);padding:8px 10px;margin-bottom:10px;font-size:12px;color:#92400e">⚠️ ระบบตรวจพบชื่อที่คล้ายกัน — กรุณาตรวจสอบก่อนอนุมัติ</div>`:''}
+    ${p.note?`<div style="background:var(--sf2);border-radius:var(--rm);padding:8px 10px;margin-bottom:10px;font-size:12px;color:var(--t2)">💬 ${escHtml(p.note)}</div>`:''}
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      ${isPend?`
+        <button onclick="admApprove('${p.id}')" style="padding:8px 16px;background:var(--go);color:#fff;border:none;border-radius:var(--rl);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--body)">✅ อนุมัติ</button>
+        <button onclick="admReject('${p.id}')" style="padding:8px 14px;background:transparent;color:var(--empty);border:1.5px solid var(--empty);border-radius:var(--rl);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--body)">❌ ปฏิเสธ</button>
+        <button onclick="admEditApprove('${p.id}')" style="padding:8px 14px;background:var(--go-dim);color:var(--go);border:1.5px solid var(--go-brd);border-radius:var(--rl);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--body)">✏️ แก้ไขแล้วอนุมัติ</button>
+      `:`
+        ${st==='approved'?`<button onclick="admReject('${p.id}')" style="padding:8px 14px;background:transparent;color:var(--t3);border:1.5px solid var(--bd2);border-radius:var(--rl);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--body)">ยกเลิกอนุมัติ</button>`:``}
+        ${st==='rejected'?`<button onclick="admApprove('${p.id}')" style="padding:8px 14px;background:var(--go-dim);color:var(--go);border:1.5px solid var(--go-brd);border-radius:var(--rl);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--body)">อนุมัติใหม่</button>`:``}
+      `}
+      ${gm?`<a href="${gm}" target="_blank" style="padding:8px 14px;background:transparent;color:var(--blue);border:1.5px solid var(--blue);border-radius:var(--rl);font-size:12px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px;font-family:var(--body)">📍 Maps</a>`:''}
+    </div>
+  </div>`;
+}
+
+async function admApprove(id){
+  try{
+    if(String(id).startsWith('local_')){
+      const local=JSON.parse(localStorage.getItem('fw_pending_places')||'[]');
+      const idx=parseInt(id.replace('local_',''));
+      if(local[idx])local[idx].status='approved';
+      localStorage.setItem('fw_pending_places',JSON.stringify(local));
+    } else {
+      const {error}=await sb.from('community_places')
+        .update({status:'approved',approved_at:new Date().toISOString()}).eq('id',id);
+      if(error)throw error;
+    }
+    const p=adminPlaces.find(x=>String(x.id)===String(id));
+    if(p)p.status='approved';
+    updateAdminStats();renderAdminPlaces();
+    showToast('✅ อนุมัติแล้ว!');
+  }catch(e){showToast('❌ '+e.message);}
+}
+
+async function admReject(id){
+  const reason=prompt('เหตุผล (ไม่จำเป็น):');
+  if(reason===null)return; // กด cancel
+  try{
+    if(String(id).startsWith('local_')){
+      const local=JSON.parse(localStorage.getItem('fw_pending_places')||'[]');
+      const idx=parseInt(id.replace('local_',''));
+      if(local[idx])local[idx].status='rejected';
+      localStorage.setItem('fw_pending_places',JSON.stringify(local));
+    } else {
+      const {error}=await sb.from('community_places')
+        .update({status:'rejected',reject_reason:reason||null,rejected_at:new Date().toISOString()}).eq('id',id);
+      if(error)throw error;
+    }
+    const p=adminPlaces.find(x=>String(x.id)===String(id));
+    if(p)p.status='rejected';
+    updateAdminStats();renderAdminPlaces();
+    showToast('✅ ปฏิเสธแล้ว');
+  }catch(e){showToast('❌ '+e.message);}
+}
+
+function admEditApprove(id){
+  const p=adminPlaces.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  const newName=prompt('ชื่อสถานที่:',p.name||'');if(newName===null)return;
+  const newPhone=prompt('เบอร์โทร:',p.phone||'');if(newPhone===null)return;
+  const newAddr=prompt('ที่อยู่:',p.address||'');if(newAddr===null)return;
+  if(newName) p.name=newName;
+  if(newPhone!==undefined) p.phone=newPhone;
+  if(newAddr) p.address=newAddr;
+  admApprove(id);
+}
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 /* ─── INIT ─── */
 if(currentUser){enterApp();}
