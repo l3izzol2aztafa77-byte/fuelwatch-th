@@ -58,7 +58,7 @@ input,textarea{cursor:text}
 /* AUTH */
 .auth-screen{min-height:100dvh;display:flex;flex-direction:column;background:#fff}
 .auth-screen.hidden{display:none}
-.auth-hero{padding:44px 24px 32px;text-align:center;background:linear-gradient(160deg,#FF6030 0%,#FF8C55 30%,#FFF0E8 65%,#FFFFFF 100%);border-bottom:none;position:relative}
+.auth-hero{padding:44px 24px 32px;text-align:center;background:url('data:image/webp;base64,UklGRmQEAABXRUJQVlA4IFgEAABwSQCdASogAywBPpFIoU0lpCMiIAgAsBIJaW7hd+E4+f6YEdT7ouBYx2APwA+nzrsAE9gUmUmUmUmUmUmUmUmUmUmUmUmUmUmUmUuu89RU/eeoqfvPUVP3nqKn7z1FT956ip+89RRFBFxU/eeoqfvPUVP3nqKn7z1FT956ip+89RUzs9RVONZNtgKsm2wFWTbYCrJtsBVk22AqybbAIyT9E6PeeoqfvPUVP3nqKn7z1FT956ip+89RUygWS7Xi5OQ99snIe+2TkPfbJyHvtk9XeeoqfvPUVP3nqKn7z1FT956ip+89RU/eeooikQ96iHvUQ96iHvUQ96iHvUQ96iHvUQ96iHvUQ96iHuudxU/eeoqfvPUVP3nqKn7z1FT956ip+89RU/c3q6Z2imAF5Sa8pNeUmvKTXlJryk15Sa8pNeUmvKN3iHWTbYCrJtsBVk22AqybbAVZNtgKsm2wFWSKBHWTbYCrJtsBVk22AqybbAVZNtgKsm2wFWTXkMj3nqKn7z1FT956ip+89RU/eeoqfvPUVP3nmpWAqybbAVZNtgKsm2wFWTbYCrJtsBVk22AqyRQI9giDlGnpKLMNuvghSSzkU1l2W/n4Y5Rp6SizDbr4IUks5FLOgi4qfvPUVP3nqKn7z1FT956ip+89RU/eeoqZ2p9/ROrprYKShIvF04UC/PXfU4t2qoyIVlWoR0fEfVxIWW/n4Y5Rp6SizDbr4IUks5FNZdlv5+GOUaekosw26+CFJLNrGzzouKn7z1FT956ip+89RU/eeoqfvPUVP3nppADt//mwPKuXX6Af/9CT/BJ/gk/6xv4CbwE3gJvATeAm8BN4CbwE3gJvATeAm8BN4CbwE3gJvBOZKF5lyAAAAAAAaRMPSAAAAAABlmfLHzmSQIAAAAAIXYUGgIAAAAAAC3EAAAAAACG9bQ0FtOWlk5JggdExmWTkmCB0TGZZOSYIHRMZlk5JggdExmWTkpgXWtMAAAAAAAEB0KkGY+0J9XNxa2Q8ZLm4tbIeMlzcWtkPGS5uLWyHjJc3FrZDxkufK5ZNAAAAAAAAAAAAAAABBWaNOwQAAAAAAOBkhqph6nTD1OmHqdMPU6Yep0w9Tph6nTD1OmHqdMPU6Yep0xTzSAAAAAAAPHJfCO32ZBNRjPZ33kQvqTZBcvTqMO8ouqbILl6dRh3lF1TZBcvTqMO8ouqbILl6dRh3lF1TZBcvTqMO8sAnbcEvFAs0AAAAAABLUy6LEn6rtKrEthFiWwixLYRYlsIsS2EWJbCLk6h7INQYv1oWeiatHyxClDBUHPB5pYJ+qKVpfkEHmpDqlxKDzUh1S4lB5qQ6pcSg81IdUuJTLrX6RAAAAAAADNYLtgsxKyyY1nMCRTRjJN7O+n0jRhsh1fwwYWaSoJ5Ve0lQTyq9pKgnlV7SVBPKr2kqCeVXtJUE8qvaSoJ5Ve0lQTyq9pKgnlV7SVBPKr2kqCeVXtJUCiAAAA==') center/cover;border-bottom:none;position:relative}
 .auth-logo-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px}
 .auth-logo{width:40px;height:40px;background:transparent;display:flex;align-items:center;justify-content:center}
 .auth-title{font-family:var(--disp);font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--t1)}
@@ -148,30 +148,83 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 .ftag-rm{cursor:pointer;color:var(--t3);font-size:14px}.ftag-rm:hover{color:var(--acc)}
 .tags-in{background:none;border:none;outline:none;color:var(--t1);font-size:13px;min-width:80px;flex:1;padding:2px 4px;font-family:var(--body)}
 .wrap16{padding:12px 16px}
+/* ══ HERO CARD v3 — Gemini exact ══ */
+.hv3-wrap{display:flex;align-items:stretch;gap:10px;margin-bottom:10px}
+.hv3-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.hv3-greet{font-size:12px;color:rgba(255,255,255,.8);font-weight:500;letter-spacing:.3px}
+.hv3-name{font-family:var(--disp);font-size:clamp(20px,5vw,28px);font-weight:700;color:#fff;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 4px rgba(0,0,0,.2)}
+.hv3-loc{font-size:12px;color:rgba(255,255,255,.75);font-weight:500;margin-bottom:4px}
+/* ราคาน้ำมันใน hero v3 */
+.hv3-prices{display:flex;gap:5px;overflow-x:auto;flex-wrap:nowrap}
+.hv3-prices::-webkit-scrollbar{display:none}
+.hv3-prices .price-chip{padding:5px 10px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.15);border-radius:8px}
+.hv3-prices .price-chip-label{font-size:9px}
+.hv3-prices .price-chip-val{font-size:12px}
+.hv3-prices .price-chip-ico{width:18px;height:18px;font-size:11px}
+/* Stats แนวตั้ง ขวา */
+.hv3-right{display:flex;flex-direction:column;gap:5px;flex-shrink:0;width:72px}
+.hv3-stat{background:rgba(0,0,0,.22);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:6px 8px;text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.hv3-stat-ico{font-size:14px;line-height:1}
+.hv3-stat-val{font-family:var(--disp);font-size:18px;font-weight:700;color:#fff;line-height:1}
+.hv3-stat-lbl{font-size:8px;color:rgba(255,255,255,.7);font-weight:500}
+
+/* ══ HERO CARD v2 (Gemini style) ══ */
+.hero-top-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+.hero-loc{font-size:12px;color:rgba(255,255,255,.8);margin-top:4px;font-weight:500}
+.hero-avatar{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;flex-shrink:0;overflow:hidden}
+.hero-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.hstat-box{background:rgba(0,0,0,.22);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:8px 6px;text-align:center}
+.hstat-ico{font-size:16px;margin-bottom:2px}
+.hstat-val{font-family:var(--disp);font-size:18px;font-weight:700;color:#fff;line-height:1;margin-bottom:2px}
+.hstat-lbl{font-size:9px;color:rgba(255,255,255,.75);font-weight:500}
+
+/* ══ STATION LIST 2 คอลัมน์ ══ */
+.st-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 16px 0}
+.sc-grid{background:var(--sf);border-radius:var(--rl);padding:12px;box-shadow:var(--sh1);border:1px solid var(--bd);position:relative;overflow:hidden;transition:all .15s}
+.sc-grid:active{transform:scale(.98)}
+.sc-grid .sc-accent{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--rl) 0 0 var(--rl)}
+.sc-grid.ok .sc-accent{background:var(--go)}.sc-grid.low .sc-accent{background:var(--warn)}.sc-grid.empty .sc-accent{background:var(--empty)}.sc-grid.partial .sc-accent{background:var(--part)}
+.sc-brand-logo{width:32px;height:32px;border-radius:8px;object-fit:contain;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;flex-shrink:0}
+.sc-grid-name{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3;margin-bottom:5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.sc-grid-fuels{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:6px}
+.sc-grid-fuels .fb{font-size:9px;padding:1px 5px}
+.sc-grid-addr{font-size:10px;color:var(--t3);margin-bottom:7px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sc-grid-acts{display:flex;gap:4px}
+.sc-grid-acts a{flex:1;padding:6px;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rm);font-size:10px;font-weight:600;text-align:center;text-decoration:none;color:var(--t2);transition:all .15s;font-family:var(--body)}
+.sc-grid-acts a.nav{background:var(--acc);color:#fff;border-color:var(--acc)}
+.sc-grid-rpt{width:100%;padding:5px;background:var(--sf2);border:1px solid var(--bd2);border-radius:var(--rm);font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;margin-bottom:5px;font-family:var(--body);transition:all .15s}
+.sc-grid-rpt:hover{border-color:var(--acc);color:var(--acc)}
+
+/* brand colors */
+.brand-PTT{background:#d9f0e8;color:#007a4c}.brand-Shell{background:#fff3cd;color:#cc7700}.brand-Bangchak{background:#dcf0ff;color:#0066cc}.brand-PT{background:#ffe8e8;color:#cc2200}.brand-Caltex{background:#fff0e0;color:#cc5500}.brand-Esso{background:#e8e8ff;color:#3300cc}
+
+/* ══ OVERRIDE old sc for grid view ══ */
+
 /* ══ HERO CARD (Bangchak style) ══ */
-.hero-card{background:var(--acc);position:relative;overflow:hidden;padding:18px 16px 0}
-.hero-bg{position:absolute;top:-20px;right:-30px;width:160px;height:160px;background:rgba(255,255,255,.08);border-radius:50%;pointer-events:none}
-.hero-bg::after{content:'';position:absolute;top:30px;right:-20px;width:120px;height:120px;background:rgba(255,255,255,.06);border-radius:50%}
-.hero-logo-img{position:absolute;right:-10px;top:50%;transform:translateY(-50%);height:100px;width:auto;object-fit:contain;opacity:.18;pointer-events:none;filter:brightness(10)}
+.hero-card{background:url('data:image/webp;base64,UklGRmQEAABXRUJQVlA4IFgEAABwSQCdASogAywBPpFIoU0lpCMiIAgAsBIJaW7hd+E4+f6YEdT7ouBYx2APwA+nzrsAE9gUmUmUmUmUmUmUmUmUmUmUmUmUmUmUmUuu89RU/eeoqfvPUVP3nqKn7z1FT956ip+89RRFBFxU/eeoqfvPUVP3nqKn7z1FT956ip+89RUzs9RVONZNtgKsm2wFWTbYCrJtsBVk22AqybbAIyT9E6PeeoqfvPUVP3nqKn7z1FT956ip+89RUygWS7Xi5OQ99snIe+2TkPfbJyHvtk9XeeoqfvPUVP3nqKn7z1FT956ip+89RU/eeooikQ96iHvUQ96iHvUQ96iHvUQ96iHvUQ96iHvUQ96iHuudxU/eeoqfvPUVP3nqKn7z1FT956ip+89RU/c3q6Z2imAF5Sa8pNeUmvKTXlJryk15Sa8pNeUmvKN3iHWTbYCrJtsBVk22AqybbAVZNtgKsm2wFWSKBHWTbYCrJtsBVk22AqybbAVZNtgKsm2wFWTXkMj3nqKn7z1FT956ip+89RU/eeoqfvPUVP3nmpWAqybbAVZNtgKsm2wFWTbYCrJtsBVk22AqyRQI9giDlGnpKLMNuvghSSzkU1l2W/n4Y5Rp6SizDbr4IUks5FLOgi4qfvPUVP3nqKn7z1FT956ip+89RU/eeoqZ2p9/ROrprYKShIvF04UC/PXfU4t2qoyIVlWoR0fEfVxIWW/n4Y5Rp6SizDbr4IUks5FNZdlv5+GOUaekosw26+CFJLNrGzzouKn7z1FT956ip+89RU/eeoqfvPUVP3nppADt//mwPKuXX6Af/9CT/BJ/gk/6xv4CbwE3gJvATeAm8BN4CbwE3gJvATeAm8BN4CbwE3gJvBOZKF5lyAAAAAAAaRMPSAAAAAABlmfLHzmSQIAAAAAIXYUGgIAAAAAAC3EAAAAAACG9bQ0FtOWlk5JggdExmWTkmCB0TGZZOSYIHRMZlk5JggdExmWTkpgXWtMAAAAAAAEB0KkGY+0J9XNxa2Q8ZLm4tbIeMlzcWtkPGS5uLWyHjJc3FrZDxkufK5ZNAAAAAAAAAAAAAAABBWaNOwQAAAAAAOBkhqph6nTD1OmHqdMPU6Yep0w9Tph6nTD1OmHqdMPU6Yep0xTzSAAAAAAAPHJfCO32ZBNRjPZ33kQvqTZBcvTqMO8ouqbILl6dRh3lF1TZBcvTqMO8ouqbILl6dRh3lF1TZBcvTqMO8sAnbcEvFAs0AAAAAABLUy6LEn6rtKrEthFiWwixLYRYlsIsS2EWJbCLk6h7INQYv1oWeiatHyxClDBUHPB5pYJ+qKVpfkEHmpDqlxKDzUh1S4lB5qQ6pcSg81IdUuJTLrX6RAAAAAAADNYLtgsxKyyY1nMCRTRjJN7O+n0jRhsh1fwwYWaSoJ5Ve0lQTyq9pKgnlV7SVBPKr2kqCeVXtJUE8qvaSoJ5Ve0lQTyq9pKgnlV7SVBPKr2kqCeVXtJUCiAAAA==') center/cover;position:relative;overflow:hidden;padding:18px 16px 0;border-radius:0 0 24px 24px;box-shadow:0 8px 24px rgba(180,40,0,.25)}
+.hero-bg{position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:rgba(255,255,255,.06);border-radius:50%;pointer-events:none;border:1px solid rgba(255,255,255,.08)}
+.hero-bg::after{content:'';position:absolute;top:50px;right:-60px;width:150px;height:150px;background:rgba(255,255,255,.04);border-radius:50%;border:1px solid rgba(255,255,255,.06)}
+.hero-logo-img{position:absolute;right:-8px;top:50%;transform:translateY(-50%);height:110px;width:auto;object-fit:contain;opacity:.22;pointer-events:none;filter:brightness(10) drop-shadow(0 2px 8px rgba(0,0,0,.3))}
 .hero-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
 .hero-left{flex:1;min-width:0}
 .hero-greet{font-size:12px;color:rgba(255,255,255,.85);margin-bottom:2px;font-weight:500;letter-spacing:.3px}
 .hero-name{font-family:var(--disp);font-size:20px;font-weight:700;color:#fff;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.15)}
-.hero-crisis{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.22);border-radius:var(--rf);padding:5px 10px;font-size:11px;color:#fff;max-width:230px;overflow:hidden;font-weight:500}
+.hero-crisis{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.3);backdrop-filter:blur(6px);border-radius:var(--rf);padding:5px 10px;font-size:11px;color:#fff;max-width:230px;overflow:hidden;font-weight:500;border:1px solid rgba(255,255,255,.15)}
 .hero-crisis .live-d{width:6px;height:6px;background:#fff;border-radius:50%;flex-shrink:0;animation:blink 1.2s ease-in-out infinite}
 .hero-crisis span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hero-stats{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
-.hst{background:rgba(255,255,255,.15);border-radius:var(--rm);padding:5px 10px;text-align:center;min-width:46px}
+.hst{background:rgba(0,0,0,.2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:var(--rm);padding:6px 10px;text-align:center;min-width:48px;border:1px solid rgba(255,255,255,.15)}
 .hst-n{font-family:var(--disp);font-size:20px;font-weight:700;color:#fff;display:block;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.2)}
 .hst-l{font-size:10px;color:rgba(255,255,255,.9);font-weight:600}
 /* ราคาน้ำมันใน hero */
-.hero-prices{display:flex;gap:5px;overflow-x:auto;padding:0 0 12px;margin:0 -2px}
+.hero-prices{display:flex;gap:6px;overflow-x:auto;padding:0 0 14px;margin:0 -2px}
 .hero-prices::-webkit-scrollbar{display:none}
-.hero-prices .pc-chip{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.15);flex-shrink:0}
-.hero-prices .pc-chip .pc-t{color:rgba(255,255,255,.85);font-size:10px}
-.hero-prices .pc-chip .pc-p{color:#fff;font-weight:700;font-size:12px}
+.price-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(0,0,0,.22);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:7px 12px;flex-shrink:0;white-space:nowrap}
+.price-chip-ico{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:rgba(255,255,255,.15)}
+.price-chip-label{font-size:11px;color:rgba(255,255,255,.8);font-weight:500}
+.price-chip-val{font-family:var(--mono);font-size:14px;font-weight:700;color:#fff}
 /* quick grid */
-.hero-grid{display:grid;grid-template-columns:repeat(5,1fr);background:var(--sf);border-radius:var(--rx) var(--rx) 0 0;margin:0 -16px;padding:12px 8px 10px;gap:4px}
+.hero-grid{display:grid;grid-template-columns:repeat(5,1fr);background:var(--sf);border-radius:20px 20px 0 0;margin:0 -16px;padding:14px 8px 12px;gap:4px;margin-top:12px}
 .hg-btn{background:none;border:none;cursor:pointer;padding:6px 4px;border-radius:var(--rm);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--body)}
 .hg-btn:active{background:var(--sf2);transform:scale(.95)}
 .hg-ico{font-size:26px;line-height:1;display:block;text-align:center}
@@ -462,47 +515,53 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 
   <!-- FUEL -->
   <div class="screen on" id="s-fuel">
-    <!-- HERO CARD แบบ Bangchak -->
+    <!-- HERO CARD v3 — Gemini exact layout -->
     <div class="hero-card">
       <div class="hero-bg"></div>
-      <img src="data:image/webp;base64,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" class="hero-logo-img" alt="FuelWatch">
-      <div class="hero-inner">
-        <div class="hero-left">
-          <div class="hero-greet" id="heroGreet">สวัสดี 👋</div>
-          <div class="hero-name" id="heroName">เช็คน้ำมันใกล้คุณ</div>
-          <div class="hero-crisis">
-            <div class="live-d"></div>
-            <span id="tkTxt">วิกฤตน้ำมัน · กำลังโหลด...</span>
+      <img src="data:image/webp;base64,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" class="hero-logo-img" alt="">
+      <div class="hv3-wrap">
+        <!-- LEFT: ทักทาย + ชื่อ + พิกัด + ราคา -->
+        <div class="hv3-left">
+          <div class="hv3-greet" id="heroGreet">สวัสดี 👋</div>
+          <div class="hv3-name" id="heroName">FuelWatch TH</div>
+          <div class="hv3-loc">📍 <span id="heroLocTxt">สุพรรณบุรี</span></div>
+          <div class="hv3-prices" id="pRow"></div>
+        </div>
+        <!-- RIGHT: Stats แนวตั้ง -->
+        <div class="hv3-right">
+          <div class="hv3-stat">
+            <div class="hv3-stat-ico">✉️</div>
+            <div class="hv3-stat-val" id="userPoints">0</div>
+            <div class="hv3-stat-lbl">ข้อความ</div>
+          </div>
+          <div class="hv3-stat">
+            <div class="hv3-stat-ico">🪙</div>
+            <div class="hv3-stat-val" id="userReports">0</div>
+            <div class="hv3-stat-lbl">คะแนน</div>
+          </div>
+          <div class="hv3-stat">
+            <div class="hv3-stat-ico">📋</div>
+            <div class="hv3-stat-val" id="bs0">—</div>
+            <div class="hv3-stat-lbl">ปั๊มปกติ</div>
           </div>
         </div>
-        <div class="hero-stats">
-          <div class="hst ok" title="มีน้ำมัน"><span class="hst-n" id="bs0">—</span><span class="hst-l">ปกติ</span></div>
-          <div class="hst warn" title="เหลือน้อย"><span class="hst-n" id="bs2">—</span><span class="hst-l">น้อย</span></div>
-          <div class="hst empty" title="หมด"><span class="hst-n" id="bs3">—</span><span class="hst-l">หมด</span></div>
-        </div>
       </div>
-      <!-- ราคาน้ำมันวันนี้ -->
-      <div class="hero-prices" id="pRow"></div>
-      <!-- Quick action grid -->
+      <!-- Quick grid -->
       <div class="hero-grid">
         <button class="hg-btn" onclick="locateNear()">
-          <div class="hg-ico">📍</div>
-          <div class="hg-lbl">ใกล้ฉัน</div>
+          <div class="hg-ico">📍</div><div class="hg-lbl">ใกล้ฉัน</div>
         </button>
-        <button class="hg-btn" onclick="setFtf('diesel',document.querySelector('.chip[onclick*=diesel]'))">
-          <div class="hg-ico">🛢️</div>
-          <div class="hg-lbl">ดีเซล</div>
+        <button class="hg-btn" onclick="setFtf('diesel',document.querySelector('#ftChips .chip:nth-child(2)'))">
+          <div class="hg-ico">🛢️</div><div class="hg-lbl">ดีเซล</div>
         </button>
-        <button class="hg-btn" onclick="setFtf('gasohol95',document.querySelector('.chip[onclick*=gasohol95]'))">
-          <div class="hg-ico">🟠</div>
-          <div class="hg-lbl">95</div>
+        <button class="hg-btn" onclick="setFtf('gasohol95',document.querySelector('#ftChips .chip:nth-child(3)'))">
+          <div class="hg-ico">🟠</div><div class="hg-lbl">95</div>
         </button>
-        <button class="hg-btn" onclick="setFtf('e20',document.querySelector('.chip[onclick*=e20]'))">
-          <div class="hg-ico">🟢</div>
-          <div class="hg-lbl">E20</div>
+        <button class="hg-btn" onclick="setFtf('e20',document.querySelector('#ftChips .chip:nth-child(5)'))">
+          <div class="hg-ico">🟢</div><div class="hg-lbl">E20</div>
         </button>
         <button class="hg-btn" onclick="openAddPlace()">
-          <div class="hg-ico" style="background:var(--acc);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;margin:0 auto 4px">＋</div>
+          <div class="hg-ico" style="background:rgba(255,255,255,.2);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;margin:0 auto 4px">＋</div>
           <div class="hg-lbl">เพิ่มที่</div>
         </button>
       </div>
@@ -525,7 +584,7 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
         <option>PT</option><option>Caltex</option><option>Esso</option>
       </select>
     </div>
-    <div id="stList" class="st-list" style="padding-top:8px"></div>
+    <div id="stList" class="st-grid" style="padding:8px 16px 0"></div>
   </div>
 
   <!-- EMERGENCY -->
@@ -1079,13 +1138,20 @@ async function loadData(){
 }
 
 function renderPricesFromDB(prices){
-  const row = document.getElementById('pRow');
-  row.innerHTML = prices.filter(p=>p.price_ptt).map(p=>
-    `<div class="pc-chip">
-      <span class="pc-t">${p.label_th}</span>
-      <span class="pc-p">${p.price_ptt}฿</span>
-    </div>`
-  ).join('');
+  const row=document.getElementById('pRow');
+  const ICO={'diesel':'🛢️','gasohol91':'🟡','gasohol95':'🟠','e20':'🟢','e85':'🔵','premium95':'⭐','lpg':'🔴'};
+  const LBL={'diesel':'ดีเซล B7','gasohol91':'แก๊สโซฮอล์ 91','gasohol95':'แก๊สโซฮอล์ 95','e20':'E20','e85':'E85','premium95':'พรีเมียม 95','lpg':'LPG'};
+  row.innerHTML=prices.filter(p=>p.price_ptt).map(p=>{
+    const ico=ICO[p.fuel_type]||'⛽';
+    const lbl=LBL[p.fuel_type]||p.label_th;
+    return `<div class="price-chip">
+      <div class="price-chip-ico">${ico}</div>
+      <div>
+        <div class="price-chip-label">${lbl}</div>
+        <div class="price-chip-val">${p.price_ptt}฿</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function loadMockData(){
@@ -1191,34 +1257,34 @@ function renderSt(){
   if(q)list=list.filter(s=>s.name.toLowerCase().includes(q)||(s.address||'').toLowerCase().includes(q));
   if(br)list=list.filter(s=>s.brand===br);
   if(uLat)list=[...list].sort((a,b)=>distR(uLat,uLng,a.lat,a.lng)-distR(uLat,uLng,b.lat,b.lng));
-  if(!list.length){el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px">ไม่พบปั๊มที่ตรงกัน</div>`;return;}
+  if(!list.length){el.innerHTML=`<div style="text-align:center;padding:32px;color:var(--t3);font-size:13px">ไม่พบปั๊มที่ตรงกัน</div>`;el.className='st-list';return;}
+  el.className='st-grid';
+  const BRAND_ICO={PTT:'🔴',Shell:'🐚',Bangchak:'🌿',PT:'🅿️',Caltex:'⭐',Esso:'🐯'};
   el.innerHTML=list.map(s=>{
-    const bars=FT.map(ft=>{const fd=s.fuels[ft];const vb=fd.verified?`<span class="fb-v">✓</span>`:'';return `<span class="fb ${fd.status}">${FL[ft]}${vb}</span>`;}).join('');
+    const bars=FT.map(ft=>{const fd=s.fuels[ft];return `<span class="fb ${fd.status}">${FL[ft]}</span>`;}).join('');
     const ts=Math.max(...FT.map(ft=>s.fuels[ft].ts||0));
     const isFav=favs.includes(s.id);
-    const dist=uLat?`<span class="pill blue">📍 ${dist1(uLat,uLng,s.lat,s.lng)} กม.</span>`:'';
-    const reporters=FT.map(ft=>s.fuels[ft]).filter(f=>f.reporter);
-    const lastRep=reporters.length?`<span class="rep-by">${reporters[reporters.length-1].verified?'✅':'👤'} ${reporters[reporters.length-1].reporter}</span>`:'';
+    const dist=uLat?`<span style="font-size:9px;color:var(--t3)">📍 ${dist1(uLat,uLng,s.lat,s.lng)} กม.</span>`:'';
     const gm=`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}`;
     const nav=`https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}&travelmode=driving`;
-    return `<div class="sc ${s.overall}" id="sc-${s.id}">
+    const ico=BRAND_ICO[s.brand]||'⛽';
+    return `<div class="sc-grid ${s.overall}" id="sc-${s.id}">
       <div class="sc-accent"></div>
-      <div class="sc-r1">
-        <div class="sc-name">${s.name}</div>
-        <span class="pill ${s.overall}" style="flex-shrink:0">${slabel(s.overall)}</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div class="sc-brand-logo brand-${s.brand}">${ico}</div>
+        <div style="flex:1;min-width:0">
+          <div class="sc-grid-name">${s.name}</div>
+          <span class="pill ${s.overall}" style="font-size:9px">${slabel(s.overall)}</span>
+        </div>
+        <div class="sc-fav${isFav?' on':''}" onclick="toggleFav(${s.id})" style="font-size:14px;cursor:pointer;flex-shrink:0">⭐</div>
       </div>
-      <div class="sc-fuels">${bars}</div>
-      <div class="sc-meta">
-        <span style="background:var(--sf2);padding:2px 7px;border-radius:var(--rf);font-weight:500;white-space:nowrap">🏷 ${s.brand}</span>
-        ${dist}${lastRep}
-        <span style="color:var(--t3)">${ago(ts)}</span>
-      </div>
-      ${s.address?`<div style="font-size:10px;color:var(--t3);margin-bottom:8px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical">📍 ${s.address}</div>`:''}
-      <div class="sc-acts">
-        <button class="sc-rpt" onclick="toggleRpt(${s.id})">📝 รายงานสถานะ</button>
-        <a class="btn-gm" href="${gm}" target="_blank" style="white-space:nowrap">📍 Maps</a>
-        <a class="btn-nav2" href="${nav}" target="_blank" style="white-space:nowrap">🗺️ นำทาง</a>
-        <div class="sc-fav${isFav?' on':''}" onclick="toggleFav(${s.id})">⭐</div>
+      <div class="sc-grid-fuels">${bars}</div>
+      <div class="sc-grid-addr">📍 ${s.address||s.brand}</div>
+      <div style="display:flex;gap:4px;align-items:center;margin-bottom:5px;flex-wrap:wrap">${dist}<span style="font-size:9px;color:var(--t3)">${ago(ts)}</span></div>
+      <button class="sc-grid-rpt" onclick="toggleRpt(${s.id})">📝 รายงานสถานะ</button>
+      <div class="sc-grid-acts">
+        <a href="${gm}" target="_blank">📍 Maps</a>
+        <a href="${nav}" target="_blank" class="nav">🗺️ นำทาง</a>
       </div>
       <div class="rpt-panel" id="rpt-${s.id}"></div>
     </div>`;
@@ -1774,7 +1840,11 @@ function chatTime(ts){
 
 /* ─── PRICE CHART ─── */
 function renderPrices(){
-  document.getElementById('pRow').innerHTML=PRICES.map(p=>`<div class="pc-chip"><span class="pc-t">${p.t}</span><span class="pc-p">${p.p}฿</span></div>`).join('');
+  const ICO={'ดีเซล B7':'🛢️','91':'🟡','95':'🟠','E20':'🟢','E85':'🔵','พรีเมียม':'⭐','LPG':'🔴'};
+  document.getElementById('pRow').innerHTML=PRICES.map(p=>{
+    const ico=Object.entries(ICO).find(([k])=>p.t.includes(k))?.[1]||'⛽';
+    return `<div class="price-chip"><div class="price-chip-ico">${ico}</div><div><div class="price-chip-label">${p.t}</div><div class="price-chip-val">${p.p}฿</div></div></div>`;
+  }).join('');
 }
 const PRICE_DATA={diesel:[29.94,29.94,28.94,29.94,30.44,29.94,29.94,28.94,29.94,29.94,30.44,29.94,29.94,28.94,29.94,29.44,29.94,29.94,28.94,30.44,29.94,29.94,29.94,28.94,29.94,29.94,29.94,29.44,29.94,29.94],gasohol95:[31.05,31.05,32.05,31.05,31.55,31.05,31.05,30.05,31.05,31.05,31.55,31.05,31.05,32.05,31.05,31.05,31.05,31.05,32.05,31.55,31.05,31.05,31.05,32.05,31.05,31.05,31.05,31.05,31.05,31.05],gasohol91:[30.68,30.68,31.68,30.68,31.18,30.68,30.68,29.68,30.68,30.68,31.18,30.68,30.68,31.68,30.68,30.68,30.68,30.68,31.68,31.18,30.68,30.68,30.68,31.68,30.68,30.68,30.68,30.68,30.68,30.68],e20:[27.84,27.84,28.84,27.84,28.34,27.84,27.84,26.84,27.84,27.84,28.34,27.84,27.84,28.84,27.84,27.84,27.84,27.84,28.84,28.34,27.84,27.84,27.84,28.84,27.84,27.84,27.84,27.84,27.84,27.84]};
 function setPT(type,el){priceType=type;document.querySelectorAll('#ptChips .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderPriceChart();}
@@ -1811,21 +1881,26 @@ function updateStats(){
   const ok=stations.filter(s=>s.overall==='ok').length;
   const low=stations.filter(s=>s.overall==='low'||s.overall==='partial').length;
   const empty=stations.filter(s=>s.overall==='empty').length;
-  // hero card
-  const b0=document.getElementById('bs0');const b2=document.getElementById('bs2');const b3=document.getElementById('bs3');
+  const b0=document.getElementById('bs0');const b3=document.getElementById('bs3');
   if(b0)b0.textContent=ok;
-  if(b2)b2.textContent=low;
   if(b3)b3.textContent=empty;
-  // greeting
   updateHeroGreet();
 }
 function updateHeroGreet(){
   const h=new Date().getHours();
-  const greet=h<12?'สวัสดีตอนเช้า ☀️':h<17?'สวัสดีตอนบ่าย 🌤':h<21?'สวัสดีตอนเย็น 🌆':'สวัสดีตอนกลางคืน 🌙';
+  const greet=h<12?'สวัสดีตอนเช้า ☀️':h<17?'สวัสดีตอนบ่าย 🌤':h<21?'สวัสดีตอนเย็น 🌆':'สวัสดีตอนกลางคืน... 🌙';
   const greetEl=document.getElementById('heroGreet');
   const nameEl=document.getElementById('heroName');
+  const locEl=document.getElementById('heroLocTxt');
+  const pointsEl=document.getElementById('userPoints');
+  const reportsEl=document.getElementById('userReports');
+  const avatarEl=document.getElementById('heroUserIco');
   if(greetEl)greetEl.textContent=greet;
-  if(nameEl)nameEl.textContent=currentUser?('คุณ'+currentUser.name):'FuelWatch TH · สุพรรณบุรี';
+  if(nameEl)nameEl.textContent=currentUser?('คุณ'+currentUser.name):'FuelWatch TH';
+  if(locEl)locEl.textContent=currentUser?.location||'สุพรรณบุรี';
+  if(pointsEl)pointsEl.textContent=currentUser?.reports||0;
+  if(reportsEl)reportsEl.textContent=currentUser?.reports||0;
+  if(avatarEl)avatarEl.textContent=currentUser?currentUser.name.charAt(0).toUpperCase():'👤';
 }
 function updateTicker(){
   const emp=stations.filter(s=>s.overall==='empty').map(s=>s.name);
