@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#e8311a">
+<title>FuelWatch TH — สถานการณ์น้ำมันและช่วยเหลือฉุกเฉิน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
+<style>
+:root {
+  --bg:#07080d;--s1:#0e0f16;--s2:#14151f;--s3:#1b1c28;
+  --bd:#222432;--bd2:#2d2f42;--text:#ecedf4;--muted:#52546a;--faint:#1a1b27;
+  --red:#e8311a;--red-d:#c5270f;--rbg:rgba(232,49,26,.10);--rbd:rgba(232,49,26,.28);
+  --green:#22c55e;--gbg:rgba(34,197,94,.10);
+  --yellow:#eab308;--ybg:rgba(234,179,8,.10);
+  --blue:#3b82f6;--bbg:rgba(59,130,246,.10);
+  --amber:#f59e0b;--abg:rgba(245,158,11,.10);
+  --purple:#a855f7;--pbg:rgba(168,85,247,.10);
+  --orange:#f97316;--obg:rgba(249,115,22,.10);
+  --mono:'IBM Plex Mono',monospace;--display:'Bebas Neue',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Sarabun',sans-serif;min-height:100vh;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:400;background:rgba(7,8,13,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);height:52px;display:flex;align-items:center;padding:0 14px;gap:10px}
+.logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.logo-mark{width:32px;height:32px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 14px rgba(232,49,26,.45);animation:glow 3s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 14px rgba(232,49,26,.45)}50%{box-shadow:0 0 26px rgba(232,49,26,.7)}}
+.logo-name{font-family:var(--display);font-size:20px;letter-spacing:.5px;line-height:1}
+.logo-name em{color:var(--red);font-style:normal}
+.nav-tabs{display:flex;gap:2px;flex:1;max-width:380px}
+.nav-tab{flex:1;padding:6px 8px;border:none;border-radius:7px;background:transparent;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.nav-tab:hover{color:var(--text);background:var(--s2)}
+.nav-tab.active.fuel-tab{color:var(--orange);background:var(--obg)}
+.nav-tab.active.rescue-tab{color:var(--red);background:var(--rbg)}
+.crisis-dot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:blink 1.2s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.topbar-right{display:flex;align-items:center;gap:7px;margin-left:auto}
+.top-search{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:6px 10px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;width:180px;transition:border-color .2s}
+.top-search:focus{border-color:var(--red)}
+.top-search::placeholder{color:var(--muted)}
+.btn{border:none;border-radius:7px;padding:6px 12px;font-family:'Sarabun',sans-serif;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:4px}
+.btn-register{background:var(--rbg);border:1px solid var(--rbd);color:var(--red)}
+.btn-register:hover{background:rgba(232,49,26,.18)}
+.btn-notif{background:var(--s2);border:1px solid var(--bd);color:var(--muted);font-size:16px;padding:5px 9px}
+.btn-notif:hover{border-color:var(--orange);color:var(--orange)}
+.btn-notif.on{color:var(--orange);border-color:var(--orange);background:var(--obg)}
+.catloop{display:flex;align-items:center;gap:4px;color:var(--muted);font-family:var(--mono);font-size:9px;letter-spacing:1.5px;padding:3px 8px;border:1px solid var(--bd);border-radius:20px;background:var(--s2);transition:all .2s;flex-shrink:0}
+.catloop:hover{color:var(--red);border-color:var(--rbd)}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
+
+/* CRISIS BANNER */
+.crisis-banner{background:linear-gradient(135deg,#1a0805 0%,var(--s1) 60%,#050a18 100%);border-bottom:1px solid var(--bd);padding:16px 16px 0;position:relative;overflow:hidden}
+.crisis-banner::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 55% 80% at 0% 50%,rgba(232,49,26,.08) 0%,transparent 70%)}
+.crisis-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.crisis-label{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--red)}
+.pulse{width:8px;height:8px;background:var(--red);border-radius:50%;animation:ripple 1.5s ease-out infinite}
+@keyframes ripple{0%{box-shadow:0 0 0 0 rgba(232,49,26,.6)}70%{box-shadow:0 0 0 10px rgba(232,49,26,0)}100%{box-shadow:0 0 0 0 rgba(232,49,26,0)}}
+.crisis-ts{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.ticker-wrap{background:rgba(232,49,26,.08);border:1px solid var(--rbd);border-radius:8px;padding:7px 12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;overflow:hidden}
+.ticker-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--red);white-space:nowrap;flex-shrink:0}
+.ticker-text{font-size:12px;color:var(--text);white-space:nowrap;animation:scroll-x 30s linear infinite}
+@keyframes scroll-x{0%{transform:translateX(60%)}100%{transform:translateX(-100%)}}
+.big-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:0;padding-bottom:14px}
+@media(max-width:480px){.big-stats{grid-template-columns:repeat(2,1fr)}}
+.bstat{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px 8px;text-align:center;position:relative;overflow:hidden}
+.bstat::before{content:'';position:absolute;inset:0;opacity:.06;border-radius:12px}
+.bstat.c-green::before{background:var(--green)}.bstat.c-orange::before{background:var(--orange)}.bstat.c-yellow::before{background:var(--yellow)}.bstat.c-red::before{background:var(--red)}
+.bstat-n{font-family:var(--mono);font-size:26px;font-weight:600;display:block;line-height:1;margin-bottom:3px}
+.bstat-l{font-size:10px;color:var(--muted)}
+.c-green .bstat-n{color:var(--green)}.c-orange .bstat-n{color:var(--orange)}.c-yellow .bstat-n{color:var(--yellow)}.c-red .bstat-n{color:var(--red)}
+
+/* FUEL NAV */
+.fuel-nav{display:flex;border-bottom:1px solid var(--bd);background:var(--s1);padding:0 14px;gap:0;overflow-x:auto;flex-shrink:0}
+.fuel-nav::-webkit-scrollbar{display:none}
+.fnav-btn{padding:9px 13px;border:none;border-bottom:2px solid transparent;background:none;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:4px}
+.fnav-btn:hover{color:var(--text)}.fnav-btn.active{color:var(--orange);border-bottom-color:var(--orange)}
+
+/* SPLIT LAYOUT */
+.fuel-layout{display:flex;height:calc(100vh - 52px - 230px);min-height:380px}
+@media(max-width:700px){.fuel-layout{flex-direction:column;height:auto}}
+.fuel-panel{width:340px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+@media(max-width:700px){.fuel-panel{width:100%;height:300px;border-right:none;border-bottom:1px solid var(--bd)}}
+
+/* FUEL TYPE BAR */
+.fuel-type-bar{padding:8px 10px;border-bottom:1px solid var(--bd);display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
+.ftype-chip{padding:3px 9px;border-radius:14px;border:1px solid var(--bd);background:var(--s2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.ftype-chip:hover{color:var(--text);border-color:var(--bd2)}.ftype-chip.active{border-color:var(--orange);background:var(--obg);color:var(--orange)}
+
+/* STATION LIST */
+.station-scroll{flex:1;overflow-y:auto;padding:5px}
+.station-scroll::-webkit-scrollbar{width:3px}.station-scroll::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+.scard{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:9px 11px;margin-bottom:4px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.scard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.scard.ok::before{background:var(--green)}.scard.partial::before{background:var(--orange)}.scard.low::before{background:var(--yellow)}.scard.empty::before{background:var(--red)}
+.scard:hover{border-color:var(--bd2);transform:translateX(2px)}.scard.sel{border-color:var(--orange);background:var(--obg)}
+.scard-row1{display:flex;justify-content:space-between;align-items:flex-start;gap:5px;margin-bottom:4px}
+.scard-name{font-weight:700;font-size:12.5px;line-height:1.3;flex:1}
+.sbadge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:9px;flex-shrink:0;font-family:var(--mono)}
+.sbadge.ok{background:var(--gbg);color:var(--green)}.sbadge.partial{background:var(--obg);color:var(--orange)}.sbadge.low{background:var(--ybg);color:var(--yellow)}.sbadge.empty{background:var(--rbg);color:var(--red)}
+.fuel-mini-bars{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:4px}
+.fmbar{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:600}
+.fmbar.ok{background:var(--gbg);color:var(--green)}.fmbar.low{background:var(--ybg);color:var(--yellow)}.fmbar.empty{background:var(--rbg);color:var(--red)}.fmbar.unknown{background:var(--faint);color:var(--muted)}
+.scard-meta{font-size:10px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+
+/* DRAWER */
+.fuel-drawer{background:var(--s1);border-top:2px solid var(--orange);flex-shrink:0;max-height:0;overflow:hidden;transition:max-height .3s ease}
+.fuel-drawer.open{max-height:360px;overflow-y:auto}
+.drawer-inner{padding:11px 13px}
+.drawer-title{font-weight:800;font-size:13px;margin-bottom:2px}
+.drawer-sub{font-size:11px;color:var(--muted);margin-bottom:8px}
+.fuel-status-table{width:100%;border-collapse:collapse;margin-bottom:10px}
+.fuel-status-table th{font-family:var(--mono);font-size:8px;letter-spacing:1.5px;color:var(--muted);text-align:left;padding:0 5px 5px;border-bottom:1px solid var(--bd)}
+.fuel-status-table td{padding:5px;font-size:12px;border-bottom:1px solid var(--faint);vertical-align:middle}
+.fuel-status-table tr:last-child td{border-bottom:none}
+.schip{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:5px;font-size:10px;font-weight:700}
+.schip.ok{background:var(--gbg);color:var(--green)}.schip.low{background:var(--ybg);color:var(--yellow)}.schip.empty{background:var(--rbg);color:var(--red)}.schip.unknown{background:var(--faint);color:var(--muted)}
+.rpt-title{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin:8px 0 5px}
+.rpt-fuel-btns{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px}
+.rfbtn{padding:3px 8px;background:var(--s3);border:1px solid var(--bd);border-radius:5px;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.rfbtn:hover{color:var(--text)}.rfbtn.sel{border-color:var(--orange);background:var(--obg);color:var(--orange)}
+.rpt-status-btns{display:flex;gap:4px;margin-bottom:7px}
+.rsbtn{flex:1;padding:6px 3px;border-radius:6px;border:2px solid transparent;font-family:'Sarabun',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
+.rsbtn.ok{background:var(--gbg);border-color:rgba(34,197,94,.25);color:var(--green)}.rsbtn.low{background:var(--ybg);border-color:rgba(234,179,8,.25);color:var(--yellow)}.rsbtn.empty{background:var(--rbg);border-color:var(--rbd);color:var(--red)}
+.rsbtn:hover{filter:brightness(1.3)}.rsbtn.sel{filter:brightness(1.4);box-shadow:0 3px 10px rgba(0,0,0,.3);transform:translateY(-1px)}
+.rpt-submit{width:100%;padding:8px;background:var(--orange);color:#fff;border:none;border-radius:7px;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.rpt-submit:hover{background:#e06012}
+
+/* MAP */
+#fuelMap{flex:1;z-index:1;min-height:280px}
+.leaflet-tile-pane{filter:brightness(.55) saturate(.35)}
+.leaflet-popup-content-wrapper{background:var(--s1);border:1px solid var(--bd);border-radius:10px;color:var(--text);box-shadow:0 10px 40px rgba(0,0,0,.7);padding:0}
+.leaflet-popup-content{margin:0;min-width:190px}
+.leaflet-popup-tip{background:var(--s1)}
+.pup{padding:12px 14px}
+.pup-name{font-weight:700;font-size:13px;margin-bottom:2px}
+.pup-brand{font-size:11px;color:var(--muted);margin-bottom:7px}
+.pup-fuels{display:flex;flex-direction:column;gap:3px;margin-bottom:7px}
+.pup-fuel-row{display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.pup-fname{color:var(--muted)}
+.pup-ts{font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:7px}
+.pup-btn{width:100%;padding:6px;background:var(--orange);color:#fff;border:none;border-radius:6px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+
+/* RESCUE PAGE */
+.rescue-hero{background:linear-gradient(135deg,#130504 0%,var(--s1) 55%,#080c14 100%);border-bottom:1px solid var(--bd);padding:22px 16px 18px;text-align:center;position:relative;overflow:hidden}
+.rescue-hero::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(232,49,26,.06) 0%,transparent 70%)}
+.rescue-title{font-family:var(--display);font-size:clamp(28px,6vw,48px);letter-spacing:1px;line-height:.95;margin-bottom:8px}
+.rescue-title span{color:var(--red)}
+.rescue-sub{font-size:13px;color:var(--muted);max-width:380px;margin:0 auto 14px;line-height:1.6}
+.hotlines-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.hl-chip{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bd);border-radius:20px;padding:5px 12px;color:var(--text);font-size:12px;font-weight:600;transition:all .15s}
+.hl-chip:hover{border-color:var(--red);background:var(--rbg)}
+.hl-num{font-family:var(--mono);color:var(--red);font-size:12px;font-weight:600}
+.hl-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+.rescue-filter{position:sticky;top:52px;z-index:200;background:rgba(7,8,13,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);padding:7px 14px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.rfil-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);flex-shrink:0}
+.rfil-chips{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.rfchip{padding:4px 10px;border-radius:14px;border:1px solid var(--bd);background:var(--s2);color:var(--muted);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:3px}
+.rfchip:hover{color:var(--text);border-color:var(--bd2)}
+.rfchip.active.r{border-color:var(--red);background:var(--rbg);color:var(--red)}
+.rfchip.active.b{border-color:var(--blue);background:var(--bbg);color:var(--blue)}
+.rfchip.active.a{border-color:var(--amber);background:var(--abg);color:var(--amber)}
+.rfchip.active.g{border-color:var(--green);background:var(--gbg);color:var(--green)}
+.rfchip.active.p{border-color:var(--purple);background:var(--pbg);color:var(--purple)}
+.rfchip.active.all{border-color:var(--bd2);color:var(--text);background:var(--s2)}
+.rfchip-cnt{background:rgba(255,255,255,.08);color:var(--muted);border-radius:7px;padding:1px 5px;font-family:var(--mono);font-size:9px}
+.rfchip.active .rfchip-cnt{background:rgba(255,255,255,.15);color:#fff}
+.rescue-search-in{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 9px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:12px;outline:none;width:140px;transition:border-color .2s}
+.rescue-search-in:focus{border-color:var(--red)}
+.rescue-search-in::placeholder{color:var(--muted)}
+
+.rescue-main{max-width:940px;margin:0 auto;padding:18px 12px 80px}
+.rescue-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.rescue-sec-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.rescue-count{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.r-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:9px}
+
+.rcard{background:var(--s1);border:1px solid var(--bd);border-radius:12px;overflow:hidden;transition:all .2s;animation:fadeup .25s ease both}
+@keyframes fadeup{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.rcard:hover{border-color:var(--bd2);transform:translateY(-2px);box-shadow:0 7px 24px rgba(0,0,0,.4)}
+.rcard-strip{height:3px}
+.rcard.rescue .rcard-strip{background:linear-gradient(90deg,var(--red),transparent)}
+.rcard.tow    .rcard-strip{background:linear-gradient(90deg,var(--blue),transparent)}
+.rcard.shop   .rcard-strip{background:linear-gradient(90deg,var(--amber),transparent)}
+.rcard.fuel   .rcard-strip{background:linear-gradient(90deg,var(--green),transparent)}
+.rcard.other  .rcard-strip{background:linear-gradient(90deg,var(--purple),transparent)}
+.rcard-body{padding:12px 13px 10px}
+.rcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:6px}
+.rcard-name{font-weight:800;font-size:13px;line-height:1.3;flex:1}
+.rtype-badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:8px;flex-shrink:0;font-family:var(--mono)}
+.rtype-badge.rescue{background:var(--rbg);color:var(--red);border:1px solid var(--rbd)}
+.rtype-badge.tow   {background:var(--bbg);color:var(--blue);border:1px solid rgba(59,130,246,.25)}
+.rtype-badge.shop  {background:var(--abg);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.rtype-badge.fuel  {background:var(--gbg);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.rtype-badge.other {background:var(--pbg);color:var(--purple);border:1px solid rgba(168,85,247,.25)}
+.rcard-phone{font-family:var(--mono);font-size:17px;font-weight:600;margin-bottom:7px;letter-spacing:-.5px}
+.rcard-tags{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px}
+.rtag{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--s3);color:var(--muted);border:1px solid var(--bd)}
+.rcard-meta{display:flex;gap:8px;font-size:11px;color:var(--muted);flex-wrap:wrap;margin-bottom:7px}
+.rcard-meta span{display:flex;align-items:center;gap:2px}
+.rbadges{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px}
+.rbadge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px}
+.rbadge.verified{background:var(--gbg);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.rbadge.h24{background:var(--rbg);color:var(--red);border:1px solid var(--rbd)}
+.rbadge.free{background:var(--bbg);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
+.rbadge.heavy{background:var(--pbg);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.rbadge.quick{background:var(--abg);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.rcard-note{font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+.rcard-actions{display:flex;gap:5px}
+.rcall{flex:1;padding:7px;background:var(--red);color:#fff;border:none;border-radius:7px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:3px}
+.rcall:hover{background:var(--red-d)}
+.rline{padding:7px 9px;background:#00b900;color:#fff;border:none;border-radius:7px;font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+.rline:hover{background:#009900}
+.rcard-edit{margin-top:6px;font-size:10px;color:var(--muted);font-family:var(--mono)}
+.rcard-edit span{cursor:pointer;text-decoration:underline}
+.rcard-edit span:hover{color:var(--red)}
+.r-empty{text-align:center;padding:44px 16px;color:var(--muted);grid-column:1/-1}
+.r-empty .ei{font-size:40px;margin-bottom:8px}
+.r-empty p{font-size:13px;line-height:1.8}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.8);display:flex;align-items:flex-start;justify-content:center;padding:14px 12px 40px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--s1);border:1px solid var(--bd2);border-top:3px solid var(--red);border-radius:14px;width:100%;max-width:480px;padding:20px;transform:translateY(20px);transition:transform .3s cubic-bezier(.34,1.4,.64,1);margin-top:6px}
+.overlay.open .modal{transform:translateY(0)}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.modal-title{font-weight:800;font-size:17px}
+.modal-close{background:var(--s3);border:1px solid var(--bd);border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--muted);transition:all .15s;flex-shrink:0}
+.modal-close:hover{color:var(--text)}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.fgrid .full{grid-column:1/-1}
+.fg{display:flex;flex-direction:column;gap:4px}
+.flabel{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+.finput,.fselect,.ftextarea{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'Sarabun',sans-serif;font-size:13px;outline:none;transition:border-color .15s;width:100%}
+.finput:focus,.fselect:focus,.ftextarea:focus{border-color:var(--red)}
+.finput::placeholder,.ftextarea::placeholder{color:var(--muted)}
+.fselect{cursor:pointer;-webkit-appearance:none}
+.ftextarea{resize:vertical;min-height:56px;line-height:1.5}
+.toggles{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.tchip{display:flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 9px;cursor:pointer;transition:all .15s;user-select:none;font-size:12px;font-weight:600}
+.tchip input{display:none}
+.tchip:has(input:checked){border-color:var(--red);background:var(--rbg);color:var(--red)}
+.tags-wrap{background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:5px 8px;display:flex;flex-wrap:wrap;gap:4px;cursor:text;transition:border-color .15s}
+.tags-wrap:focus-within{border-color:var(--red)}
+.ftag-item{background:var(--s3);border:1px solid var(--bd2);color:var(--text);border-radius:5px;padding:2px 6px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px}
+.ftag-rm{cursor:pointer;color:var(--muted);font-size:13px;transition:color .1s}
+.ftag-rm:hover{color:var(--red)}
+.ftags-in{background:none;border:none;outline:none;color:var(--text);font-family:'Sarabun',sans-serif;font-size:12px;min-width:70px;flex:1;padding:2px 3px}
+.ftags-hint{font-size:10px;color:var(--muted);margin-top:3px}
+.pin-box{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:11px;margin-bottom:11px}
+.pin-title{font-weight:700;font-size:12px;margin-bottom:2px}
+.pin-desc{font-size:11px;color:var(--muted);margin-bottom:7px;line-height:1.5}
+.pin-row{display:flex;gap:6px}
+.pin-row .finput{letter-spacing:6px;font-family:var(--mono);font-size:15px;text-align:center}
+hr.div{border:none;border-top:1px solid var(--bd);margin:12px 0}
+.modal-actions{display:flex;gap:6px;margin-top:12px}
+.mcancel{flex:1;padding:8px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;color:var(--muted);font-family:'Sarabun',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.mcancel:hover{color:var(--text);border-color:var(--bd2)}
+.msubmit{flex:2;padding:8px;background:var(--red);border:none;border-radius:8px;color:#fff;font-family:'Sarabun',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:background .15s}
+.msubmit:hover{background:var(--red-d)}
+
+/* TOAST */
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--s2);border:1px solid var(--bd2);border-left:3px solid var(--red);padding:9px 16px;border-radius:9px;font-size:13px;font-weight:600;z-index:9999;pointer-events:none;white-space:nowrap;transition:transform .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 7px 28px rgba(0,0,0,.6)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* NOTIF POPUP */
+.notif-popup{position:fixed;top:58px;right:14px;z-index:800;background:var(--s1);border:1px solid var(--rbd);border-left:3px solid var(--red);border-radius:10px;padding:11px 14px;max-width:270px;box-shadow:0 7px 28px rgba(0,0,0,.6);transform:translateX(310px);transition:transform .4s cubic-bezier(.34,1.3,.64,1)}
+.notif-popup.show{transform:translateX(0)}
+.notif-top{display:flex;justify-content:space-between;align-items:flex-start;gap:7px;margin-bottom:4px}
+.notif-title{font-weight:700;font-size:12px;color:var(--red)}
+.notif-close{cursor:pointer;color:var(--muted);font-size:15px;line-height:1}
+.notif-close:hover{color:var(--text)}
+.notif-body{font-size:12px;color:var(--text);line-height:1.4}
+.notif-ts{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;background:rgba(7,8,13,.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.loading-overlay.hidden{display:none}
+.spinner{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:1px}
+
+@media(max-width:600px){.fgrid{grid-template-columns:1fr}.fgrid .full{grid-column:1}.r-grid{grid-template-columns:1fr}.topbar .top-search{display:none}.catloop{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-txt">กำลังโหลดข้อมูลปั๊มน้ำมัน...</div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">⛽</div>
+    <div class="logo-name">Fuel<em>Watch</em> TH</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab fuel-tab active" onclick="switchPage('fuel',this)">
+      <div class="crisis-dot"></div>น้ำมัน / วิกฤต
+    </button>
+    <button class="nav-tab rescue-tab" onclick="switchPage('rescue',this)">🆘 ช่วยเหลือ</button>
+  </div>
+  <div class="topbar-right">
+    <input class="top-search" id="globalSearch" placeholder="🔍 ค้นหา..." oninput="onGlobalSearch()">
+    <button class="btn btn-notif" id="notifBtn" onclick="toggleNotif()" title="เปิด/ปิด การแจ้งเตือน">🔔</button>
+    <button class="btn btn-register" onclick="openRegister()">🏢 ลงทะเบียน</button>
+    <a class="catloop" href="#" title="CatLoop Studios">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+      CATLOOP STUDIOS
+    </a>
+  </div>
+</div>
+
+<!-- PAGE: FUEL -->
+<div class="page active" id="page-fuel">
+  <div class="crisis-banner">
+    <div class="crisis-top">
+      <div class="crisis-label"><div class="pulse"></div>⚠️ CRISIS MODE — สถานการณ์น้ำมันแห่งชาติ</div>
+      <div class="crisis-ts" id="crisisTs"></div>
+    </div>
+    <div class="ticker-wrap">
+      <div class="ticker-label">ALERT</div>
+      <div class="ticker-text" id="tickerText">กำลังโหลด...</div>
+    </div>
+    <div class="big-stats">
+      <div class="bstat c-green"><span class="bstat-n" id="bs-ok">—</span><div class="bstat-l">มีน้ำมันครบ</div></div>
+      <div class="bstat c-orange"><span class="bstat-n" id="bs-partial">—</span><div class="bstat-l">มีบางชนิด</div></div>
+      <div class="bstat c-yellow"><span class="bstat-n" id="bs-low">—</span><div class="bstat-l">เหลือน้อย</div></div>
+      <div class="bstat c-red"><span class="bstat-n" id="bs-empty">—</span><div class="bstat-l">หมดแล้ว</div></div>
+    </div>
+  </div>
+
+  <div class="fuel-nav">
+    <button class="fnav-btn active" onclick="setFuelView('map',this)">🗺️ แผนที่</button>
+    <button class="fnav-btn" onclick="locateMe()">📍 ใกล้ฉัน</button>
+  </div>
+
+  <div class="fuel-layout">
+    <div class="fuel-panel">
+      <div class="fuel-type-bar" id="fuelTypeBar">
+        <div class="ftype-chip active" onclick="setFuelTypeFilter('all',this)">ทั้งหมด</div>
+        <div class="ftype-chip" onclick="setFuelTypeFilter('diesel',this)">ดีเซล</div>
+        <div class="ftype-chip" onclick="setFuelTypeFilter('gasohol95',this)">95</div>
+        <div class="ftype-chip" onclick="setFuelTypeFilter('gasohol91',this)">91</div>
+        <div class="ftype-chip" onclick="setFuelTypeFilter('e20',this)">E20</div>
+        <div class="ftype-chip" onclick="setFuelTypeFilter('e85',this)">E85</div>
+        <div class="ftype-chip" onclick="setFuelTypeFilter('lpg',this)">LPG</div>
+      </div>
+      <div class="station-scroll" id="stationScroll"><div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">กำลังโหลด...</div></div>
+      <div class="fuel-drawer" id="fuelDrawer"><div class="drawer-inner" id="drawerInner"></div></div>
+    </div>
+    <div id="fuelMap"></div>
+  </div>
+</div>
+
+<!-- PAGE: RESCUE -->
+<div class="page" id="page-rescue">
+  <div class="rescue-hero">
+    <h1 class="rescue-title">กู้ภัย · รถสไลด์<br><span>อู่ซ่อม · ฉุกเฉิน</span></h1>
+    <p class="rescue-sub">ค้นหาผู้ช่วยในพื้นที่ได้ทันที เจ้าของกิจการลงทะเบียนและอัปเดตข้อมูลเองได้</p>
+    <div class="hotlines-row">
+      <a class="hl-chip" href="tel:1669"><div class="hl-dot" style="background:#ef4444"></div>กู้ชีพ <span class="hl-num">1669</span></a>
+      <a class="hl-chip" href="tel:191"><div class="hl-dot" style="background:#3b82f6"></div>ตำรวจ <span class="hl-num">191</span></a>
+      <a class="hl-chip" href="tel:199"><div class="hl-dot" style="background:#f97316"></div>ดับเพลิง <span class="hl-num">199</span></a>
+      <a class="hl-chip" href="tel:1193"><div class="hl-dot" style="background:#22c55e"></div>พลังงาน <span class="hl-num">1193</span></a>
+      <a class="hl-chip" href="tel:1586"><div class="hl-dot" style="background:#a855f7"></div>ทางหลวง <span class="hl-num">1586</span></a>
+    </div>
+  </div>
+
+  <div class="rescue-filter">
+    <span class="rfil-label">กรอง</span>
+    <div class="rfil-chips">
+      <div class="rfchip active all" data-rt="all" onclick="setRescueFilter('all',this,'all')">🔍 ทั้งหมด <span class="rfchip-cnt" id="rcnt-all">0</span></div>
+      <div class="rfchip" data-rt="rescue" onclick="setRescueFilter('rescue',this,'r')">🚨 กู้ภัย <span class="rfchip-cnt" id="rcnt-rescue">0</span></div>
+      <div class="rfchip" data-rt="tow" onclick="setRescueFilter('tow',this,'b')">🚛 รถสไลด์ <span class="rfchip-cnt" id="rcnt-tow">0</span></div>
+      <div class="rfchip" data-rt="shop" onclick="setRescueFilter('shop',this,'a')">🔧 อู่ซ่อม <span class="rfchip-cnt" id="rcnt-shop">0</span></div>
+      <div class="rfchip" data-rt="fuel" onclick="setRescueFilter('fuel',this,'g')">🛢️ น้ำมัน <span class="rfchip-cnt" id="rcnt-fuel">0</span></div>
+      <div class="rfchip" data-rt="other" onclick="setRescueFilter('other',this,'p')">🙋 อาสา <span class="rfchip-cnt" id="rcnt-other">0</span></div>
+    </div>
+    <input class="rescue-search-in" id="rescueSearch" placeholder="🔍 ชื่อ / พื้นที่..." oninput="renderRescue()">
+  </div>
+
+  <div class="rescue-main">
+    <div class="rescue-header">
+      <div class="rescue-sec-title">รายชื่อผู้ให้บริการ</div>
+      <div class="rescue-count" id="rescueCount"></div>
+    </div>
+    <div class="r-grid" id="rescueGrid"><div style="text-align:center;padding:32px;color:var(--muted);grid-column:1/-1">กำลังโหลด...</div></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NOTIF POPUP -->
+<div class="notif-popup" id="notifPopup">
+  <div class="notif-top">
+    <div class="notif-title" id="notifTitle">🔴 แจ้งเตือน</div>
+    <div class="notif-close" onclick="dismissNotif()">✕</div>
+  </div>
+  <div class="notif-body" id="notifBody"></div>
+  <div class="notif-ts" id="notifTs"></div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="overlay" id="overlay" onclick="closeOverlayOutside(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">🏢 ลงทะเบียนกิจการ</div>
+      <div class="modal-close" onclick="closeOverlay()">✕</div>
+    </div>
+    <div class="modal-sub" id="modalSub">กรอกข้อมูลกิจการของคุณ ข้อมูลจะขึ้นแสดงทันทีหลังยืนยัน</div>
+    <div class="fgrid">
+      <div class="fg full"><label class="flabel">ชื่อกิจการ / ชื่อทีม *</label><input class="finput" id="f_name" placeholder="เช่น ทีมกู้ภัยบ้านหัวทุ่ง / อู่ช่างนิด"></div>
+      <div class="fg"><label class="flabel">ประเภทบริการ *</label>
+        <select class="fselect" id="f_type">
+          <option value="rescue">🚨 กู้ภัย / EMS</option>
+          <option value="tow">🚛 รถสไลด์</option>
+          <option value="shop">🔧 อู่ซ่อมรถ</option>
+          <option value="fuel">🛢️ จัดหาน้ำมัน</option>
+          <option value="other">🙋 อาสาสมัคร</option>
+        </select></div>
+      <div class="fg"><label class="flabel">เบอร์โทรหลัก *</label><input class="finput" id="f_phone" type="tel" placeholder="0812345678"></div>
+      <div class="fg"><label class="flabel">เบอร์สำรอง</label><input class="finput" id="f_phone2" type="tel" placeholder="0812345679"></div>
+      <div class="fg"><label class="flabel">LINE ID</label><input class="finput" id="f_line" placeholder="@rescue_th"></div>
+      <div class="fg full"><label class="flabel">พื้นที่ให้บริการ *</label><input class="finput" id="f_area" placeholder="เช่น ลาดพร้าว, ทั่วกรุงเทพฯ"></div>
+    </div>
+    <div class="fg" style="margin-bottom:9px">
+      <label class="flabel">บริการ / ความเชี่ยวชาญ (Enter เพื่อเพิ่ม)</label>
+      <div class="tags-wrap" id="tagsWrap" onclick="document.getElementById('tagsRaw').focus()">
+        <div id="tagsList"></div>
+        <input class="ftags-in" id="tagsRaw" placeholder="พิมพ์แล้วกด Enter..." onkeydown="handleTagInput(event)">
+      </div>
+      <div class="ftags-hint">เช่น รถยนต์ทุกยี่ห้อ · เปิด 24 ชม. · ดีเซล/เบนซิน</div>
+    </div>
+    <div class="toggles">
+      <label class="tchip"><input type="checkbox" id="f_24h"><span>⏰ 24 ชั่วโมง</span></label>
+      <label class="tchip"><input type="checkbox" id="f_free"><span>💚 บริการฟรี</span></label>
+      <label class="tchip"><input type="checkbox" id="f_heavy"><span>🚚 รับรถหนัก</span></label>
+      <label class="tchip"><input type="checkbox" id="f_quick"><span>⚡ ถึงที่เร็ว</span></label>
+    </div>
+    <div class="fg" style="margin-bottom:11px">
+      <label class="flabel">หมายเหตุ</label>
+      <textarea class="ftextarea" id="f_note" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+    </div>
+    <hr class="div">
+    <div class="pin-box">
+      <div class="pin-title">🔐 รหัส PIN สำหรับแก้ไขข้อมูลในภายหลัง</div>
+      <div class="pin-desc">ตั้งรหัส 4 หลัก เพื่อกลับมาอัปเดตข้อมูลกิจการได้ — เก็บไว้ให้ดีนะครับ</div>
+      <div class="pin-row">
+        <input class="finput" id="f_pin" type="password" maxlength="4" placeholder="· · · ·" inputmode="numeric">
+        <input class="finput" id="f_pin2" type="password" maxlength="4" placeholder="ยืนยัน PIN" inputmode="numeric">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="mcancel" onclick="closeOverlay()">ยกเลิก</button>
+      <button class="msubmit" id="msubmitBtn" onclick="submitListing()">📤 ลงทะเบียน</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// SUPABASE CONFIG
+// ═══════════════════════════════════════════
+const SUPABASE_URL  = 'https://axliwktkumzgmqvahtxm.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bGl3a3RrdW16Z21xdmFodHhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MzEwNTAsImV4cCI6MjA4OTMwNzA1MH0.v2aQG_cksA63z2rZ8tGYu8Zo3W9a_k6rvEkVweNqGOs';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ═══════════════════════════════════════════
+// FIREBASE FCM CONFIG
+// ═══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyC8bVNHPokNZQRE0HJs1bZDoRyp3uwylf4",
+  authDomain: "fuelwatch-th.firebaseapp.com",
+  projectId: "fuelwatch-th",
+  storageBucket: "fuelwatch-th.firebasestorage.app",
+  messagingSenderId: "306045751415",
+  appId: "1:306045751415:web:00640d774d3c609a593672"
+};
+const VAPID_KEY = 'BO6AGSc8HaUvVcy9Bjb_mpi8wAaPh1cb7h16dNKCvDbhYsJJggElXG1f9YTcvhhDK2sEgAHq0wtkWsGsx2PQpLk';
+
+firebase.initializeApp(firebaseConfig);
+let messaging = null;
+try { messaging = firebase.messaging(); } catch(e) {}
+
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const FUEL_LABELS = {
+  diesel:'ดีเซล B7',gasohol91:'91',gasohol95:'95',
+  e20:'E20',e85:'E85',premium95:'พรีเมียม',lpg:'LPG'
+};
+const FT_ALL = Object.keys(FUEL_LABELS);
+const STATUS_CFG = {
+  ok:     {label:'มีน้ำมัน', dot:'🟢',color:'var(--green)'},
+  low:    {label:'เหลือน้อย',dot:'🟡',color:'var(--yellow)'},
+  empty:  {label:'หมดแล้ว', dot:'🔴',color:'var(--red)'},
+  partial:{label:'มีบางชนิด',dot:'🟠',color:'var(--orange)'},
+  unknown:{label:'ไม่ทราบ', dot:'⚪',color:'var(--muted)'},
+};
+const TYPE_CFG = {
+  rescue:{label:'กู้ภัย',icon:'🚨'},tow:{label:'รถสไลด์',icon:'🚛'},
+  shop:{label:'อู่ซ่อม',icon:'🔧'},fuel:{label:'จัดหาน้ำมัน',icon:'🛢️'},other:{label:'อาสาสมัคร',icon:'🙋'},
+};
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let fuelMap,markers={},userMarker=null;
+let stations=[],activeFilterFt='all',selectedSid=null,reportFuel=null,reportStatus=null;
+let rescueFilter='all',editingId=null,formTags=[];
+let rescueListings=[];
+let notifEnabled=false;
+
+// ═══════════════════════════════════════════
+// PAGE SWITCH
+// ═══════════════════════════════════════════
+function switchPage(p,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  btn.classList.add('active');
+  if(p==='rescue')renderRescue();
+  if(p==='fuel'&&fuelMap)setTimeout(()=>fuelMap.invalidateSize(),100);
+}
+
+// ═══════════════════════════════════════════
+// MAP
+// ═══════════════════════════════════════════
+function initMap(){
+  fuelMap=L.map('fuelMap',{center:[13.756,100.567],zoom:11,zoomControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(fuelMap);
+  L.control.zoom({position:'bottomright'}).addTo(fuelMap);
+}
+
+function makePinIcon(status,size=30){
+  const c={ok:'#22c55e',partial:'#f97316',low:'#eab308',empty:'#e8311a',unknown:'#3a4560'}[status]||'#3a4560';
+  const svg=`<svg width="${size}" height="${size+10}" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg"><path d="M15 0C6.7 0 0 6.7 0 15c0 13 15 25 15 25S30 28 30 15C30 6.7 23.3 0 15 0z" fill="${c}"/><circle cx="15" cy="15" r="7" fill="rgba(0,0,0,.22)"/><text x="15" y="20" text-anchor="middle" font-size="9" fill="white">⛽</text></svg>`;
+  return L.divIcon({html:svg,iconSize:[size,size+10],iconAnchor:[size/2,size+10],popupAnchor:[0,-(size+8)],className:''});
+}
+
+function addMarker(s){
+  const m=L.marker([s.lat,s.lng],{icon:makePinIcon(s.overall)}).addTo(fuelMap);
+  m.bindPopup(buildPopup(s),{maxWidth:230});
+  m.on('click',()=>openStation(s.id));
+  markers[s.id]=m;
+}
+
+function buildPopup(s){
+  const rows=FT_ALL.map(ft=>{
+    const fd=s.fuels[ft];const sc=STATUS_CFG[fd.status]||STATUS_CFG.unknown;
+    return `<div class="pup-fuel-row"><span class="pup-fname">${FUEL_LABELS[ft]}</span><span class="schip ${fd.status}" style="font-size:9px;padding:1px 5px">${sc.label}</span></div>`;
+  }).join('');
+  const ts=Math.max(...FT_ALL.map(ft=>s.fuels[ft].ts||0));
+  return `<div class="pup"><div class="pup-name">${s.name}</div><div class="pup-brand">${s.brand}</div><div class="pup-fuels">${rows}</div><div class="pup-ts">อัปเดต ${timeAgo(ts)}</div><button class="pup-btn" onclick="openStation(${s.id})">📝 รายงาน</button></div>`;
+}
+
+// ═══════════════════════════════════════════
+// LOAD DATA FROM SUPABASE
+// ═══════════════════════════════════════════
+async function loadStations(){
+  const {data:st,error:e1} = await sb.from('stations').select('*');
+  const {data:fs,error:e2} = await sb.from('fuel_status').select('*');
+  if(e1||e2){ showToast('❌ โหลดข้อมูลไม่สำเร็จ'); return; }
+
+  stations = st.map(s=>{
+    const fuels={};
+    FT_ALL.forEach(ft=>{
+      const f=fs.find(x=>x.station_id===s.id&&x.fuel_type===ft);
+      fuels[ft]={status:f?.status||'unknown',ts:f?new Date(f.updated_at).getTime()/1000:0};
+    });
+    return{...s,fuels,overall:computeOverall(fuels)};
+  });
+
+  Object.values(markers).forEach(m=>fuelMap.removeLayer(m));
+  markers={};
+  stations.forEach(addMarker);
+  renderStationList();
+  updateBigStats();
+  updateTicker();
+}
+
+async function loadRescue(){
+  const {data,error} = await sb.from('rescue_listings').select('*').order('verified',{ascending:false}).order('created_at',{ascending:false});
+  if(error){ rescueListings=[]; return; }
+  rescueListings = data.map(l=>({...l,tags:l.tags||[],ts:new Date(l.created_at).getTime()}));
+}
+
+// ═══════════════════════════════════════════
+// REALTIME SUBSCRIPTION
+// ═══════════════════════════════════════════
+function subscribeRealtime(){
+  sb.channel('fuel_realtime')
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'fuel_status'},(payload)=>{
+      const {station_id,fuel_type,status,updated_at} = payload.new;
+      const s=stations.find(x=>x.id===station_id);
+      if(!s)return;
+      s.fuels[fuel_type].status=status;
+      s.fuels[fuel_type].ts=new Date(updated_at).getTime()/1000;
+      s.overall=computeOverall(s.fuels);
+      if(markers[station_id]){markers[station_id].setIcon(makePinIcon(s.overall));markers[station_id].setPopupContent(buildPopup(s));}
+      renderStationList();updateBigStats();updateTicker();
+      if(status==='empty')pushNotif(`⛽ ${s.name}`,`น้ำมัน${FUEL_LABELS[fuel_type]} หมดแล้ว!`);
+      if(status==='low')  pushNotif(`⚠️ ${s.name}`,`น้ำมัน${FUEL_LABELS[fuel_type]} เหลือน้อย`);
+    })
+    .subscribe();
+
+  sb.channel('rescue_realtime')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'rescue_listings'},async()=>{
+      await loadRescue(); renderRescue();
+    })
+    .subscribe();
+}
+
+// ═══════════════════════════════════════════
+// RENDER STATION LIST
+// ═══════════════════════════════════════════
+function renderStationList(){
+  const el=document.getElementById('stationScroll');
+  let list=stations;
+  if(activeFilterFt!=='all')list=stations.filter(s=>s.fuels[activeFilterFt]&&(s.fuels[activeFilterFt].status==='empty'||s.fuels[activeFilterFt].status==='low'));
+  if(!list.length){el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">ไม่พบปั๊มที่ตรงกัน</div>`;return;}
+  el.innerHTML=list.map(s=>{
+    const sc=STATUS_CFG[s.overall]||STATUS_CFG.unknown;
+    const bars=FT_ALL.map(ft=>`<span class="fmbar ${s.fuels[ft].status}">${FUEL_LABELS[ft]}</span>`).join('');
+    const ts=Math.max(...FT_ALL.map(ft=>s.fuels[ft].ts||0));
+    return `<div class="scard ${s.overall}${selectedSid===s.id?' sel':''}" id="sc-${s.id}" onclick="openStation(${s.id})">
+      <div class="scard-row1"><div class="scard-name">${s.name}</div><span class="sbadge ${s.overall}">${sc.label}</span></div>
+      <div class="fuel-mini-bars">${bars}</div>
+      <div class="scard-meta"><span>🏷 ${s.brand}</span><span>🕒 ${timeAgo(ts)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function openStation(id){
+  selectedSid=id;reportFuel=null;reportStatus=null;
+  const s=stations.find(x=>x.id===id);if(!s)return;
+  document.querySelectorAll('.scard').forEach(c=>c.classList.remove('sel'));
+  const card=document.getElementById('sc-'+id);
+  if(card){card.classList.add('sel');card.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  fuelMap.flyTo([s.lat,s.lng],15,{animate:true,duration:.7});
+  if(markers[id])markers[id].openPopup();
+  buildDrawer(s);
+}
+
+function buildDrawer(s){
+  const rows=FT_ALL.map(ft=>{
+    const fd=s.fuels[ft];const sc=STATUS_CFG[fd.status]||STATUS_CFG.unknown;
+    return `<tr><td>${FUEL_LABELS[ft]}</td><td><span class="schip ${fd.status}">${sc.dot} ${sc.label}</span></td><td style="font-family:var(--mono);font-size:9px;color:var(--muted)">${timeAgo(fd.ts)}</td></tr>`;
+  }).join('');
+  const fbtns=FT_ALL.map(ft=>`<button class="rfbtn${reportFuel===ft?' sel':''}" onclick="selRFuel('${ft}')">${FUEL_LABELS[ft]}</button>`).join('');
+  document.getElementById('drawerInner').innerHTML=`
+    <div class="drawer-title">${s.name}</div>
+    <div class="drawer-sub">${s.brand} · ${s.address||''}</div>
+    <table class="fuel-status-table"><thead><tr><th>ชนิด</th><th>สถานะ</th><th>อัปเดต</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="rpt-title">📝 รายงานสถานะ</div>
+    <div class="rpt-fuel-btns" id="rfuelBtns">${fbtns}</div>
+    <div class="rpt-status-btns">
+      <button class="rsbtn ok${reportStatus==='ok'?' sel':''}"    onclick="selRStatus('ok')">✅ มีน้ำมัน</button>
+      <button class="rsbtn low${reportStatus==='low'?' sel':''}"  onclick="selRStatus('low')">⚠️ เหลือน้อย</button>
+      <button class="rsbtn empty${reportStatus==='empty'?' sel':''}" onclick="selRStatus('empty')">🚫 หมดแล้ว</button>
+    </div>
+    <button class="rpt-submit" onclick="doReport(${s.id})">ส่ง Report</button>
+  `;
+  document.getElementById('fuelDrawer').classList.add('open');
+}
+
+function selRFuel(ft){reportFuel=ft;document.querySelectorAll('.rfbtn').forEach(b=>b.classList.remove('sel'));event.target.classList.add('sel');}
+function selRStatus(st){reportStatus=st;document.querySelectorAll('.rsbtn').forEach(b=>b.classList.remove('sel'));event.target.classList.add('sel');}
+
+async function doReport(sid){
+  if(!reportFuel){showToast('⚠️ เลือกชนิดน้ำมันก่อน');return;}
+  if(!reportStatus){showToast('⚠️ เลือกสถานะก่อน');return;}
+  const s=stations.find(x=>x.id===sid);if(!s)return;
+
+  // บันทึก report ลง Supabase
+  await sb.from('reports').insert({station_id:sid,fuel_type:reportFuel,status:reportStatus});
+
+  // อัปเดต fuel_status
+  const {error} = await sb.from('fuel_status').upsert(
+    {station_id:sid,fuel_type:reportFuel,status:reportStatus,updated_at:new Date().toISOString()},
+    {onConflict:'station_id,fuel_type'}
+  );
+
+  if(error){showToast('❌ บันทึกไม่สำเร็จ กรุณาลองใหม่');return;}
+
+  const sc=STATUS_CFG[reportStatus];
+  showToast(`${sc.dot} รายงาน: ${FUEL_LABELS[reportFuel]} → ${sc.label}`);
+  // Realtime จะ trigger update อัตโนมัติ
+}
+
+function setFuelTypeFilter(ft,el){
+  activeFilterFt=ft;
+  document.querySelectorAll('.ftype-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderStationList();
+}
+
+function setFuelView(_,btn){document.querySelectorAll('.fnav-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+function locateMe(){
+  if(!navigator.geolocation){showToast('❌ Browser ไม่รองรับ GPS');return;}
+  showToast('📍 กำลังหาตำแหน่ง...');
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude:lat,longitude:lng}=pos.coords;
+    if(userMarker)fuelMap.removeLayer(userMarker);
+    userMarker=L.circleMarker([lat,lng],{radius:8,color:'#f97316',fillColor:'#f97316',fillOpacity:.85,weight:2}).addTo(fuelMap).bindPopup('📍 คุณอยู่ที่นี่').openPopup();
+    fuelMap.setView([lat,lng],13,{animate:true});
+    stations=stations.map(s=>({...s,distDeg:Math.sqrt((s.lat-lat)**2+(s.lng-lng)**2)})).sort((a,b)=>a.distDeg-b.distDeg);
+    renderStationList();showToast('✅ เรียงปั๊มตามระยะทางแล้ว');
+  },()=>showToast('❌ ไม่สามารถเข้าถึง GPS ได้'));
+}
+
+function updateBigStats(){
+  document.getElementById('bs-ok').textContent=stations.filter(s=>s.overall==='ok').length;
+  document.getElementById('bs-partial').textContent=stations.filter(s=>s.overall==='partial').length;
+  document.getElementById('bs-low').textContent=stations.filter(s=>s.overall==='low').length;
+  document.getElementById('bs-empty').textContent=stations.filter(s=>s.overall==='empty').length;
+}
+
+function updateTicker(){
+  const empty=stations.filter(s=>s.overall==='empty').map(s=>s.name);
+  const low=stations.filter(s=>s.overall==='low'||s.overall==='partial').map(s=>s.name);
+  let parts=[];
+  if(empty.length)parts.push(`🔴 หมดน้ำมัน: ${empty.join(' · ')}`);
+  if(low.length)parts.push(`🟡 เหลือน้อย/บางชนิด: ${low.join(' · ')}`);
+  if(!parts.length)parts.push('🟢 ปั๊มทั้งหมดมีน้ำมัน');
+  document.getElementById('tickerText').textContent=parts.join('   ·   ');
+}
+
+// ═══════════════════════════════════════════
+// RESCUE
+// ═══════════════════════════════════════════
+function setRescueFilter(type,el,cls){
+  rescueFilter=type;
+  document.querySelectorAll('.rfchip').forEach(c=>{c.classList.remove('active','r','b','a','g','p','all');});
+  el.classList.add('active',cls);
+  renderRescue();
+}
+
+function renderRescue(){
+  const q=document.getElementById('rescueSearch').value.toLowerCase().trim();
+  ['all','rescue','tow','shop','fuel','other'].forEach(t=>{
+    const cnt=t==='all'?rescueListings.length:rescueListings.filter(l=>l.type===t).length;
+    const el=document.getElementById('rcnt-'+t);if(el)el.textContent=cnt;
+  });
+  let list=rescueListings.filter(l=>{
+    const mt=rescueFilter==='all'||l.type===rescueFilter;
+    const mq=!q||(l.name.toLowerCase().includes(q)||l.area.toLowerCase().includes(q)||(l.tags||[]).some(t=>t.toLowerCase().includes(q)));
+    return mt&&mq;
+  });
+  document.getElementById('rescueCount').textContent=`${list.length} รายการ`;
+  const grid=document.getElementById('rescueGrid');
+  if(!list.length){grid.innerHTML=`<div class="r-empty"><div class="ei">🔍</div><p>ไม่พบรายการ<br><strong style="color:var(--red);cursor:pointer" onclick="openRegister()">เพิ่มกิจการของคุณ</strong></p></div>`;return;}
+  grid.innerHTML=list.map((l,i)=>{
+    const tc=TYPE_CFG[l.type]||TYPE_CFG.other;
+    const tags=(l.tags||[]).map(t=>`<span class="rtag">${t}</span>`).join('');
+    return `<div class="rcard ${l.type}" style="animation-delay:${Math.min(i*30,200)}ms">
+      <div class="rcard-strip"></div>
+      <div class="rcard-body">
+        <div class="rcard-top"><div class="rcard-name">${tc.icon} ${l.name}</div><div class="rtype-badge ${l.type}">${tc.label}</div></div>
+        <div class="rcard-phone">${l.phone}</div>
+        ${tags?`<div class="rcard-tags">${tags}</div>`:''}
+        <div class="rcard-meta"><span>📍 ${l.area}</span>${l.phone2?`<span>📱 ${l.phone2}</span>`:''}</div>
+        <div class="rbadges">
+          ${l.verified?`<span class="rbadge verified">✓ ยืนยัน</span>`:''}
+          ${l.h24?`<span class="rbadge h24">⏰ 24 ชม.</span>`:''}
+          ${l.is_free?`<span class="rbadge free">💚 ฟรี</span>`:''}
+          ${l.heavy?`<span class="rbadge heavy">🚚 รถหนัก</span>`:''}
+          ${l.quick?`<span class="rbadge quick">⚡ เร็ว</span>`:''}
+        </div>
+        ${l.note?`<div class="rcard-note">💬 ${l.note}</div>`:''}
+        <div class="rcard-actions">
+          <a class="rcall" href="tel:${l.phone.replace(/[-\s]/g,'')}">📞 โทรเลย</a>
+          ${l.line_id?`<button class="rline" onclick="window.open('https://line.me/ti/p/${l.line_id}','_blank')">LINE</button>`:''}
+        </div>
+        <div class="rcard-edit">อัปเดต ${timeAgo(l.ts)} · <span onclick="openEdit(${l.id})">แก้ไขข้อมูล</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+// REGISTER / EDIT MODAL
+// ═══════════════════════════════════════════
+function openRegister(){
+  editingId=null;formTags=[];renderTagsList();
+  document.getElementById('modalTitle').textContent='🏢 ลงทะเบียนกิจการ';
+  document.getElementById('modalSub').textContent='กรอกข้อมูลกิจการของคุณ ข้อมูลจะขึ้นแสดงทันทีหลังยืนยัน';
+  document.getElementById('msubmitBtn').textContent='📤 ลงทะเบียน';
+  clearForm();
+  document.getElementById('overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f_name').focus(),200);
+}
+
+async function openEdit(id){
+  const l=rescueListings.find(x=>x.id===id);if(!l)return;
+  const pin=prompt(`🔐 PIN 4 หลัก สำหรับ "${l.name}"`);
+  if(!pin)return;
+  if(pin!==l.pin_hash){showToast('❌ PIN ไม่ถูกต้อง');return;}
+  editingId=id;formTags=[...(l.tags||[])];renderTagsList();
+  document.getElementById('modalTitle').textContent='✏️ แก้ไขข้อมูลกิจการ';
+  document.getElementById('modalSub').textContent=`กำลังแก้ไข: ${l.name}`;
+  document.getElementById('msubmitBtn').textContent='💾 บันทึก';
+  document.getElementById('f_name').value=l.name;
+  document.getElementById('f_type').value=l.type;
+  document.getElementById('f_phone').value=l.phone;
+  document.getElementById('f_phone2').value=l.phone2||'';
+  document.getElementById('f_line').value=l.line_id||'';
+  document.getElementById('f_area').value=l.area;
+  document.getElementById('f_note').value=l.note||'';
+  document.getElementById('f_24h').checked=l.h24||false;
+  document.getElementById('f_free').checked=l.is_free||false;
+  document.getElementById('f_heavy').checked=l.heavy||false;
+  document.getElementById('f_quick').checked=l.quick||false;
+  document.getElementById('f_pin').value='';document.getElementById('f_pin2').value='';
+  document.getElementById('overlay').classList.add('open');
+}
+
+function clearForm(){
+  ['f_name','f_phone','f_phone2','f_line','f_area','f_note','f_pin','f_pin2'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f_type').value='rescue';
+  ['f_24h','f_free','f_heavy','f_quick'].forEach(id=>document.getElementById(id).checked=false);
+}
+
+function closeOverlay(){document.getElementById('overlay').classList.remove('open');}
+function closeOverlayOutside(e){if(e.target===document.getElementById('overlay'))closeOverlay();}
+
+async function submitListing(){
+  const name=document.getElementById('f_name').value.trim();
+  const type=document.getElementById('f_type').value;
+  const phone=document.getElementById('f_phone').value.trim();
+  const area=document.getElementById('f_area').value.trim();
+  const pin=document.getElementById('f_pin').value.trim();
+  const pin2=document.getElementById('f_pin2').value.trim();
+  if(!name){showToast('⚠️ กรุณากรอกชื่อกิจการ');return;}
+  if(!phone){showToast('⚠️ กรุณากรอกเบอร์โทร');return;}
+  if(!area){showToast('⚠️ กรุณาระบุพื้นที่');return;}
+  if(!editingId&&(!pin||pin.length!==4)){showToast('⚠️ PIN ต้อง 4 หลัก');return;}
+  if(!editingId&&pin!==pin2){showToast('⚠️ PIN ทั้งสองไม่ตรงกัน');return;}
+
+  const data={name,type,phone,phone2:document.getElementById('f_phone2').value.trim()||null,
+    line_id:document.getElementById('f_line').value.trim()||null,area,tags:formTags,
+    h24:document.getElementById('f_24h').checked,is_free:document.getElementById('f_free').checked,
+    heavy:document.getElementById('f_heavy').checked,quick:document.getElementById('f_quick').checked,
+    note:document.getElementById('f_note').value.trim()||null};
+
+  if(editingId){
+    const {error}=await sb.from('rescue_listings').update(data).eq('id',editingId);
+    if(error){showToast('❌ อัปเดตไม่สำเร็จ');return;}
+    showToast(`✅ อัปเดต "${name}" แล้ว`);
+  } else {
+    data.pin_hash=pin;data.verified=false;
+    const {error}=await sb.from('rescue_listings').insert(data);
+    if(error){showToast('❌ บันทึกไม่สำเร็จ');return;}
+    showToast(`🎉 ลงทะเบียน "${name}" สำเร็จ!`);
+  }
+  closeOverlay();
+  await loadRescue();renderRescue();
+}
+
+function renderTagsList(){
+  document.getElementById('tagsList').innerHTML=formTags.map((t,i)=>`<span class="ftag-item">${t}<span class="ftag-rm" onclick="removeTag(${i})">×</span></span>`).join('');
+}
+function handleTagInput(e){
+  if(e.key==='Enter'||e.key===','){e.preventDefault();const v=e.target.value.trim().replace(/,$/,'');
+    if(v&&!formTags.includes(v)){formTags.push(v);renderTagsList();}e.target.value='';}
+}
+function removeTag(i){formTags.splice(i,1);renderTagsList();}
+
+// ═══════════════════════════════════════════
+// FCM PUSH NOTIFICATION
+// ═══════════════════════════════════════════
+async function toggleNotif(){
+  if(notifEnabled){
+    notifEnabled=false;
+    document.getElementById('notifBtn').classList.remove('on');
+    showToast('🔕 ปิดการแจ้งเตือนแล้ว');
+    return;
+  }
+  if(!messaging){showToast('❌ Browser ไม่รองรับ Push Notification');return;}
+  try {
+    const permission=await Notification.requestPermission();
+    if(permission!=='granted'){showToast('❌ กรุณาอนุญาต Notification ก่อนครับ');return;}
+    const token=await messaging.getToken({vapidKey:VAPID_KEY});
+    if(token){
+      await sb.from('fcm_tokens').upsert({token},{onConflict:'token'});
+      notifEnabled=true;
+      document.getElementById('notifBtn').classList.add('on');
+      showToast('🔔 เปิดการแจ้งเตือนแล้ว!');
+    }
+  } catch(e){ showToast('❌ เปิด Notification ไม่สำเร็จ: '+e.message); }
+}
+
+// รับ notification เมื่อ app อยู่ foreground
+if(messaging){
+  messaging.onMessage(payload=>{
+    const{title,body}=payload.notification||{};
+    if(title&&body)pushNotif(title,body);
+  });
+}
+
+// ═══════════════════════════════════════════
+// NOTIFICATION POPUP
+// ═══════════════════════════════════════════
+function pushNotif(title,body){
+  document.getElementById('notifTitle').textContent=title;
+  document.getElementById('notifBody').textContent=body;
+  document.getElementById('notifTs').textContent=new Date().toLocaleTimeString('th-TH');
+  const el=document.getElementById('notifPopup');
+  el.classList.add('show');clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),8000);
+}
+function dismissNotif(){document.getElementById('notifPopup').classList.remove('show');}
+
+// ═══════════════════════════════════════════
+// GLOBAL SEARCH
+// ═══════════════════════════════════════════
+function onGlobalSearch(){
+  const q=document.getElementById('globalSearch').value.toLowerCase().trim();
+  if(!q)return;
+  document.getElementById('rescueSearch').value=q;
+  renderRescue();
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function computeOverall(fuels){
+  const s=FT_ALL.map(ft=>fuels[ft].status);
+  if(s.every(x=>x==='ok'))return'ok';
+  if(s.some(x=>x==='empty')&&s.some(x=>x==='ok'||x==='low'))return'partial';
+  if(s.some(x=>x==='empty'))return'empty';
+  if(s.some(x=>x==='low'))return'low';
+  if(s.every(x=>x==='unknown'))return'unknown';
+  return'ok';
+}
+
+function timeAgo(ts){
+  if(!ts)return'—';
+  const d=Math.floor((typeof ts==='number'&&ts>1e10?(Date.now()-ts)/1000:Date.now()/1000-ts));
+  if(d<60)return'เมื่อกี้';
+  if(d<3600)return`${Math.floor(d/60)} นาทีที่แล้ว`;
+  if(d<86400)return`${Math.floor(d/3600)} ชั่วโมงที่แล้ว`;
+  return`${Math.floor(d/86400)} วันที่แล้ว`;
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+function updateClock(){
+  document.getElementById('crisisTs').textContent=new Date().toLocaleString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',day:'numeric',month:'short'});
+}
+
+// ═══════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════
+window.addEventListener('load',async()=>{
+  initMap();
+  updateClock();setInterval(updateClock,1000);
+
+  await Promise.all([loadStations(),loadRescue()]);
+  subscribeRealtime();
+
+  document.getElementById('loadingOverlay').classList.add('hidden');
+  renderRescue();
+
+  // Register service worker สำหรับ FCM background
+  if('serviceWorker' in navigator){
+    try{await navigator.serviceWorker.register('/firebase-messaging-sw.js');}
+    catch(e){console.warn('SW register failed:',e);}
+  }
+});
+</script>
+</body>
+</html>
