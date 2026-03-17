@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FuelWatch Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{--acc:#FF3B1F;--go:#00A651;--warn:#F59E0B;--empty:#EF4444;--blue:#2563EB;
+  --bg:#F7F8FA;--sf:#fff;--sf2:#F2F3F7;--bd:rgba(0,0,0,.07);--bd2:rgba(0,0,0,.12);
+  --t1:#111318;--t2:#555B72;--t3:#9CA3B5;
+  --body:'Noto Sans Thai','Kanit',sans-serif;--mono:'IBM Plex Mono',monospace;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t1);font-family:var(--body);min-height:100vh;font-size:14px}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:var(--body)}
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:var(--sf);border-radius:20px;padding:36px 32px;max-width:380px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.1)}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.login-ico{width:40px;height:40px;background:var(--acc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.login-title{font-family:'Kanit',sans-serif;font-size:22px;font-weight:700}
+.login-title span{color:var(--acc)}
+/* APP */
+#adminApp{display:none}
+/* HEADER */
+.adm-header{background:var(--sf);border-bottom:1px solid var(--bd);padding:12px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.adm-logo{display:flex;align-items:center;gap:8px}
+.adm-ico{width:32px;height:32px;background:var(--acc);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.adm-title{font-family:'Kanit',sans-serif;font-size:16px;font-weight:700}
+.adm-title span{color:var(--acc)}
+.adm-badge{background:var(--empty);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:9999px;font-family:var(--mono)}
+.adm-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.adm-tabs{display:flex;gap:2px;background:var(--sf2);border-radius:10px;padding:3px}
+.adm-tab{padding:7px 16px;border-radius:8px;border:none;background:transparent;font-size:13px;font-weight:600;color:var(--t3);cursor:pointer;transition:all .15s;font-family:var(--body)}
+.adm-tab.on{background:var(--sf);color:var(--t1);box-shadow:var(--sh)}
+/* CONTENT */
+.adm-content{max-width:960px;margin:0 auto;padding:20px 20px 40px}
+.adm-section{margin-bottom:28px}
+.adm-section-title{font-size:16px;font-weight:700;color:var(--t1);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.cnt-badge{background:var(--warn);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:9999px;font-family:var(--mono)}
+/* PLACE CARD */
+.place-card{background:var(--sf);border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:var(--sh);border:1px solid var(--bd);position:relative;overflow:hidden}
+.place-card.dup{border-left:3px solid var(--warn)}
+.place-card.pending{border-left:3px solid var(--blue)}
+.place-card.approved{border-left:3px solid var(--go);opacity:.7}
+.place-card.rejected{border-left:3px solid var(--t3);opacity:.5}
+.pc-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.pc-type-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--sf2)}
+.pc-name{font-size:15px;font-weight:700;color:var(--t1);margin-bottom:3px}
+.pc-meta{font-size:11px;color:var(--t3);display:flex;gap:8px;flex-wrap:wrap}
+.pc-detail{background:var(--sf2);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--t2);display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+.pc-detail-item{display:flex;flex-direction:column;gap:1px}
+.pc-detail-item label{font-size:10px;color:var(--t3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+.pc-detail-item span{font-size:12px;color:var(--t1);font-weight:500}
+.pc-note{font-size:12px;color:var(--t2);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.5}
+.pc-dup-warn{font-size:12px;color:#92400e;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:8px 10px;margin-bottom:10px}
+.pc-acts{display:flex;gap:6px;flex-wrap:wrap}
+.btn-approve{padding:8px 16px;background:var(--go);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--body)}
+.btn-approve:hover{background:#008a44}
+.btn-reject{padding:8px 16px;background:transparent;color:var(--empty);border:1.5px solid var(--empty);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--body)}
+.btn-reject:hover{background:rgba(239,68,68,.08)}
+.btn-maps{padding:8px 14px;background:transparent;color:var(--blue);border:1.5px solid var(--blue);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all .15s;font-family:var(--body)}
+.btn-maps:hover{background:rgba(37,99,235,.08)}
+.btn-edit-approve{padding:8px 14px;background:rgba(0,166,81,.1);color:var(--go);border:1.5px solid rgba(0,166,81,.25);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--body)}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:9999px;font-size:10px;font-weight:600;font-family:var(--mono)}
+.status-badge.pending{background:rgba(37,99,235,.1);color:var(--blue)}
+.status-badge.pending_dup{background:rgba(245,158,11,.1);color:var(--warn)}
+.status-badge.approved{background:rgba(0,166,81,.1);color:var(--go)}
+.status-badge.rejected{background:rgba(239,68,68,.08);color:var(--empty)}
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-box{background:var(--sf);border-radius:14px;padding:16px;box-shadow:var(--sh);border:1px solid var(--bd);text-align:center}
+.stat-num{font-family:'Kanit',sans-serif;font-size:28px;font-weight:700;line-height:1;margin-bottom:4px}
+.stat-label{font-size:11px;color:var(--t3);font-weight:500}
+/* FORM */
+.fi{background:var(--sf2);border:1.5px solid var(--bd2);border-radius:10px;padding:9px 12px;color:var(--t1);font-size:13px;outline:none;width:100%;transition:border-color .18s;font-family:var(--body)}
+.fi:focus{border-color:var(--acc)}
+.fl{font-size:12px;font-weight:500;color:var(--t2);margin-bottom:4px;display:block}
+.fg{margin-bottom:10px}
+/* EMPTY */
+.empty-state{text-align:center;padding:48px 24px;color:var(--t3)}
+.empty-ico{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:16px;font-weight:600;margin-bottom:6px;color:var(--t2)}
+.empty-sub{font-size:13px}
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--t1);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;transition:all .25s;white-space:nowrap;pointer-events:none}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}.pc-detail{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginWrap" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-ico">⛽</div>
+      <div class="login-title">Fuel<span>Watch</span> Admin</div>
+    </div>
+    <div class="fg"><label class="fl">Admin Password</label>
+      <input class="fi" id="adminPw" type="password" placeholder="กรอก Admin Password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    </div>
+    <button onclick="doAdminLogin()" style="width:100%;padding:12px;background:var(--acc);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--body);transition:background .15s" onmouseover="this.style.background='#E02E14'" onmouseout="this.style.background='var(--acc)'">
+      🔐 เข้าสู่ระบบ Admin
+    </button>
+    <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--t3)">FuelWatch TH · ระบบจัดการข้อมูล · 2569</div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp">
+  <header class="adm-header">
+    <div class="adm-logo">
+      <div class="adm-ico">⛽</div>
+      <div class="adm-title">Fuel<span>Watch</span> Admin</div>
+    </div>
+    <div class="adm-tabs">
+      <button class="adm-tab on" id="tab-pending" onclick="switchTab('pending')">⏳ รออนุมัติ <span class="adm-badge" id="pendingCnt">0</span></button>
+      <button class="adm-tab" id="tab-approved" onclick="switchTab('approved')">✅ อนุมัติแล้ว</button>
+      <button class="adm-tab" id="tab-rejected" onclick="switchTab('rejected')">❌ ปฏิเสธ</button>
+      <button class="adm-tab" id="tab-all" onclick="switchTab('all')">📋 ทั้งหมด</button>
+    </div>
+    <div class="adm-right">
+      <button onclick="loadPlaces()" style="padding:7px 14px;background:var(--sf2);border:1.5px solid var(--bd2);border-radius:10px;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;font-family:var(--body)">🔄 รีเฟรช</button>
+      <button onclick="doLogout()" style="padding:7px 14px;background:transparent;border:1.5px solid var(--bd2);border-radius:10px;font-size:12px;color:var(--t3);cursor:pointer;font-family:var(--body)">ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <div class="adm-content">
+    <!-- STATS -->
+    <div class="stats-row" id="statsRow">
+      <div class="stat-box"><div class="stat-num" id="st-pending" style="color:var(--blue)">—</div><div class="stat-label">รออนุมัติ</div></div>
+      <div class="stat-box"><div class="stat-num" id="st-dup" style="color:var(--warn)">—</div><div class="stat-label">ชื่อซ้ำ (รอตรวจ)</div></div>
+      <div class="stat-box"><div class="stat-num" id="st-approved" style="color:var(--go)">—</div><div class="stat-label">อนุมัติแล้ว</div></div>
+      <div class="stat-box"><div class="stat-num" id="st-rejected" style="color:var(--t3)">—</div><div class="stat-label">ปฏิเสธ</div></div>
+    </div>
+
+    <!-- FILTER + SEARCH -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input class="fi" id="searchPlaces" placeholder="🔍 ค้นหาชื่อ หรือ ที่อยู่..." oninput="renderPlaces()" style="flex:1">
+      <select class="fi" id="filterType" onchange="renderPlaces()" style="min-width:120px;flex-shrink:0">
+        <option value="">ทุกประเภท</option>
+        <option value="fuel">⛽ ปั๊มน้ำมัน</option>
+        <option value="garage">🔧 อู่/ปะยาง</option>
+        <option value="hospital">🏥 รพ./คลินิก</option>
+        <option value="rescue">🚨 กู้ภัย</option>
+        <option value="police">🚔 ตำรวจ</option>
+        <option value="food">🍜 ร้านอาหาร</option>
+        <option value="hotel">🏨 ที่พัก</option>
+        <option value="ev">⚡ ชาร์จ EV</option>
+        <option value="pharmacy">💊 ร้านยา</option>
+        <option value="convenience">🏪 สะดวกซื้อ</option>
+        <option value="atm">🏧 ATM</option>
+        <option value="other">📦 อื่นๆ</option>
+      </select>
+    </div>
+
+    <!-- PLACE LIST -->
+    <div id="placeList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL='https://axliwktkumzgmqvahtxm.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bGl3a3RrdW16Z21xdmFodHhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MzEwNTAsImV4cCI6MjA4OTMwNzA1MH0.v2aQG_cksA63z2rZ8tGYu8Zo3W9a_k6rvEkVweNqGOs';
+const sb=supabase.createClient(SB_URL,SB_KEY);
+// ⚠️ เปลี่ยน password ตรงนี้ได้เลยครับพี่
+const ADMIN_PW='FuelWatch@Admin2569';
+const TYPE_ICO={fuel:'⛽',garage:'🔧',hospital:'🏥',rescue:'🚨',police:'🚔',food:'🍜',hotel:'🏨',ev:'⚡',pharmacy:'💊',convenience:'🏪',atm:'🏧',other:'📦'};
+const TYPE_LABEL={fuel:'ปั๊มน้ำมัน',garage:'อู่/ปะยาง',hospital:'รพ./คลินิก',rescue:'กู้ภัย',police:'ตำรวจ',food:'ร้านอาหาร',hotel:'ที่พัก',ev:'ชาร์จ EV',pharmacy:'ร้านยา',convenience:'สะดวกซื้อ',atm:'ATM/ธนาคาร',other:'อื่นๆ'};
+
+let allPlaces=[];
+let curTab='pending';
+let isLoggedIn=!!sessionStorage.getItem('fw_admin_auth');
+
+if(isLoggedIn) showApp();
+
+function doAdminLogin(){
+  const pw=document.getElementById('adminPw').value;
+  if(pw===ADMIN_PW){
+    sessionStorage.setItem('fw_admin_auth','1');
+    isLoggedIn=true;
+    showApp();
+  } else {
+    showToast('❌ Password ไม่ถูกต้อง');
+    document.getElementById('adminPw').value='';
+    document.getElementById('adminPw').focus();
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('fw_admin_auth');
+  isLoggedIn=false;
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('adminApp').style.display='none';
+  document.getElementById('adminPw').value='';
+}
+function showApp(){
+  document.getElementById('loginWrap').style.display='none';
+  document.getElementById('adminApp').style.display='block';
+  loadPlaces();
+}
+
+async function loadPlaces(){
+  showToast('⏳ กำลังโหลด...');
+  try{
+    const {data,error}=await sb.from('community_places')
+      .select('*').order('created_at',{ascending:false});
+    if(error) throw error;
+    allPlaces=data||[];
+    updateStats();
+    renderPlaces();
+    showToast('✅ โหลดแล้ว '+allPlaces.length+' รายการ');
+  }catch(e){
+    showToast('❌ '+e.message);
+    // Fallback: show local pending
+    const local=JSON.parse(localStorage.getItem('fw_pending_places')||'[]');
+    allPlaces=local.map((p,i)=>({...p,id:'local_'+i}));
+    updateStats();renderPlaces();
+  }
+}
+
+function updateStats(){
+  const pend=allPlaces.filter(p=>p.status==='pending'||p.status==='pending_dup');
+  const dup=allPlaces.filter(p=>p.status==='pending_dup'||p.is_duplicate_flag);
+  const app=allPlaces.filter(p=>p.status==='approved');
+  const rej=allPlaces.filter(p=>p.status==='rejected');
+  document.getElementById('st-pending').textContent=pend.length;
+  document.getElementById('st-dup').textContent=dup.length;
+  document.getElementById('st-approved').textContent=app.length;
+  document.getElementById('st-rejected').textContent=rej.length;
+  document.getElementById('pendingCnt').textContent=pend.length;
+}
+
+function switchTab(tab){
+  curTab=tab;
+  document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('tab-'+tab).classList.add('on');
+  renderPlaces();
+}
+
+function renderPlaces(){
+  const q=(document.getElementById('searchPlaces').value||'').toLowerCase();
+  const ft=document.getElementById('filterType').value;
+  let list=allPlaces.filter(p=>{
+    const matchStatus=
+      curTab==='all'?true:
+      curTab==='pending'?(p.status==='pending'||p.status==='pending_dup'):
+      p.status===curTab;
+    const matchType=ft?p.type===ft:true;
+    const matchQ=!q||(p.name||'').toLowerCase().includes(q)||(p.address||'').toLowerCase().includes(q);
+    return matchStatus&&matchType&&matchQ;
+  });
+  const el=document.getElementById('placeList');
+  if(!list.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-ico">${curTab==='pending'?'🎉':'📋'}</div><div class="empty-title">${curTab==='pending'?'ไม่มีรายการรออนุมัติ':'ไม่พบรายการ'}</div><div class="empty-sub">${curTab==='pending'?'ทุกอย่างเรียบร้อยดีแล้ว':'ลองเปลี่ยน filter ครับ'}</div></div>`;
+    return;
+  }
+  el.innerHTML=list.map(p=>buildCard(p)).join('');
+}
+
+function buildCard(p){
+  const ico=TYPE_ICO[p.type]||'📍';
+  const lbl=TYPE_LABEL[p.type]||p.type_label||'อื่นๆ';
+  const gm=`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+  const statusMap={pending:'pending',pending_dup:'pending_dup',approved:'approved',rejected:'rejected'};
+  const statusLabel={pending:'⏳ รออนุมัติ',pending_dup:'⚠️ ชื่อซ้ำ/รอตรวจ',approved:'✅ อนุมัติแล้ว',rejected:'❌ ปฏิเสธ'};
+  const st=statusMap[p.status]||'pending';
+  const isPending=st==='pending'||st==='pending_dup';
+  const hours=p.hours_open?(p.hours_open+(p.hours_close?' – '+p.hours_close:' – ตลอด')):'ไม่ระบุ';
+  const added_time=p.created_at?new Date(p.created_at).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+
+  return `<div class="place-card ${st}" id="card-${p.id}">
+    <div class="pc-top">
+      <div class="pc-type-ico">${ico}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+          <div class="pc-name">${escHtml(p.name)}</div>
+          <span class="status-badge ${st}">${statusLabel[st]||st}</span>
+          <span style="background:var(--sf2);padding:2px 8px;border-radius:9999px;font-size:10px;font-weight:600;color:var(--t2)">${ico} ${lbl}</span>
+        </div>
+        <div class="pc-meta">
+          <span>📍 ${escHtml(p.address||'ไม่ระบุ')}</span>
+          ${p.phone?`<span>📞 ${p.phone}</span>`:''}
+          <span>🕐 ${hours}</span>
+          <span style="color:var(--t3)">👤 ${escHtml(p.added_by||'ไม่ระบุ')} · ${added_time}</span>
+        </div>
+      </div>
+    </div>
+    ${p.is_duplicate_flag?`<div class="pc-dup-warn">⚠️ ระบบตรวจพบว่าชื่อนี้อาจซ้ำกับสถานที่ที่มีอยู่แล้ว กรุณาตรวจสอบก่อนอนุมัติ</div>`:''}
+    <div class="pc-detail">
+      ${p.lat&&p.lng?`<div class="pc-detail-item"><label>พิกัด GPS</label><span style="font-family:var(--mono);font-size:11px">${p.lat}, ${p.lng}</span></div>`:''}
+      ${p.contact?`<div class="pc-detail-item"><label>ช่องทางติดต่อ</label><span>${p.contact}</span></div>`:''}
+      ${p.phone?`<div class="pc-detail-item"><label>เบอร์โทร</label><span>${p.phone}</span></div>`:''}
+      ${p.hours_open?`<div class="pc-detail-item"><label>เวลาเปิด-ปิด</label><span>${hours}</span></div>`:''}
+    </div>
+    ${p.note?`<div class="pc-note">💬 ${escHtml(p.note)}</div>`:''}
+    <div class="pc-acts">
+      ${isPending?`
+        <button class="btn-approve" onclick="approvePlace('${p.id}')">✅ อนุมัติ</button>
+        <button class="btn-reject" onclick="rejectPlace('${p.id}')">❌ ปฏิเสธ</button>
+        ${p.lat&&p.lng?`<a class="btn-maps" href="${gm}" target="_blank">📍 ดูบน Maps</a>`:''}
+        <button class="btn-edit-approve" onclick="editBeforeApprove('${p.id}')">✏️ แก้ไขแล้วอนุมัติ</button>
+      `:`
+        ${p.lat&&p.lng?`<a class="btn-maps" href="${gm}" target="_blank">📍 ดูบน Maps</a>`:''}
+        ${st==='approved'?`<button class="btn-reject" onclick="rejectPlace('${p.id}')">ยกเลิกอนุมัติ</button>`:''}
+        ${st==='rejected'?`<button class="btn-approve" onclick="approvePlace('${p.id}')">อนุมัติใหม่</button>`:''}
+      `}
+    </div>
+  </div>`;
+}
+
+async function approvePlace(id){
+  try{
+    if(String(id).startsWith('local_')){
+      const local=JSON.parse(localStorage.getItem('fw_pending_places')||'[]');
+      const idx=parseInt(id.replace('local_',''));
+      local[idx]={...local[idx],status:'approved'};
+      localStorage.setItem('fw_pending_places',JSON.stringify(local));
+      showToast('✅ อนุมัติแล้ว (local)');
+    } else {
+      const {error}=await sb.from('community_places')
+        .update({status:'approved',approved_at:new Date().toISOString()})
+        .eq('id',id);
+      if(error)throw error;
+      showToast('✅ อนุมัติแล้ว!');
+    }
+    const p=allPlaces.find(x=>String(x.id)===String(id));
+    if(p)p.status='approved';
+    updateStats();renderPlaces();
+  }catch(e){showToast('❌ '+e.message);}
+}
+
+async function rejectPlace(id){
+  const reason=prompt('เหตุผลที่ปฏิเสธ (ไม่จำเป็น):');
+  try{
+    if(String(id).startsWith('local_')){
+      const local=JSON.parse(localStorage.getItem('fw_pending_places')||'[]');
+      const idx=parseInt(id.replace('local_',''));
+      local[idx]={...local[idx],status:'rejected'};
+      localStorage.setItem('fw_pending_places',JSON.stringify(local));
+    } else {
+      const {error}=await sb.from('community_places')
+        .update({status:'rejected',reject_reason:reason||null,rejected_at:new Date().toISOString()})
+        .eq('id',id);
+      if(error)throw error;
+    }
+    showToast('✅ ปฏิเสธแล้ว');
+    const p=allPlaces.find(x=>String(x.id)===String(id));
+    if(p)p.status='rejected';
+    updateStats();renderPlaces();
+  }catch(e){showToast('❌ '+e.message);}
+}
+
+function editBeforeApprove(id){
+  const p=allPlaces.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  const newName=prompt('แก้ชื่อ (ว่างเว้น=คงเดิม):',p.name);
+  const newPhone=prompt('แก้เบอร์โทร:',p.phone||'');
+  const newAddr=prompt('แก้ที่อยู่:',p.address||'');
+  if(newName!==null)p.name=newName||p.name;
+  if(newPhone!==null)p.phone=newPhone||p.phone;
+  if(newAddr!==null)p.address=newAddr||p.address;
+  approvePlace(id);
+}
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+let tt;function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),3000);}
+</script>
+</body>
+</html>
