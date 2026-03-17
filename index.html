@@ -638,7 +638,7 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
   </div>
 
   <!-- RESCUE DIR (hidden — ใช้ใน s-map แทน) -->
-  <div class="screen" id="s-rescue" style="display:none!important"></div>
+  <div id="s-rescue" style="display:none!important"></div>
 
   <!-- TOOLS -->
   <div class="screen" id="s-tools">
@@ -1027,14 +1027,18 @@ function openUserMenu(){
 
 /* ─── NAV ─── */
 function goTo(n){
+  // rescue รวมกับ map แล้ว
+  if(n==='rescue') n='map';
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.bni').forEach(b=>b.classList.remove('on'));
-  document.getElementById('s-'+n).classList.add('on');
-  document.getElementById('n-'+n).classList.add('on');
+  const screen = document.getElementById('s-'+n);
+  if(screen) screen.classList.add('on');
+  // nav button — map ใช้ id n-map
+  const navBtn = document.getElementById('n-'+n);
+  if(navBtn) navBtn.classList.add('on');
   if(n==='tools'){renderPriceChart();renderDashChart();renderFavList();}
   if(n==='chat'){initChat();scrollChat();}
-  if(n==='rescue')renderRescue();
-  if(n==='map')renderEmList();
+  if(n==='map'){renderEmList();renderRescue();}
 }
 
 function setLang(l){LANG=l;document.getElementById('lt').classList.toggle('on',l==='th');document.getElementById('le').classList.toggle('on',l==='en');renderSt();renderRescue();renderEmList();}
@@ -2107,13 +2111,16 @@ function adminLogout(){
 }
 
 // Override goTo เพื่อ handle admin tab
+// Admin screen handler — ใช้ goTo('admin') แล้ว goTo จะ handle เอง
+// override goTo เพื่อ handle admin tab
 const _origGoTo=goTo;
 function goTo(n){
+  if(n==='rescue') n='map'; // rescue รวมกับ map
   if(n==='admin'){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
     document.querySelectorAll('.bni').forEach(b=>b.classList.remove('on'));
-    document.getElementById('s-admin').classList.add('on');
-    // ถ้า login แล้ว แสดง dashboard
+    const adminScreen=document.getElementById('s-admin');
+    if(adminScreen) adminScreen.classList.add('on');
     if(adminAuthed){
       document.getElementById('adminLoginPanel').style.display='none';
       document.getElementById('adminDashPanel').style.display='block';
