@@ -1029,12 +1029,28 @@ function openUserMenu(){
 function goTo(n){
   // rescue รวมกับ map แล้ว
   if(n==='rescue') n='map';
+  // admin tab
+  if(n==='admin'){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+    document.querySelectorAll('.bni').forEach(b=>b.classList.remove('on'));
+    const adminScreen=document.getElementById('s-admin');
+    if(adminScreen) adminScreen.classList.add('on');
+    if(adminAuthed){
+      document.getElementById('adminLoginPanel').style.display='none';
+      document.getElementById('adminDashPanel').style.display='block';
+      loadAdminPlaces();
+    } else {
+      document.getElementById('adminLoginPanel').style.display='block';
+      document.getElementById('adminDashPanel').style.display='none';
+      setTimeout(()=>document.getElementById('adminPwInline')?.focus(),300);
+    }
+    return;
+  }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.bni').forEach(b=>b.classList.remove('on'));
-  const screen = document.getElementById('s-'+n);
+  const screen=document.getElementById('s-'+n);
   if(screen) screen.classList.add('on');
-  // nav button — map ใช้ id n-map
-  const navBtn = document.getElementById('n-'+n);
+  const navBtn=document.getElementById('n-'+n);
   if(navBtn) navBtn.classList.add('on');
   if(n==='tools'){renderPriceChart();renderDashChart();renderFavList();}
   if(n==='chat'){initChat();scrollChat();}
@@ -2111,29 +2127,6 @@ function adminLogout(){
 }
 
 // Override goTo เพื่อ handle admin tab
-// Admin screen handler — ใช้ goTo('admin') แล้ว goTo จะ handle เอง
-// override goTo เพื่อ handle admin tab
-const _origGoTo=goTo;
-function goTo(n){
-  if(n==='rescue') n='map'; // rescue รวมกับ map
-  if(n==='admin'){
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
-    document.querySelectorAll('.bni').forEach(b=>b.classList.remove('on'));
-    const adminScreen=document.getElementById('s-admin');
-    if(adminScreen) adminScreen.classList.add('on');
-    if(adminAuthed){
-      document.getElementById('adminLoginPanel').style.display='none';
-      document.getElementById('adminDashPanel').style.display='block';
-      loadAdminPlaces();
-    } else {
-      document.getElementById('adminLoginPanel').style.display='block';
-      document.getElementById('adminDashPanel').style.display='none';
-      setTimeout(()=>document.getElementById('adminPwInline')?.focus(),300);
-    }
-    return;
-  }
-  _origGoTo(n);
-}
 
 async function loadAdminPlaces(){
   try{
