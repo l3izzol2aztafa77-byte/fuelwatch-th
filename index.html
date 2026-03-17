@@ -815,35 +815,146 @@ function setLang(l){LANG=l;document.getElementById('lt').classList.toggle('on',l
 function setTheme(t){THEME=t;document.documentElement.setAttribute('data-theme',t);document.getElementById('td').classList.toggle('on',t==='dark');document.getElementById('tl').classList.toggle('on',t==='light');document.querySelector('meta[name="theme-color"]').content=t==='light'?'#ffffff':'#0a0b12';if(priceChart)renderPriceChart();if(dashChart)renderDashChart();}
 
 /* ─── LOAD DATA ─── */
-function loadData(){
+async function loadData(){
   renderPrices();
-  const pool=['ok','ok','ok','low','empty','partial'];const now=Math.floor(Date.now()/1000);
-  const rawSt=[
-    // พิกัดยืนยันจาก Google Maps — อัปเดต 2569
-    {id:1,name:'ปตท. ถ.มาลัยแมน (ใกล้ Big C)',brand:'PTT',lat:14.4748,lng:100.1174,address:'ถ.มาลัยแมน ต.รั้วใหญ่ อ.เมืองสุพรรณบุรี'},
-    {id:2,name:'เชลล์ ถ.มาลัยแมน สุพรรณบุรี',brand:'Shell',lat:14.4712,lng:100.1208,address:'ถ.มาลัยแมน ต.สนามชัย อ.เมืองสุพรรณบุรี'},
-    {id:3,name:'บางจาก ต.ดอนกำยาน',brand:'Bangchak',lat:14.4468,lng:100.1063,address:'128/1 ม.2 ต.ดอนกำยาน อ.เมืองสุพรรณบุรี'},
-    {id:4,name:'PT ถ.สุพรรณ-อู่ทอง',brand:'PT',lat:14.4598,lng:100.0947,address:'ถ.สุพรรณบุรี-อู่ทอง อ.เมืองสุพรรณบุรี'},
-    {id:5,name:'ปตท. ศรีประจันต์',brand:'PTT',lat:14.6241,lng:100.1503,address:'ถ.สุพรรณบุรี-ชัยนาท อ.ศรีประจันต์'},
-    {id:6,name:'บางจาก ศรีประจันต์',brand:'Bangchak',lat:14.6198,lng:100.1462,address:'อ.ศรีประจันต์ จ.สุพรรณบุรี'},
-    {id:7,name:'ปตท. สองพี่น้อง',brand:'PTT',lat:14.2268,lng:100.0314,address:'ถ.สุพรรณบุรี-อยุธยา อ.สองพี่น้อง'},
-    {id:8,name:'เชลล์ สองพี่น้อง',brand:'Shell',lat:14.2231,lng:100.0289,address:'อ.สองพี่น้อง จ.สุพรรณบุรี'},
-    {id:9,name:'ปตท. อู่ทอง',brand:'PTT',lat:14.3764,lng:99.9018,address:'ถ.สุพรรณบุรี-กาญจนบุรี อ.อู่ทอง'},
-    {id:10,name:'PT อู่ทอง',brand:'PT',lat:14.3741,lng:99.8986,address:'ถ.มาลัยแมน อ.อู่ทอง จ.สุพรรณบุรี'},
-    {id:11,name:'คาลเท็กซ์ ถ.พระพันวษา',brand:'Caltex',lat:14.4762,lng:100.1168,address:'ถ.พระพันวษา ต.ท่าพี่เลี้ยง อ.เมืองสุพรรณบุรี'},
-    {id:12,name:'ปตท. บางปลาม้า',brand:'PTT',lat:14.3892,lng:100.1847,address:'ถ.สุพรรณบุรี-อยุธยา อ.บางปลาม้า'},
-  ];
-  stations=rawSt.map(s=>{const fuels={};FT.forEach(ft=>{const st=pool[Math.floor(Math.random()*pool.length)];fuels[ft]={status:st,ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};});return{...s,fuels,overall:cOver(fuels)};});
-  rescueData=[
-    {id:'r1',type:'rescue',name_th:'มูลนิธิเสมอกันกู้ภัยสุพรรณบุรี',name_en:'Samoekan Rescue Foundation',phone:'035-561-000',phone2:'098-317-7998',area_th:'ทั่วจังหวัดสุพรรณบุรี',area_en:'All Suphan Buri',tags_th:['กู้ชีพ','อุบัติเหตุ','รถชน'],tags_en:['EMS','Accident'],h24:true,is_free:true,heavy:false,quick:true,note_th:'ไม่มีค่าบริการ',note_en:'Free of charge',verified:true,ownerId:null,created_at:new Date(Date.now()-4e7).toISOString(),pin_hash:'1234'},
-    {id:'r2',type:'tow',name_th:'รถสไลด์อัสรี่ สุพรรณบุรี',name_en:'Asree Tow Truck',phone:'088-190-9993',phone2:null,area_th:'ทั่วจังหวัดสุพรรณบุรี',area_en:'All Suphan Buri',tags_th:['รถสไลด์','รถลาก','มีประกัน'],tags_en:['Tow','Insured'],h24:true,is_free:false,heavy:true,quick:true,note_th:'ออกงานทันที มีประกัน',note_en:'Immediate, insured',verified:true,ownerId:null,created_at:new Date(Date.now()-3e7).toISOString(),pin_hash:'1234'},
-    {id:'r3',type:'shop',name_th:'ช.ทรัพย์ไพศาล อู่ซ่อมรถ',name_en:'Ch. Sapphaipan Garage',phone:'035-555-247',phone2:'089-818-8475',area_th:'อ.เมืองสุพรรณบุรี',area_en:'Mueang Suphan Buri',tags_th:['ซ่อมสี','เครื่องยนต์','มีรถสไลด์'],tags_en:['Paint','Engine'],h24:false,is_free:false,heavy:false,quick:false,note_th:'อู่กลางประกันภัย รับประกัน 1 ปี',note_en:'Insurance garage 1yr warranty',verified:true,ownerId:null,created_at:new Date(Date.now()-2e7).toISOString(),pin_hash:'1234'},
-    {id:'r4',type:'tow',name_th:'รถสไลด์ (เจ้ริน) 24 ชม.',name_en:'Jarin Tow 24hr',phone:'061-158-6756',phone2:null,area_th:'ทั่วจังหวัดสุพรรณบุรี',area_en:'All Suphan Buri',tags_th:['รถสไลด์','แบตหมด','พ่วงแบต'],tags_en:['Tow','Jump start'],h24:true,is_free:false,heavy:false,quick:true,note_th:'ช่างเจ้ริน ออกงาน 24 ชม.',note_en:'24hr service',verified:false,ownerId:null,created_at:new Date(Date.now()-1e7).toISOString(),pin_hash:'1234'},
-    {id:'r5',type:'rescue',name_th:'กู้ภัยจักรนารายณ์ อ.อู่ทอง',name_en:'Chakranarayon Rescue',phone:'035-564-888',phone2:null,area_th:'อ.อู่ทอง และพื้นที่ใกล้เคียง',area_en:'U Thong and surroundings',tags_th:['กู้ชีพ','อุบัติเหตุ'],tags_en:['EMS','Accident'],h24:true,is_free:true,heavy:false,quick:true,note_th:'ฟรีทุกกรณี',note_en:'Free service',verified:true,ownerId:null,created_at:new Date(Date.now()-5e7).toISOString(),pin_hash:'1234'},
-  ];
-  renderSt();updateStats();updateTicker();
   setInterval(updateClock,1000);
+
+  // แสดง loading
+  document.getElementById('stList').innerHTML=`<div style="text-align:center;padding:32px;color:var(--t3);font-size:13px">⏳ กำลังโหลดข้อมูลปั๊มน้ำมัน...</div>`;
+
+  try {
+    // โหลด stations + fuel_status พร้อมกัน
+    const [stRes, fsRes, rescRes, priceRes] = await Promise.all([
+      sb.from('stations').select('*').order('id'),
+      sb.from('fuel_status').select('*'),
+      sb.from('rescue_listings').select('*').order('verified',{ascending:false}).order('created_at',{ascending:false}),
+      sb.from('fuel_prices').select('*').order('fuel_type'),
+    ]);
+
+    if(stRes.error) throw stRes.error;
+
+    // Build stations map
+    const now = Math.floor(Date.now()/1000);
+    const fsMap = {};
+    (fsRes.data||[]).forEach(f=>{
+      if(!fsMap[f.station_id]) fsMap[f.station_id]={};
+      fsMap[f.station_id][f.fuel_type]={
+        status: f.status||'unknown',
+        ts: f.updated_at ? new Date(f.updated_at).getTime()/1000 : now,
+        reporter: f.reporter_name||null,
+        verified: f.verified||false
+      };
+    });
+
+    stations = (stRes.data||[]).map(s=>{
+      const fuels={};
+      FT.forEach(ft=>{
+        fuels[ft] = fsMap[s.id]?.[ft] || {status:'unknown',ts:0,reporter:null,verified:false};
+      });
+      return {...s, fuels, overall: cOver(fuels)};
+    });
+
+    // Rescue listings
+    if(!rescRes.error && rescRes.data?.length){
+      rescueData = rescRes.data.map(l=>({
+        id: l.id,
+        type: l.type,
+        name_th: l.name,
+        name_en: l.name,
+        phone: l.phone,
+        phone2: l.phone2,
+        line_id: l.line_id,
+        area_th: l.area,
+        area_en: l.area,
+        tags_th: l.tags||[],
+        tags_en: l.tags||[],
+        h24: l.h24||false,
+        is_free: l.is_free||false,
+        heavy: l.heavy||false,
+        quick: l.quick||false,
+        note_th: l.note||null,
+        note_en: l.note||null,
+        verified: l.verified||false,
+        ownerId: l.owner_id||null,
+        ownerName: l.owner_name||null,
+        pin_hash: l.pin_hash||null,
+        created_at: l.created_at
+      }));
+    }
+
+    // Fuel prices
+    if(!priceRes.error && priceRes.data?.length){
+      renderPricesFromDB(priceRes.data);
+    }
+
+  } catch(err) {
+    console.warn('Supabase load error, using mock:', err.message);
+    loadMockData();
+  }
+
+  renderSt(); updateStats(); updateTicker();
+
+  // Realtime: fuel_status updates
+  sb.channel('fuel_rt')
+    .on('postgres_changes',{event:'*',schema:'public',table:'fuel_status'}, payload=>{
+      const f = payload.new;
+      const s = stations.find(x=>x.id===f.station_id);
+      if(!s) return;
+      s.fuels[f.fuel_type] = {
+        status: f.status,
+        ts: new Date(f.updated_at||Date.now()).getTime()/1000,
+        reporter: f.reporter_name||null,
+        verified: f.verified||false
+      };
+      s.overall = cOver(s.fuels);
+      renderSt(); updateStats(); updateTicker();
+      if(f.status==='empty') showToast(`⛽ ${s.name} — น้ำมัน${FL[f.fuel_type]} หมดแล้ว!`);
+    })
+    .subscribe();
 }
+
+function renderPricesFromDB(prices){
+  const row = document.getElementById('pRow');
+  const COLORS={diesel:'#2563eb',gasohol91:'#16a34a',gasohol95:'#ea580c',e20:'#9333ea',e85:'#d97706',premium95:'#dc2626',lpg:'#0891b2'};
+  row.innerHTML = prices.filter(p=>p.price_ptt).map(p=>
+    `<div class="pc-chip">
+      <span class="pc-t" style="color:${COLORS[p.fuel_type]||'#888'}">${p.label_th}</span>
+      <span class="pc-p">${p.price_ptt}฿</span>
+    </div>`
+  ).join('');
+}
+
+function loadMockData(){
+  // Fallback mock ถ้า Supabase ยังไม่ได้ seed
+  const pool=['ok','ok','ok','low','empty','partial'];
+  const now=Math.floor(Date.now()/1000);
+  const rawSt=[
+    {id:1, name:'ปตท. ถ.มาลัยแมน (ใกล้ Big C)',       brand:'PTT',      lat:14.4748, lng:100.1174, address:'ถ.มาลัยแมน ต.รั้วใหญ่ อ.เมืองสุพรรณบุรี'},
+    {id:2, name:'เชลล์ ถ.มาลัยแมน',                   brand:'Shell',    lat:14.4712, lng:100.1208, address:'ถ.มาลัยแมน ต.สนามชัย อ.เมืองสุพรรณบุรี'},
+    {id:3, name:'บางจาก ต.ดอนกำยาน',                  brand:'Bangchak', lat:14.4468, lng:100.1063, address:'128/1 ม.2 ต.ดอนกำยาน อ.เมืองสุพรรณบุรี'},
+    {id:4, name:'PT ถ.สุพรรณ-อู่ทอง',                  brand:'PT',       lat:14.4598, lng:100.0947, address:'ถ.สุพรรณบุรี-อู่ทอง อ.เมืองสุพรรณบุรี'},
+    {id:5, name:'ปตท. ศรีประจันต์',                    brand:'PTT',      lat:14.6241, lng:100.1503, address:'ถ.สุพรรณบุรี-ชัยนาท อ.ศรีประจันต์'},
+    {id:6, name:'บางจาก ศรีประจันต์',                  brand:'Bangchak', lat:14.6198, lng:100.1462, address:'อ.ศรีประจันต์ จ.สุพรรณบุรี'},
+    {id:7, name:'ปตท. สองพี่น้อง',                     brand:'PTT',      lat:14.2268, lng:100.0314, address:'ถ.สุพรรณบุรี-อยุธยา อ.สองพี่น้อง'},
+    {id:8, name:'เชลล์ สองพี่น้อง',                    brand:'Shell',    lat:14.2231, lng:100.0289, address:'อ.สองพี่น้อง จ.สุพรรณบุรี'},
+    {id:9, name:'ปตท. อู่ทอง',                         brand:'PTT',      lat:14.3764, lng:99.9018,  address:'ถ.สุพรรณบุรี-กาญจนบุรี อ.อู่ทอง'},
+    {id:10,name:'PT อู่ทอง',                            brand:'PT',       lat:14.3741, lng:99.8986,  address:'ถ.มาลัยแมน อ.อู่ทอง จ.สุพรรณบุรี'},
+    {id:11,name:'คาลเท็กซ์ ถ.พระพันวษา',              brand:'Caltex',   lat:14.4762, lng:100.1168, address:'ถ.พระพันวษา ต.ท่าพี่เลี้ยง อ.เมืองสุพรรณบุรี'},
+    {id:12,name:'ปตท. บางปลาม้า',                      brand:'PTT',      lat:14.3892, lng:100.1847, address:'ถ.สุพรรณบุรี-อยุธยา อ.บางปลาม้า'},
+  ];
+  stations=rawSt.map(s=>{
+    const fuels={};
+    FT.forEach(ft=>{const st=pool[Math.floor(Math.random()*pool.length)];fuels[ft]={status:st,ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};});
+    return{...s,fuels,overall:cOver(fuels)};
+  });
+  rescueData=[
+    {id:'r1',type:'rescue',name_th:'มูลนิธิเสมอกันกู้ภัยสุพรรณบุรี',phone:'035-561-000',phone2:'098-317-7998',area_th:'ทั่วจังหวัดสุพรรณบุรี',tags_th:['กู้ชีพ','อุบัติเหตุ','รถชน'],h24:true,is_free:true,heavy:false,quick:true,note_th:'ไม่มีค่าบริการ',verified:true,ownerId:null,created_at:new Date(Date.now()-4e7).toISOString(),pin_hash:'1234'},
+    {id:'r2',type:'tow',name_th:'รถสไลด์อัสรี่ สุพรรณบุรี',phone:'088-190-9993',phone2:null,area_th:'ทั่วจังหวัดสุพรรณบุรี',tags_th:['รถสไลด์','รถลาก','มีประกัน'],h24:true,is_free:false,heavy:true,quick:true,note_th:'ออกงานทันที มีประกัน',verified:true,ownerId:null,created_at:new Date(Date.now()-3e7).toISOString(),pin_hash:'1234'},
+    {id:'r3',type:'shop',name_th:'ช.ทรัพย์ไพศาล อู่ซ่อมรถ',phone:'035-555-247',phone2:'089-818-8475',area_th:'อ.เมืองสุพรรณบุรี',tags_th:['ซ่อมสี','เครื่องยนต์','มีรถสไลด์'],h24:false,is_free:false,heavy:false,quick:false,note_th:'อู่กลางประกันภัย รับประกัน 1 ปี',verified:true,ownerId:null,created_at:new Date(Date.now()-2e7).toISOString(),pin_hash:'1234'},
+    {id:'r4',type:'rescue',name_th:'กู้ภัยจักรนารายณ์ อ.อู่ทอง',phone:'035-564-888',phone2:null,area_th:'อ.อู่ทอง และพื้นที่ใกล้เคียง',tags_th:['กู้ชีพ','อุบัติเหตุ'],h24:true,is_free:true,heavy:false,quick:true,note_th:'ฟรีทุกกรณี',verified:true,ownerId:null,created_at:new Date(Date.now()-5e7).toISOString(),pin_hash:'1234'},
+  ];
+}
+
 
 /* ─── RENDER STATIONS ─── */
 function renderSt(){
@@ -911,27 +1022,58 @@ function openRpt(id){
 function selRFuel(ft){rptFuel=ft;document.querySelectorAll('.rfbtn').forEach(b=>b.classList.remove('on'));event.target.classList.add('on');}
 function selRS(st){rptStat=st;document.querySelectorAll('.rstbtn').forEach(b=>b.classList.remove('on'));event.target.classList.add('on');}
 
-function doReport(sid){
+async function doReport(sid){
   if(!rptFuel){showToast('⚠️ เลือกชนิดน้ำมันก่อน');return;}
   if(!rptStat){showToast('⚠️ เลือกสถานะก่อน');return;}
   const s=stations.find(x=>x.id===sid);if(!s)return;
+
+  // Optimistic UI update ทันที
   s.fuels[rptFuel].status=rptStat;
   s.fuels[rptFuel].ts=Math.floor(Date.now()/1000);
   s.fuels[rptFuel].reporter=currentUser?currentUser.name:'ผู้ใช้ทั่วไป';
   s.fuels[rptFuel].verified=!!currentUser;
   s.overall=cOver(s.fuels);
+  renderSt();updateStats();updateTicker();
+
+  // Save to Supabase
+  try {
+    const reporterName = currentUser?.name || 'ผู้ใช้ทั่วไป';
+    const isVerified = !!currentUser;
+
+    // บันทึก report
+    await sb.from('reports').insert({
+      station_id: sid,
+      fuel_type: rptFuel,
+      status: rptStat
+    });
+
+    // อัปเดต fuel_status
+    await sb.from('fuel_status').upsert({
+      station_id: sid,
+      fuel_type: rptFuel,
+      status: rptStat,
+      reporter_name: reporterName,
+      verified: isVerified,
+      updated_at: new Date().toISOString()
+    },{onConflict:'station_id,fuel_type'});
+
+  } catch(err){
+    console.warn('Report save error:', err.message);
+    // ไม่แสดง error ให้ user เห็น เพราะ UI อัปเดตแล้ว
+  }
+
   if(currentUser){
     currentUser.reports=(currentUser.reports||0)+1;
     localStorage.setItem('fw_user',JSON.stringify(currentUser));
     const ui=users.findIndex(u=>u.id===currentUser.id);
     if(ui!==-1){users[ui].reports=currentUser.reports;localStorage.setItem('fw_users',JSON.stringify(users));}
   }
-  renderSt();updateStats();updateTicker();
   totalReports++;
   document.getElementById('totalR').textContent=totalReports;
   document.getElementById('emptyR').textContent=stations.filter(x=>x.overall==='empty').length;
-  showToast('✅ Report ส่งแล้ว'+(currentUser?' (ยืนยันแล้ว)':''));
+  showToast('✅ Report ส่งแล้ว'+(currentUser?' ✓':''));
 }
+
 
 function share(via){
   const s=selSid?stations.find(x=>x.id===selSid):null;
