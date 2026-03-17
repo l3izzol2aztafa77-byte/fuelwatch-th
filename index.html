@@ -691,6 +691,33 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
         <div class="sect-lbl">ปั๊มโปรดของฉัน ⭐</div>
         <div id="favList"><div style="text-align:center;padding:14px;color:var(--t3);font-size:12px">กด ⭐ ที่รายการปั๊มเพื่อบันทึก</div></div>
       </div>
+
+      <!-- BADGE + POINTS CARD -->
+      <div class="card" id="badgeCard" style="display:none">
+        <div class="sect-lbl">ยศและคะแนนของฉัน 🏅</div>
+        <div id="myBadgeBox" style="display:flex;align-items:center;gap:14px;padding:10px 0"></div>
+        <div style="margin-top:10px">
+          <div style="font-size:11px;color:var(--t3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">วิธีได้คะแนน</div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span>⛽ รายงานสถานะน้ำมัน</span><span style="font-weight:600;color:var(--acc)">+5 คะแนน</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span>📍 เพิ่มสถานที่ใหม่</span><span style="font-weight:600;color:var(--acc)">+20 คะแนน</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span>⚡ เพิ่ม NGV/EV (หายาก)</span><span style="font-weight:600;color:var(--acc)">+50 คะแนน</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span>📅 Login ทุกวัน</span><span style="font-weight:600;color:var(--acc)">+3 คะแนน</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span>🔥 Streak 3 วัน</span><span style="font-weight:600;color:var(--acc)">+5 bonus</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span>🔥 Streak 7 วัน</span><span style="font-weight:600;color:var(--acc)">+10 bonus</span></div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div style="font-size:11px;color:var(--t3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:1px">ระดับยศ</div>
+          <div style="display:flex;flex-direction:column;gap:4px" id="badgeLevels"></div>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD -->
+      <div class="card">
+        <div class="sect-lbl">🏆 Leaderboard — นักรายงานเก่ง</div>
+        <div id="leaderboardList" style="margin-top:8px"></div>
+      </div>
     </div>
   </div>
 
@@ -1020,6 +1047,7 @@ function enterApp(){
   updateUserBtn();
   checkAdminBtn();
   updateHeroGreet();
+  doCheckin();
   loadData();
 }
 
@@ -1072,7 +1100,7 @@ function goTo(n){
   if(screen) screen.classList.add('on');
   const navBtn=document.getElementById('n-'+n);
   if(navBtn) navBtn.classList.add('on');
-  if(n==='tools'){renderPriceChart();renderDashChart();renderFavList();}
+  if(n==='tools'){renderPriceChart();renderDashChart();renderFavList();renderLeaderboard();renderBadgeCard();}
   if(n==='chat'){initChat();scrollChat();}
   if(n==='map'){renderEmList();renderRescue();}
 }
@@ -1506,6 +1534,9 @@ async function doReport(sid){
     localStorage.setItem('fw_user',JSON.stringify(currentUser));
     const ui=users.findIndex(u=>u.id===currentUser.id);
     if(ui!==-1){users[ui].reports=currentUser.reports;localStorage.setItem('fw_users',JSON.stringify(users));}
+    // คะแนน: NGV/EV พิเศษ +50, รายงานปกติ +5
+    if(['ngv','ev'].includes(rptFuel)) addPoints('add_ngv_ev');
+    else addPoints('report');
   }
   totalReports++;
   document.getElementById('totalR').textContent=totalReports;
@@ -1533,6 +1564,62 @@ function toggleFav(id){
   if(i===-1){favs.push(id);showToast('⭐ เพิ่มปั๊มโปรดแล้ว');}else{favs.splice(i,1);showToast('✅ ลบปั๊มโปรดแล้ว');}
   localStorage.setItem('fw_favs',JSON.stringify(favs));
   renderSt();renderFavList();
+}
+
+function renderBadgeCard(){
+  const card=document.getElementById('badgeCard');
+  const box=document.getElementById('myBadgeBox');
+  const lvls=document.getElementById('badgeLevels');
+  if(!card||!box) return;
+  if(!currentUser){card.style.display='none';return;}
+  card.style.display='block';
+  const pts=currentUser.points||0;
+  const badge=getBadge(pts);
+  const streak=currentUser.checkinStreak||0;
+  // current badge display
+  box.innerHTML=`
+    <div style="font-size:48px;line-height:1">${badge.icon}</div>
+    <div>
+      <div style="font-family:var(--disp);font-size:18px;font-weight:700;color:var(--t1)">${badge.name}</div>
+      <div style="font-size:13px;color:var(--acc);font-weight:600;font-family:var(--mono)">${pts.toLocaleString()} คะแนน</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:2px">🔥 Streak ${streak} วัน · 📋 ${currentUser.reports||0} Reports</div>
+    </div>`;
+  // badge levels
+  if(lvls) lvls.innerHTML=BADGES.map(b=>{
+    const active=pts>=b.min;
+    const isCurrent=badge.name===b.name;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:8px;background:${isCurrent?'var(--acc-dim)':'transparent'};border:1px solid ${isCurrent?'var(--acc)':'transparent'}">
+      <span style="font-size:18px">${b.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600;color:${active?'var(--t1)':'var(--t3)'}">${b.name}</div>
+        <div style="font-size:10px;color:var(--t3)">${b.min.toLocaleString()}+ คะแนน</div>
+      </div>
+      ${active?'<span style="font-size:10px;color:var(--go);font-weight:600">✅ ปลดล็อคแล้ว</span>':'<span style="font-size:10px;color:var(--t3)">🔒</span>'}
+    </div>`;
+  }).join('');
+}
+
+function renderLeaderboard(){
+  const el=document.getElementById('leaderboardList');if(!el)return;
+  const board=getLeaderboard();
+  if(!board.length){
+    el.innerHTML=`<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">ยังไม่มีข้อมูล — เริ่ม Report เพื่อขึ้น Leaderboard!</div>`;
+    return;
+  }
+  const medals=['🥇','🥈','🥉'];
+  el.innerHTML=board.map((u,i)=>{
+    const badge=getBadge(u.points||0);
+    const isMe=currentUser&&u.id===currentUser.id;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);${isMe?'background:var(--acc-dim);margin:0 -14px;padding:8px 14px;border-radius:8px':''}">
+      <div style="font-size:${i<3?20:14}px;width:24px;text-align:center">${medals[i]||`${i+1}`}</div>
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0">${u.name.charAt(0).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--t1)">${badge.icon} ${u.name}${isMe?' (คุณ)':''}</div>
+        <div style="font-size:10px;color:var(--t3)">${badge.name} · ${u.reports||0} Reports</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--acc)">${(u.points||0).toLocaleString()}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderFavList(){
@@ -2007,9 +2094,13 @@ function updateHeroGreet(){
   const reportsEl=document.getElementById('userReports');
   const avatarEl=document.getElementById('heroUserIco');
   if(greetEl)greetEl.textContent=greet;
-  if(nameEl)nameEl.textContent=currentUser?('คุณ'+currentUser.name):'FuelWatch TH';
+  if(nameEl){
+    const badge=currentUser?getBadge(currentUser.points||0):null;
+    nameEl.textContent=currentUser?('คุณ'+currentUser.name):'FuelWatch TH';
+    if(badge&&currentUser) nameEl.textContent=badge.icon+' '+currentUser.name;
+  }
   if(locEl)locEl.textContent=currentUser?.location||'สุพรรณบุรี';
-  if(pointsEl)pointsEl.textContent=currentUser?.reports||0;
+  if(pointsEl)pointsEl.textContent=(currentUser?.points||0).toLocaleString();
   if(reportsEl)reportsEl.textContent=currentUser?.reports||0;
   if(avatarEl)avatarEl.textContent=currentUser?currentUser.name.charAt(0).toUpperCase():'👤';
 }
@@ -2145,7 +2236,10 @@ async function submitAddPlace(){
     if(isDup){
       showToast('⏳ ชื่อซ้ำ — ส่งให้ Admin ตรวจสอบแล้ว');
     } else {
-      showToast('🎉 ส่งข้อมูลแล้ว รอ Admin อนุมัติ');
+      // คะแนน: NGV/EV พิเศษ, ที่อื่นปกติ
+    if(['ev','ngv'].includes(curPlaceType)) addPoints('add_ngv_ev');
+    else addPoints('add_place');
+    showToast('🎉 ส่งข้อมูลแล้ว รอ Admin อนุมัติ');
     }
   }catch(err){
     // fallback: บันทึก local ถ้า table ยังไม่มี
@@ -2354,6 +2448,66 @@ function switchEmTab(tab, el){
   if(!isEmergency) renderRescue();
 }
 
+
+/* ─── POINTS & BADGE SYSTEM ─── */
+const POINTS={
+  report: 5,        // รายงานสถานะ
+  report_upvote: 10,// Report ถูกต้อง มีคน upvote
+  checkin: 3,       // Login ทุกวัน
+  add_place: 20,    // เพิ่มสถานที่ใหม่
+  add_ngv_ev: 50    // เพิ่ม NGV/EV หายาก
+};
+const BADGES=[
+  {min:0,    icon:'🌱', name:'มือใหม่'},
+  {min:100,  icon:'⛽', name:'คนขับรถ'},
+  {min:500,  icon:'🔍', name:'นักสังเกต'},
+  {min:1000, icon:'🏆', name:'ฮีโร่ชุมชน'},
+  {min:5000, icon:'👑', name:'ผู้พิทักษ์ถนน'}
+];
+
+function getBadge(pts){
+  pts=pts||0;
+  for(let i=BADGES.length-1;i>=0;i--){
+    if(pts>=BADGES[i].min) return BADGES[i];
+  }
+  return BADGES[0];
+}
+
+function addPoints(type, extra=0){
+  if(!currentUser) return 0;
+  const pts=(POINTS[type]||0)+extra;
+  currentUser.points=(currentUser.points||0)+pts;
+  localStorage.setItem('fw_user',JSON.stringify(currentUser));
+  // sync to users array
+  const ui=users.findIndex(u=>u.id===currentUser.id);
+  if(ui!==-1){users[ui].points=currentUser.points;localStorage.setItem('fw_users',JSON.stringify(users));}
+  // update UI
+  updateHeroGreet();
+  if(pts>0) showToast(`🪙 +${pts} คะแนน! (รวม ${currentUser.points.toLocaleString()} คะแนน)`);
+  return pts;
+}
+
+function doCheckin(){
+  if(!currentUser) return;
+  const today=new Date().toDateString();
+  if(currentUser.lastCheckin===today) return; // check-in แล้ววันนี้
+  currentUser.lastCheckin=today;
+  currentUser.checkinStreak=(currentUser.checkinStreak||0)+1;
+  localStorage.setItem('fw_user',JSON.stringify(currentUser));
+  const bonus=currentUser.checkinStreak>=7?10:currentUser.checkinStreak>=3?5:0;
+  addPoints('checkin', bonus);
+  if(currentUser.checkinStreak>=3){
+    showToast(`🔥 เช็คอิน ${currentUser.checkinStreak} วันติดต่อกัน! +${3+bonus} คะแนน`);
+  }
+}
+
+function getLeaderboard(){
+  const allUsers=JSON.parse(localStorage.getItem('fw_users')||'[]');
+  return allUsers
+    .filter(u=>u.points>0)
+    .sort((a,b)=>(b.points||0)-(a.points||0))
+    .slice(0,10);
+}
 /* ─── INIT ─── */
 if(currentUser){enterApp();}
 else{document.getElementById('app').style.display='none';}
