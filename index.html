@@ -285,7 +285,7 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 .rfbtn.on{border-color:var(--acc);background:var(--acc-dim);color:var(--acc);font-weight:600}
 .rst-row{display:flex;gap:6px;margin-bottom:10px}
 .rstbtn{flex:1;padding:10px 8px;border-radius:var(--rl);border:1.5px solid transparent;font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;font-family:var(--body)}
-.rstbtn.ok{background:var(--go-dim);border-color:rgba(0,166,81,.2);color:var(--go)}.rstbtn.low{background:var(--warn-dim);border-color:rgba(245,158,11,.2);color:var(--warn)}.rstbtn.empty{background:var(--empty-dim);border-color:rgba(239,68,68,.22);color:var(--empty)}
+.rstbtn.ok{background:var(--go-dim);border-color:rgba(0,166,81,.2);color:var(--go)}.rstbtn.low{background:var(--warn-dim);border-color:rgba(245,158,11,.2);color:var(--warn)}.rstbtn.empty{background:var(--empty-dim);border-color:rgba(239,68,68,.22);color:var(--empty)}.rstbtn.discontinued{background:#f3f4f6;border-color:#d1d5db;color:#6b7280}
 .rstbtn.on{box-shadow:var(--sh1);transform:translateY(-2px)}
 .rpt-sub{width:100%;padding:11px;background:var(--acc);color:#fff;border:none;border-radius:var(--rl);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--body)}
 .rpt-sub:hover{background:var(--acc2)}
@@ -550,13 +550,13 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
           <div class="hg-ico">📍</div><div class="hg-lbl">ใกล้ฉัน</div>
         </button>
         <button class="hg-btn" onclick="setFtf('diesel',document.querySelector('#ftChips .chip:nth-child(2)'))">
-          <img src="data:image/webp;base64,UklGRj4EAABXRUJQVlA4IDIEAACQFQCdASpAAEAAPlEgjUQjoiEYDP0AOAUEtgBonahfw9g49foIxT68sg3qA8RbpAeYr9efXF9AHoAfs71gHoZ/rd6bPsbf4f/qftH7QFYv5o/UcfalL/McIPqI0KLj/9S4idJxM28b/0t7Bn62dZT0VWqu7ukOSSgDBBygjqfsgM57FrXCd+5u9GtwWBPWWOK994JgVPlmdMv8u/fIi/Ino7tRONQFIxBRF9pD3bi6EDJTs8WAAP7++GiYaZO5kWyUqpNjc9PWAqaWA+2mULaF28Seu5G68JNfI/vcxutuQqItvYhOV/2RKSRvn98ntWk83G3yDpfJWujeeVQnZW7a7Zzyfz5DW8Z5gQW/txIg2+64/szpwXD118TE1Ogc9VxeGuWg14zCYtqULM4OndV3dhfX9wtuCIpDKhczdWm93GYH2aqmlDbyXMoZpk0MsBm2KdfiLeLhhSGvi3T5UE2LGH/qcgihfqqSyN8RLcXEFPTAPEe9i1n7bgMS6tv98bGq68iyNU7nam2I7h3lyToaMLPYEqxkKWVO2IGV8zVszF/eJCQJPxjv4TyFhCkR1YK1v7T8IxoFp+YJw3M2mrMpRvSjaOQnJa5IODOSmJFlqt0JvKoVyERsPx6T7jNE8/4H7Ai8zf/6/DaGWOpx53fXSaXvRQvrQ6lVfPUQZ3/yeQVA5Wpfj5RXWisQpvKCrE/2PdeLgON/97JNokGj15hhG22TzD37J63OMdXt6dDV184Jv+9yhpWNBP9UJP/R9YsGn7SqNP9h/M5F4E/gw9rRLjHk/XDGwP1EfwHQph8sywXAZaI4YwjYuzrBR6qH/yHKJY/z3RS7cObes7T5EOW+iocTmnLX3+qsZrI2d3efl5/WIeG7eoUE9ZfvMTP376haFnyzkiPM/ywr4pHWPdauAzF78W98C5IuEqb+xJ+IEjXm3a+AJetjHpkbzL3UPBJHJKhGNoxyTaDekgPw5M+39FCLQv05hyTB+PIuCoFStOSikAW286mPT9daqsRFPjBh+/Z2QB/x5Z6Icyaj6ZybqdK1XwFdAfRZK2nKd0+ckeT2LOvBh/vq/7tfL0QfMHV4pt1MhdRhhzhfGDhHhGkZs868qKAd6RPX2X++987HLkHSy1PcQXdfoAv7pwl3+T/Obe+rCxlN/VeXzI4mftkxNRVNvtunMay7zndklfXvSblbpumwZNnB8L1lnmZgV5EnfWC7kv9BGof+IV7ztcZmR2Ij/o/gm1sTopeUKr1HRwHAc/hPaDQ1RAHtU4YK/sg7DkLbfKwHGPdS2iGjjpEEtbDpDqg0hjhymdcOU38snyQ5I5EHUZvzVPwLUF0jF/Jmwq3Oov/8tC8TxmeEKU+p/WCkTLA4QcL1XrwIMEAVl84G88D1jFLQDhgE3XO/UcHlH+f0UEjGtACX9FzgAumoAAA=" style="width:26px;height:26px;object-fit:contain;border-radius:4px;margin-bottom:2px"><div class="hg-lbl">ดีเซล</div>
+          <div class="hg-ico">🛢️</div><div class="hg-lbl">ดีเซล</div>
         </button>
         <button class="hg-btn" onclick="setFtf('gasohol95',document.querySelector('#ftChips .chip:nth-child(3)'))">
-          <img src="data:image/webp;base64,UklGRgoFAABXRUJQVlA4IP4EAABwGACdASpAAEAAPk0ei0QioaEYDv0AKATEtgBoB+iDC9c/HLnp+goyTjtxX1AbZbzAfrn+uXvdegv0AP2K9ID2G/QA8sz9r/hA/a/9tfaHrEHIn7o9neNIy//JcOPqI8m/3HcLpjTiK0lOOn/gemJ/zf4jzrfSv/j9wb9Uv+N9t3gP/ar2O2p/tems0FiBEdMF7QH8IxGdfq5oOimU7rErLBInidINjxaZLIT1TtooausRso0PKH/7VOYM69d8ZJIgve9EzBAVYmX3HQAA/v74aCs9aLkZ+w0UzjEZwIwDSVcOwEK3wNnGJJgR2WGXkFK/wXwx73FmU6iCX7piuPmBDw3lp7qfG6Thsv/HpSVYDYXgoF+9jEgypR2SjCIAimkJmxbz3JW3e/c8F6ROmY0TCTfEjq+Wd0H8PjASINCpdW3/ynh4JgUMQEE9/TFZ5uYEfdjAHsAD5Lb4iZAauwxgAyzLRgObptwJf8dpOQftbjTuvoFhnhayTEobpEi8kpTCwZCXqB6ShkhW74IOEdgP3VDJe4UlMrUrFZsV9V4f15PSQ6pxXK5ynyBWNT0+H3MRpVetmKjxbi/qcXut75+uhSe3EBg+236Im/v2FLeysCtHHhKiO5zkNwMmHzrqqU6EBxyLwx31Zvk296uq2V2++lljTtbsKJt/gdPTesiAZPTnst4b2CinLXibPKRRytVb8631yTdEoGYpYC6mZIAPQd3bygeMhhcYZIlxoj+J/HL+z80dgH/eRhRN8Fhkg63nELK5p0XFKf5SPSZQDKKJojpfbpF4ePzUuzi9+n2wiSYvHtXfKQy8HnXSOn2mGJ+NGAnjwlP2m8aTMDM/Zlgm9yKMuS1bP4Z0eqLXD6WOz/vSR3daJ1vyEBjPzRJel5G0A41vnCyCnyMshS6FUnBkVRmoyFBkZJD8LC1H0LYxzhpfvWXxEQKtVvdt/68K9Es/91NyPWmLs4GzH9t+rkKZ7QqSWX1D8E5JPw1JYt+0D39YIV5iX6o4y0p32zEFUDxdn7AHkFWdlF/vuM7CweuQmhG4nG6ak9OuxPPZaUBS1zdlu5HVfPq/+k/KzWJX2pJoiT6JCb5UxCHJNY1ufnrtoRbLv2Ff/nT2cm7Z73J/sUzQ1bLZz1H/iUR/jtD2FwhKAiL8+OWo0uS/J0ETzRWVmw2LLrklzZz4NN6X0F0r4/ACozI1EyNaKYkw96cywzNoWBxj6S3d5WeHfo73iPxMLr84DWKwIBm4PfuLNCPEQlBg9MXdlS7YZ41nEoIZNYC5JVbnAxitFy3sZRylhzzeRdf1f6kv41XYqLymiIR/jYjrp4ecvvupexGQPo4oj83LRDz5/xRf+8qJyX8l7fuju9C4d8jbLKTNFblbzb8mYiZB5nK6b570/Oxyb+pLLD9kjovafqhUmbVc++Yh7yZaPrHmGc8cDtlxWCFvQoVmYJGmHtadNbchkShWZXpOt/WGcSe8UM+dKi7aohSaKRL0haYwH/8Nfx1rA0n6f+IkKQDjMhRRA+SHfLB79dMCXGAb2iGBy85iuyAZbfA31ea+EtAlCi46HHQGifSl2Knah61kPgJGFH4XNftGursZnwx1QD4WcgJoL/qvxv7rx/4ASCsT35jVTxXaiteUOR4mrEdCZfZzgv0Oy1AWP2F9Ww0iH+uLhjg6mkswQE95Ou56ibQL3hBtwB/Z4mAAAAA=" style="width:26px;height:26px;object-fit:contain;border-radius:4px;margin-bottom:2px"><div class="hg-lbl">95</div>
+          <div class="hg-ico">🟠</div><div class="hg-lbl">95</div>
         </button>
         <button class="hg-btn" onclick="setFtf('e20',document.querySelector('#ftChips .chip:nth-child(5)'))">
-          <img src="data:image/webp;base64,UklGRvAEAABXRUJQVlA4IOQEAADQFgCdASpAAEAAPlEkjEQjoiEXC21UOAUEsQBBKrF5q4i8IDbJeKb60/oL/yPRAewj6AHlzex5+4fpM1gvlJ9ERsKOP8xwp++PJF/Z997q53r/9Z+WHMB2xvGwzHP7h57//F5Svoj9jPgI/l39N/4Prb+xn9qvZY/YdrWx7s3uZJ2sjpj5DB6F/SfoeIYKTw4dnCnPq8Q4FFmR1fxFESKiI06Mi1sbjw6cTn/IsnWTuCZErGDkEbgDTLX5GOhsAAD+/vhoj/df3uOJF0JrrbP78s7gbdfY9EoXAyHz+re+VKWUmyYAxPLMMctlGghafFJz2Zlc3yP31bIFDjaSj71azH9FIVMo37zDQOolDyZqPxt4H6YpnrtymzUGvwr008a9YBHPJGHfZeiMauKxZ6TPR319ty+2w8JLImUy0b1HBTSifcfW/qhec83rMbzqoLGj5pFGdLYRwKtO5/4zqzp24/uxu9X/r2+4DL7BHQQ3ggwXMl8UbBHV3aTczYtsrs7Z5lQSsgqS3K7BUX0/xt7Fv7v2rZ2xiz1LlaznEH83QW2t4etkKC/88pj35835LoYeS3q6sUrzGbJsCaa81FjbUBhxa7/nms/Xb15dGaSfJ2K+gbB1ZlwnCyd+F8GGeYCTakxcEEMIrkUwerFpPGiGZZLS7abqpHNy9tSWBot3d3+SqBnMHEadKIIX2yy/PGGLdnRbiEqGc/gADzthHOVFbuxAr1U1H2MCoQE6NOoY0CY9Duzfgpne4uOhNKZXkFVhD+8ftpwYzXUSE6VMZ45dBv35x+faWPM7Gd1m2LLqgIJ+E2If+aJCt1ga+S9JEOYq24pGPM7CH/Kf/ZS/ZkcMdK55SrXtKQ0uR7Zz9PeTPGf/ElPC5fr/uEwbxDGV+DW7TV/mIidRr3jKjRYN3huOCL0RryrDeH9wO+fHfyeVD/5nLlwEgj/l3v+LfnX/x9jmKQ6lCjsi4ucIuvm5GMBf/hYAU/yMiD7JxJ4Mk/FzMYgzAdZxUO8lZ0j9COGDigD2rJO4i6rnoT8ffS2lWCvT2ETo4dc0MdZcear+zz7LnL0G5iRbQLbo9+s97tVwcqvUl2DrdKFdQlQOgxU+2GzkXFqED3fBhOtNylff5b3U6ei7/Pwqw7yZ1tTIm2rruNiYXktOk7rmeyoVddWmumsgUMGjpCWVNLyPf/wGyPp2iIfpjhFVENzuH70g/HVcno/NhTWez9TzXUXQ+aAzUm02LV/ouK81/VXitNUG+KFPqCsvQSPcqJDAAv4ojHGMQg07mB1kFMM17qmdJVxMOYl9Vj7PbfFNFonx2lJIvz2kFPXc3OpOu7p7+b5td/mzR2+S7orseXVWhHysDX/PRDKej42e9eAmYaAuUP9hMGGLB6FZ34dCx879p2HytyQFC/049CTuwqOuPzWdPqxRC95ew1KdCU9RfP3d1v9fRnPl8XPW4X+5UB4hHqeWxZcylT8g1+d/ICkYP3+FB7r/rVJN13y5lb+uy9f7lldkIB2VZRq4hjKOsJYjmML1erWz7OzIdK0iurALOUWpu+1qICnlrdUSMMAe/bmAjLLql0c5N+YtbR1l5q1GI/7rypGQmnn9iv+QOv2Ehyh9AP3pV5dqWXwm49h3V1ZOc4vGfEi4ftu64Ad9MNc1GuJ/OrirY35AAAAA" style="width:26px;height:26px;object-fit:contain;border-radius:4px;margin-bottom:2px"><div class="hg-lbl">E20</div>
+          <div class="hg-ico">🟢</div><div class="hg-lbl">E20</div>
         </button>
         <button class="hg-btn" onclick="openAddPlace()">
           <div class="hg-ico" style="background:rgba(255,255,255,.2);border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;margin:0 auto 2px">＋</div>
@@ -565,14 +565,21 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
       </div>
     </div>
     <!-- FILTER -->
-    <div class="filter-wrap" id="ftChips">
-      <div class="chip on" onclick="setFtf('all',this)">ทั้งหมด</div>
-      <div class="chip" onclick="setFtf('diesel',this)">⛽ ดีเซล</div>
-      <div class="chip" onclick="setFtf('gasohol95',this)">🟠 95</div>
-      <div class="chip" onclick="setFtf('gasohol91',this)">🟡 91</div>
-      <div class="chip" onclick="setFtf('e20',this)">🟢 E20</div>
-      <div class="chip" onclick="setFtf('e85',this)">🔵 E85</div>
-      <div class="chip" onclick="setFtf('lpg',this)">🔴 LPG</div>
+    <!-- Filter + ปุ่มซ่อนน้ำมันหมด -->
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 16px 0;flex-wrap:wrap">
+      <div class="filter-wrap" id="ftChips" style="padding:0;border:none;flex:1;min-width:0">
+        <div class="chip on" onclick="setFtf('all',this)">ทั้งหมด</div>
+        <div class="chip" onclick="setFtf('diesel',this)">⛽ ดีเซล</div>
+        <div class="chip" onclick="setFtf('gasohol95',this)">🟠 แก๊ส 95</div>
+        <div class="chip" onclick="setFtf('gasohol91',this)">🟡 แก๊ส 91</div>
+        <div class="chip" onclick="setFtf('e20',this)">🟢 E20</div>
+        <div class="chip" onclick="setFtf('e85',this)">🔵 E85</div>
+        <div class="chip" onclick="setFtf('lpg',this)">🔴 LPG</div>
+        <div class="chip" onclick="setFtf('premium95',this)">🔴 เบนซิน 95</div>
+      </div>
+      <button id="hideEmptyBtn" onclick="toggleHideEmpty()" style="flex-shrink:0;padding:6px 12px;background:var(--sf2);border:1.5px solid var(--bd2);border-radius:var(--rf);font-size:11px;font-weight:600;color:var(--t2);cursor:pointer;white-space:nowrap;font-family:var(--body);transition:all .15s">
+        🚫 ซ่อนหมด
+      </button>
     </div>
     <div class="search-row">
       <input class="search-inp" id="stSrch" placeholder="ค้นหาชื่อปั๊ม หรือ ที่อยู่..." oninput="renderSt()" style="flex:1">
@@ -911,7 +918,7 @@ const SB_URL='https://axliwktkumzgmqvahtxm.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bGl3a3RrdW16Z21xdmFodHhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MzEwNTAsImV4cCI6MjA4OTMwNzA1MH0.v2aQG_cksA63z2rZ8tGYu8Zo3W9a_k6rvEkVweNqGOs';
 const sb=supabase.createClient(SB_URL,SB_KEY);
 
-const FL={diesel:'ดีเซล',gasohol91:'91',gasohol95:'95',e20:'E20',e85:'E85',premium95:'พรีเมียม',lpg:'LPG'};
+const FL={diesel:'ดีเซล B7',gasohol91:'แก๊ส 91',gasohol95:'แก๊ส 95',e20:'E20',e85:'E85',premium95:'เบนซิน 95',lpg:'LPG',ngv:'NGV',ev:'EV⚡'};
 const FT=Object.keys(FL);
 // Fuel Icons
 const FUEL_ICONS={};
@@ -1174,29 +1181,12 @@ async function loadData(){
 
 function renderPricesFromDB(prices){
   const row=document.getElementById('pRow');
-  const ICO={
-    diesel: FUEL_ICONS.diesel,
-    gasohol91: FUEL_ICONS.gasohol91,
-    gasohol95: FUEL_ICONS.gasohol95,
-    e20: FUEL_ICONS.e20,
-    e85: FUEL_ICONS.e85,
-    premium95: FUEL_ICONS.premium95,
-    lpg: FUEL_ICONS.lpg,
-    ngv: FUEL_ICONS.ngv,
-    ev: FUEL_ICONS.ev
-  };
-  const LBL={'diesel':'ดีเซล B7','gasohol91':'แก๊สโซฮอล์ 91','gasohol95':'แก๊สโซฮอล์ 95','e20':'E20','e85':'E85','premium95':'พรีเมียม 95','lpg':'LPG'};
+  const EMOJI={diesel:'🛢️',gasohol91:'🟡',gasohol95:'🟠',e20:'🟢',e85:'🔵',premium95:'⭐',lpg:'🔴',ngv:'🔵',ev:'⚡'};
+  const LBL={diesel:'ดีเซล B7',gasohol91:'แก๊สโซฮอล์ 91 (Gasohol 91)',gasohol95:'แก๊สโซฮอล์ 95 (Gasohol 95)',e20:'E20',e85:'E85',premium95:'เบนซิน 95',lpg:'LPG'};
   row.innerHTML=prices.filter(p=>p.price_ptt).map(p=>{
-    const icoSrc=ICO[p.fuel_type];
-    const icoHtml=icoSrc?`<img src="${icoSrc}" style="width:20px;height:20px;object-fit:contain;border-radius:4px">`:`<span style="font-size:14px">⛽</span>`;
+    const ico=EMOJI[p.fuel_type]||'⛽';
     const lbl=LBL[p.fuel_type]||p.label_th;
-    return `<div class="price-chip">
-      <div class="price-chip-ico">${icoHtml}</div>
-      <div>
-        <div class="price-chip-label">${lbl}</div>
-        <div class="price-chip-val">${p.price_ptt}฿</div>
-      </div>
-    </div>`;
+    return `<div class="price-chip"><div class="price-chip-ico"><span style="font-size:14px">${ico}</span></div><div><div class="price-chip-label">${lbl}</div><div class="price-chip-val">${p.price_ptt}฿</div></div></div>`;
   }).join('');
 }
 
@@ -1279,9 +1269,33 @@ function loadMockData(){
   ];
   const pool=['ok','ok','ok','low','empty','partial'];
   const now=Math.floor(Date.now()/1000);
+
+  // ปั๊มที่มี LPG จริง (ตามชื่อ/ข้อมูล)
+  const HAS_LPG=[8,53]; // PT สุพรรณ 5 (น้ำมัน+แก๊ส), บางจาก หวลบุดตา (มี LPG)
+  // ปั๊มที่มี NGV จริง
+  const HAS_NGV=[15]; // ปตท. สุพรรณบุรี (น้ำมัน+NGV+EV)
+  // ปั๊มที่มี EV จริง
+  const HAS_EV=[15,17,20,21,44,45,47,54,55]; // ตามชื่อปั๊มที่ระบุ +EV
+
   stations=rawSt.map(s=>{
     const fuels={};
-    FT.forEach(ft=>{const st=pool[Math.floor(Math.random()*pool.length)];fuels[ft]={status:st,ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};});
+    // core fuels ทุกปั๊มมี
+    ['diesel','gasohol91','gasohol95','e20','e85','premium95'].forEach(ft=>{
+      const st=pool[Math.floor(Math.random()*pool.length)];
+      fuels[ft]={status:st,ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};
+    });
+    // LPG — เฉพาะปั๊มที่มีจริง
+    fuels.lpg = HAS_LPG.includes(s.id)
+      ? {status:pool[Math.floor(Math.random()*pool.length)],ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false}
+      : {status:'unknown',ts:0,reporter:null,verified:false};
+    // NGV — เฉพาะปั๊มที่มีจริง
+    fuels.ngv = HAS_NGV.includes(s.id)
+      ? {status:pool[Math.floor(Math.random()*pool.length)],ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false}
+      : {status:'unknown',ts:0,reporter:null,verified:false};
+    // EV — เฉพาะปั๊มที่มีจริง
+    fuels.ev = HAS_EV.includes(s.id)
+      ? {status:'ok',ts:now-Math.floor(Math.random()*30+1)*60,reporter:null,verified:false}
+      : {status:'unknown',ts:0,reporter:null,verified:false};
     return{...s,fuels,overall:cOver(fuels)};
   });
   rescueData=[
@@ -1294,6 +1308,21 @@ function loadMockData(){
 
 
 /* ─── RENDER STATIONS ─── */
+// ─── Hide Empty Toggle ───
+const CORE_FT=['diesel','gasohol91','gasohol95','e20','e85','premium95'];
+const OPT_FT=['lpg','ngv','ev'];
+let hideEmpty=false;
+function toggleHideEmpty(){
+  hideEmpty=!hideEmpty;
+  const btn=document.getElementById('hideEmptyBtn');
+  if(btn){
+    btn.style.background=hideEmpty?'var(--acc)':'var(--sf2)';
+    btn.style.color=hideEmpty?'#fff':'var(--t2)';
+    btn.style.borderColor=hideEmpty?'var(--acc)':'var(--bd2)';
+    btn.textContent=hideEmpty?'✅ ซ่อนอยู่':'🚫 ซ่อนหมด';
+  }
+  renderSt();
+}
 function renderSt(){
   const el=document.getElementById('stList');if(!el)return;
   const q=(document.getElementById('stSrch')?.value||'').toLowerCase();
@@ -1315,11 +1344,14 @@ function renderSt(){
     Shell:'data:image/webp;base64,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'
   };
   el.innerHTML=list.map(s=>{
-    const bars=FT.map(ft=>{
-    const fd=s.fuels[ft];
-    const ico=FUEL_ICONS[ft]?`<img src="${FUEL_ICONS[ft]}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;border-radius:4px">`:'';
-    return `<span class="fb ${fd.status}" style="display:inline-flex;align-items:center;gap:2px;padding:2px 5px">${ico}<span style="font-size:9px">${FL[ft]}</span></span>`;
-  }).join('');
+    const CORE=['diesel','gasohol91','gasohol95','e20','e85','premium95'];
+    const OPT=['lpg','ngv','ev'];
+    const bars=[
+      ...CORE.filter(ft=>!hideEmpty||(s.fuels[ft]&&s.fuels[ft].status!=='empty'&&s.fuels[ft].status!=='unknown'))
+        .map(ft=>{const fd=s.fuels[ft];return `<span class="fb ${fd.status}">${FL[ft]}</span>`;}),
+      ...OPT.filter(ft=>s.fuels[ft]&&s.fuels[ft].status!=='unknown'&&(!hideEmpty||s.fuels[ft].status!=='empty'))
+        .map(ft=>{const fd=s.fuels[ft];return `<span class="fb ${fd.status}">${FL[ft]}</span>`;})
+    ].join('');
     const ts=Math.max(...FT.map(ft=>s.fuels[ft].ts||0));
     const isFav=favs.includes(s.id);
     const dist=uLat?`<span style="font-size:9px;color:var(--t3)">📍 ${dist1(uLat,uLng,s.lat,s.lng)} กม.</span>`:'';
@@ -1377,7 +1409,10 @@ function toggleRpt(id){
   selSid=id; rptFuel=null; rptStat=null;
   const s=stations.find(x=>x.id===id); if(!s) return;
 
-  const fbtns=FT.map(ft=>`<button class="rfbtn" onclick="selRFuel('${ft}',this)">${FL[ft]}</button>`).join('');
+  // แสดงเฉพาะ fuel ที่ปั๊มนั้นมี (ไม่ใช่ unknown) + fuel พิเศษที่มีจริง
+  const fbtns=FT.filter(ft=>s.fuels[ft]&&s.fuels[ft].status!=='unknown'
+    ||['diesel','gasohol91','gasohol95','e20','e85','premium95'].includes(ft))
+    .map(ft=>`<button class="rfbtn" onclick="selRFuel('${ft}',this)">${FL[ft]}</button>`).join('');
   const banner=currentUser
     ?`<div class="auth-banner ok" style="margin-bottom:10px">✅ รายงานในนาม <b>${currentUser.name}</b></div>`
     :`<div class="auth-banner warn" style="margin-bottom:10px;cursor:pointer" onclick="location.reload()">⚠️ ยังไม่ได้เข้าสู่ระบบ — กดเพื่อ Login</div>`;
@@ -1391,10 +1426,15 @@ function toggleRpt(id){
     <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">เลือกชนิดน้ำมัน</div>
     <div class="rfuels" id="rfBtns-${id}" style="margin-bottom:12px">${fbtns}</div>
     <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">สถานะ</div>
-    <div class="rst-row" style="margin-bottom:12px">
+    <div class="rst-row" style="margin-bottom:6px">
       <button class="rstbtn ok" onclick="selRS('ok',this,${id})">✅ มีน้ำมัน</button>
       <button class="rstbtn low" onclick="selRS('low',this,${id})">⚠️ เหลือน้อย</button>
       <button class="rstbtn empty" onclick="selRS('empty',this,${id})">🚫 หมดแล้ว</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <button class="rstbtn discontinued" style="width:100%;font-size:11px" onclick="selRS('discontinued',this,${id})">
+        🗑️ หยุดจำหน่ายชนิดนี้แล้ว (ลบออกจากรายการ)
+      </button>
     </div>
     <div style="display:flex;gap:6px">
       <button class="rpt-sub" style="flex:1" onclick="doReport(${id})">📤 ส่ง Report</button>
@@ -1424,8 +1464,11 @@ async function doReport(sid){
   if(!rptStat){showToast('⚠️ เลือกสถานะก่อน');return;}
   const s=stations.find(x=>x.id===sid);if(!s)return;
 
+  // ถ้า discontinued → เปลี่ยนเป็น unknown (ซ่อนออกจากรายการ)
+  const actualStatus = rptStat==='discontinued' ? 'unknown' : rptStat;
+
   // Optimistic UI update ทันที
-  s.fuels[rptFuel].status=rptStat;
+  s.fuels[rptFuel].status=actualStatus;
   s.fuels[rptFuel].ts=Math.floor(Date.now()/1000);
   s.fuels[rptFuel].reporter=currentUser?currentUser.name:'ผู้ใช้ทั่วไป';
   s.fuels[rptFuel].verified=!!currentUser;
@@ -1441,14 +1484,14 @@ async function doReport(sid){
     await sb.from('reports').insert({
       station_id: sid,
       fuel_type: rptFuel,
-      status: rptStat
+      status: actualStatus
     });
 
     // อัปเดต fuel_status
     await sb.from('fuel_status').upsert({
       station_id: sid,
       fuel_type: rptFuel,
-      status: rptStat,
+      status: actualStatus,
       reporter_name: reporterName,
       verified: isVerified,
       updated_at: new Date().toISOString()
@@ -1456,7 +1499,6 @@ async function doReport(sid){
 
   } catch(err){
     console.warn('Report save error:', err.message);
-    // ไม่แสดง error ให้ user เห็น เพราะ UI อัปเดตแล้ว
   }
 
   if(currentUser){
@@ -1468,12 +1510,14 @@ async function doReport(sid){
   totalReports++;
   document.getElementById('totalR').textContent=totalReports;
   document.getElementById('emptyR').textContent=stations.filter(x=>x.overall==='empty').length;
-  showToast('✅ Report ส่งแล้ว'+(currentUser?' ✓':''));
+  const toastMsg = rptStat==='discontinued'
+    ? `🗑️ ลบ ${FL[rptFuel]||rptFuel} ออกจากรายการแล้ว`
+    : '✅ Report ส่งแล้ว'+(currentUser?' ✓':'');
+  showToast(toastMsg);
   // ปิด panel หลังส่งสำเร็จ
   const panel=document.getElementById('rpt-'+sid);
   if(panel){panel.classList.remove('on');panel.innerHTML='';}
 }
-
 
 function share(via,sid){
   const id=sid?parseInt(sid):selSid;
@@ -1907,15 +1951,10 @@ function chatTime(ts){
 
 /* ─── PRICE CHART ─── */
 function renderPrices(){
-  const KEY_MAP={'ดีเซล B7':'diesel','91':'gasohol91','95':'gasohol95','E20':'e20','E85':'e85','พรีเมียม':'premium95','LPG':'lpg'};
-  const EMOJI={'diesel':'🛢️','gasohol91':'🟡','gasohol95':'🟠','e20':'🟢','e85':'🔵','premium95':'⭐','lpg':'🔴'};
+  const EMOJI={'ดีเซล B7':'🛢️','91':'🟡','95':'🟠','E20':'🟢','E85':'🔵','พรีเมียม':'⭐','LPG':'🔴'};
   document.getElementById('pRow').innerHTML=PRICES.map(p=>{
-    const key=Object.entries(KEY_MAP).find(([k])=>p.t.includes(k))?.[1]||'';
-    const icoSrc=key&&FUEL_ICONS[key]?FUEL_ICONS[key]:'';
-    const icoHtml=icoSrc
-      ?`<img src="${icoSrc}" style="width:20px;height:20px;object-fit:contain;border-radius:4px">`
-      :`<span style="font-size:14px">${EMOJI[key]||'⛽'}</span>`;
-    return `<div class="price-chip"><div class="price-chip-ico">${icoHtml}</div><div><div class="price-chip-label">${p.t}</div><div class="price-chip-val">${p.p}฿</div></div></div>`;
+    const ico=Object.entries(EMOJI).find(([k])=>p.t.includes(k))?.[1]||'⛽';
+    return `<div class="price-chip"><div class="price-chip-ico"><span style="font-size:14px">${ico}</span></div><div><div class="price-chip-label">${p.t}</div><div class="price-chip-val">${p.p}฿</div></div></div>`;
   }).join('');
 }
 const PRICE_DATA={diesel:[29.94,29.94,28.94,29.94,30.44,29.94,29.94,28.94,29.94,29.94,30.44,29.94,29.94,28.94,29.94,29.44,29.94,29.94,28.94,30.44,29.94,29.94,29.94,28.94,29.94,29.94,29.94,29.44,29.94,29.94],gasohol95:[31.05,31.05,32.05,31.05,31.55,31.05,31.05,30.05,31.05,31.05,31.55,31.05,31.05,32.05,31.05,31.05,31.05,31.05,32.05,31.55,31.05,31.05,31.05,32.05,31.05,31.05,31.05,31.05,31.05,31.05],gasohol91:[30.68,30.68,31.68,30.68,31.18,30.68,30.68,29.68,30.68,30.68,31.18,30.68,30.68,31.68,30.68,30.68,30.68,30.68,31.68,31.18,30.68,30.68,30.68,31.68,30.68,30.68,30.68,30.68,30.68,30.68],e20:[27.84,27.84,28.84,27.84,28.34,27.84,27.84,26.84,27.84,27.84,28.34,27.84,27.84,28.84,27.84,27.84,27.84,27.84,28.84,28.34,27.84,27.84,27.84,28.84,27.84,27.84,27.84,27.84,27.84,27.84]};
