@@ -78,7 +78,7 @@ input,textarea{cursor:text}
 .tc-name{font-size:13px;font-weight:600;color:var(--t1);margin-bottom:2px}
 .tc-desc{font-size:10px;color:var(--t3);line-height:1.4}
 /* APP SHELL */
-#app{display:none;flex-direction:column;min-height:100dvh}
+#app{display:none;flex-direction:column;min-height:100dvh;width:100%;max-width:100vw;overflow-x:hidden}
 #app.show{display:flex}
 /* TOPBAR */
 .topbar{position:sticky;top:0;z-index:200;background:var(--sf);border-bottom:1px solid var(--bd);padding:10px 16px;display:flex;align-items:center;gap:8px;transition:background .2s}
@@ -97,9 +97,9 @@ input,textarea{cursor:text}
 .user-pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .udot{width:6px;height:6px;background:var(--go);border-radius:50%;flex-shrink:0}
 /* BOTTOM NAV */
-.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--sf);border-top:1px solid var(--bd);display:flex;padding-bottom:env(safe-area-inset-bottom,0);box-shadow:0 -2px 12px rgba(0,0,0,.06)}
-.bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 2px 6px;background:none;border:none;color:var(--t3);font-size:9px;font-weight:500;cursor:pointer;transition:all .15s;position:relative;font-family:var(--body)}
-.bni.on{color:var(--acc)}
+.bnav{position:fixed;bottom:0;left:0;right:0;width:100%;z-index:200;background:var(--sf);border-top:1px solid var(--bd);display:flex;padding:0 0 env(safe-area-inset-bottom,0);box-shadow:0 -4px 16px rgba(0,0,0,.08)}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 2px 6px;background:none;border:none;color:var(--t3);font-size:9px;font-weight:500;cursor:pointer;transition:all .15s;position:relative;font-family:var(--body);min-width:0;overflow:visible}
+.bni.on{color:var(--acc)}.bni.on .bni-i-wrap{background:var(--acc-dim);border-radius:12px}
 .bni.on .bni-dot{opacity:1;transform:translateX(-50%) scaleX(1)}
 .bni-i{font-size:18px;line-height:1;transition:transform .15s}
 .bni.on .bni-i{transform:scale(1.08)}
@@ -107,7 +107,7 @@ input,textarea{cursor:text}
 .bni-live{animation:livep 2.5s ease-in-out infinite}
 @keyframes livep{0%,100%{opacity:1}50%{opacity:.35}}
 /* SCREENS */
-.screen{display:none;padding-bottom:80px}
+.screen{display:none;padding-bottom:72px;width:100%;overflow-x:hidden}
 .screen.on{display:block}
 /* SHARED */
 .card{background:var(--sf);border-radius:var(--rx);padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh1);border:1px solid var(--bd)}
@@ -149,23 +149,23 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 .tags-in{background:none;border:none;outline:none;color:var(--t1);font-size:13px;min-width:80px;flex:1;padding:2px 4px;font-family:var(--body)}
 .wrap16{padding:12px 16px}
 /* ══ HERO CARD v3 — Gemini exact ══ */
-.hv3-stats-row{display:flex;gap:4px;margin-bottom:5px}
-.hv3-sh{display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;flex:1}
-.hv3-sh-ico{font-size:11px}
-.hv3-sh-val{font-family:var(--disp);font-size:13px;font-weight:700;color:#fff;line-height:1}
-.hv3-sh-lbl{font-size:9px;color:rgba(255,255,255,.7);margin-left:2px}
+.hv3-stats-row{display:flex;gap:4px;margin-bottom:4px}
+.hv3-sh{display:flex;align-items:center;gap:3px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:3px 7px;flex:1}
+.hv3-sh-ico{font-size:10px}
+.hv3-sh-val{font-family:var(--disp);font-size:12px;font-weight:700;color:#fff;line-height:1}
+.hv3-sh-lbl{font-size:8px;color:rgba(255,255,255,.7);margin-left:1px}
 .hv3-wrap{display:flex;align-items:stretch;gap:8px;margin-bottom:8px}
 .hv3-left{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.hv3-greet{font-size:11px;color:rgba(255,255,255,.8);font-weight:500}
-.hv3-name{font-family:var(--disp);font-size:clamp(16px,4.5vw,22px);font-weight:700;color:#fff;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.2)}
-.hv3-loc{font-size:11px;color:rgba(255,255,255,.75);font-weight:500;margin-bottom:2px}
+.hv3-greet{font-size:10px;color:rgba(255,255,255,.8);font-weight:500;line-height:1.2}
+.hv3-name{font-family:var(--disp);font-size:clamp(15px,4vw,20px);font-weight:700;color:#fff;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hv3-loc{font-size:10px;color:rgba(255,255,255,.75);margin-bottom:2px}
 /* ราคาน้ำมันใน hero v3 */
-.hv3-prices{display:flex;gap:5px;overflow-x:auto;flex-wrap:nowrap}
+.hv3-prices{display:flex;gap:4px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:8px}
 .hv3-prices::-webkit-scrollbar{display:none}
-.hv3-prices .price-chip{padding:4px 8px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.15);border-radius:7px}
-.hv3-prices .price-chip-label{font-size:9px}
-.hv3-prices .price-chip-val{font-size:12px}
-.hv3-prices .price-chip-ico{width:18px;height:18px;font-size:11px}
+.hv3-prices .price-chip{padding:3px 7px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.15);border-radius:7px;gap:4px}
+.hv3-prices .price-chip-label{font-size:8px}
+.hv3-prices .price-chip-val{font-size:11px}
+.hv3-prices .price-chip-ico{width:14px;height:14px;font-size:10px}
 /* Stats แนวตั้ง ขวา */
 .hv3-right{display:none}
 .hv3-stat{background:rgba(0,0,0,.22);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:5px 6px;text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
@@ -206,10 +206,10 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 /* ══ OVERRIDE old sc for grid view ══ */
 
 /* ══ HERO CARD (Bangchak style) ══ */
-.hero-card{background:url('data:image/webp;base64,UklGRmQEAABXRUJQVlA4IFgEAABwSQCdASogAywBPpFIoU0lpCMiIAgAsBIJaW7hd+E4+f6YEdT7ouBYx2APwA+nzrsAE9gUmUmUmUmUmUmUmUmUmUmUmUmUmUmUmUuu89RU/eeoqfvPUVP3nqKn7z1FT956ip+89RRFBFxU/eeoqfvPUVP3nqKn7z1FT956ip+89RUzs9RVONZNtgKsm2wFWTbYCrJtsBVk22AqybbAIyT9E6PeeoqfvPUVP3nqKn7z1FT956ip+89RUygWS7Xi5OQ99snIe+2TkPfbJyHvtk9XeeoqfvPUVP3nqKn7z1FT956ip+89RU/eeooikQ96iHvUQ96iHvUQ96iHvUQ96iHvUQ96iHvUQ96iHuudxU/eeoqfvPUVP3nqKn7z1FT956ip+89RU/c3q6Z2imAF5Sa8pNeUmvKTXlJryk15Sa8pNeUmvKN3iHWTbYCrJtsBVk22AqybbAVZNtgKsm2wFWSKBHWTbYCrJtsBVk22AqybbAVZNtgKsm2wFWTXkMj3nqKn7z1FT956ip+89RU/eeoqfvPUVP3nmpWAqybbAVZNtgKsm2wFWTbYCrJtsBVk22AqyRQI9giDlGnpKLMNuvghSSzkU1l2W/n4Y5Rp6SizDbr4IUks5FLOgi4qfvPUVP3nqKn7z1FT956ip+89RU/eeoqZ2p9/ROrprYKShIvF04UC/PXfU4t2qoyIVlWoR0fEfVxIWW/n4Y5Rp6SizDbr4IUks5FNZdlv5+GOUaekosw26+CFJLNrGzzouKn7z1FT956ip+89RU/eeoqfvPUVP3nppADt//mwPKuXX6Af/9CT/BJ/gk/6xv4CbwE3gJvATeAm8BN4CbwE3gJvATeAm8BN4CbwE3gJvBOZKF5lyAAAAAAAaRMPSAAAAAABlmfLHzmSQIAAAAAIXYUGgIAAAAAAC3EAAAAAACG9bQ0FtOWlk5JggdExmWTkmCB0TGZZOSYIHRMZlk5JggdExmWTkpgXWtMAAAAAAAEB0KkGY+0J9XNxa2Q8ZLm4tbIeMlzcWtkPGS5uLWyHjJc3FrZDxkufK5ZNAAAAAAAAAAAAAAABBWaNOwQAAAAAAOBkhqph6nTD1OmHqdMPU6Yep0w9Tph6nTD1OmHqdMPU6Yep0xTzSAAAAAAAPHJfCO32ZBNRjPZ33kQvqTZBcvTqMO8ouqbILl6dRh3lF1TZBcvTqMO8ouqbILl6dRh3lF1TZBcvTqMO8sAnbcEvFAs0AAAAAABLUy6LEn6rtKrEthFiWwixLYRYlsIsS2EWJbCLk6h7INQYv1oWeiatHyxClDBUHPB5pYJ+qKVpfkEHmpDqlxKDzUh1S4lB5qQ6pcSg81IdUuJTLrX6RAAAAAAADNYLtgsxKyyY1nMCRTRjJN7O+n0jRhsh1fwwYWaSoJ5Ve0lQTyq9pKgnlV7SVBPKr2kqCeVXtJUE8qvaSoJ5Ve0lQTyq9pKgnlV7SVBPKr2kqCeVXtJUCiAAAA==') center/cover;position:relative;overflow:hidden;padding:12px 14px 0;border-radius:0 0 20px 20px;box-shadow:0 8px 24px rgba(180,40,0,.25)}
+.hero-card{background:url('data:image/webp;base64,UklGRmQEAABXRUJQVlA4IFgEAABwSQCdASogAywBPpFIoU0lpCMiIAgAsBIJaW7hd+E4+f6YEdT7ouBYx2APwA+nzrsAE9gUmUmUmUmUmUmUmUmUmUmUmUmUmUmUmUuu89RU/eeoqfvPUVP3nqKn7z1FT956ip+89RRFBFxU/eeoqfvPUVP3nqKn7z1FT956ip+89RUzs9RVONZNtgKsm2wFWTbYCrJtsBVk22AqybbAIyT9E6PeeoqfvPUVP3nqKn7z1FT956ip+89RUygWS7Xi5OQ99snIe+2TkPfbJyHvtk9XeeoqfvPUVP3nqKn7z1FT956ip+89RU/eeooikQ96iHvUQ96iHvUQ96iHvUQ96iHvUQ96iHvUQ96iHuudxU/eeoqfvPUVP3nqKn7z1FT956ip+89RU/c3q6Z2imAF5Sa8pNeUmvKTXlJryk15Sa8pNeUmvKN3iHWTbYCrJtsBVk22AqybbAVZNtgKsm2wFWSKBHWTbYCrJtsBVk22AqybbAVZNtgKsm2wFWTXkMj3nqKn7z1FT956ip+89RU/eeoqfvPUVP3nmpWAqybbAVZNtgKsm2wFWTbYCrJtsBVk22AqyRQI9giDlGnpKLMNuvghSSzkU1l2W/n4Y5Rp6SizDbr4IUks5FLOgi4qfvPUVP3nqKn7z1FT956ip+89RU/eeoqZ2p9/ROrprYKShIvF04UC/PXfU4t2qoyIVlWoR0fEfVxIWW/n4Y5Rp6SizDbr4IUks5FNZdlv5+GOUaekosw26+CFJLNrGzzouKn7z1FT956ip+89RU/eeoqfvPUVP3nppADt//mwPKuXX6Af/9CT/BJ/gk/6xv4CbwE3gJvATeAm8BN4CbwE3gJvATeAm8BN4CbwE3gJvBOZKF5lyAAAAAAAaRMPSAAAAAABlmfLHzmSQIAAAAAIXYUGgIAAAAAAC3EAAAAAACG9bQ0FtOWlk5JggdExmWTkmCB0TGZZOSYIHRMZlk5JggdExmWTkpgXWtMAAAAAAAEB0KkGY+0J9XNxa2Q8ZLm4tbIeMlzcWtkPGS5uLWyHjJc3FrZDxkufK5ZNAAAAAAAAAAAAAAABBWaNOwQAAAAAAOBkhqph6nTD1OmHqdMPU6Yep0w9Tph6nTD1OmHqdMPU6Yep0xTzSAAAAAAAPHJfCO32ZBNRjPZ33kQvqTZBcvTqMO8ouqbILl6dRh3lF1TZBcvTqMO8ouqbILl6dRh3lF1TZBcvTqMO8sAnbcEvFAs0AAAAAABLUy6LEn6rtKrEthFiWwixLYRYlsIsS2EWJbCLk6h7INQYv1oWeiatHyxClDBUHPB5pYJ+qKVpfkEHmpDqlxKDzUh1S4lB5qQ6pcSg81IdUuJTLrX6RAAAAAAADNYLtgsxKyyY1nMCRTRjJN7O+n0jRhsh1fwwYWaSoJ5Ve0lQTyq9pKgnlV7SVBPKr2kqCeVXtJUE8qvaSoJ5Ve0lQTyq9pKgnlV7SVBPKr2kqCeVXtJUCiAAAA==') center/cover;position:relative;overflow:hidden;padding:8px 14px 0;border-radius:0 0 16px 16px;box-shadow:0 8px 24px rgba(180,40,0,.25);overflow:hidden}
 .hero-bg{position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:rgba(255,255,255,.06);border-radius:50%;pointer-events:none;border:1px solid rgba(255,255,255,.08)}
 .hero-bg::after{content:'';position:absolute;top:50px;right:-60px;width:150px;height:150px;background:rgba(255,255,255,.04);border-radius:50%;border:1px solid rgba(255,255,255,.06)}
-.hero-logo-img{position:absolute;right:-8px;top:50%;transform:translateY(-50%);height:110px;width:auto;object-fit:contain;opacity:.22;pointer-events:none;filter:brightness(10) drop-shadow(0 2px 8px rgba(0,0,0,.3))}
+.hero-logo-img{position:absolute;right:-10px;bottom:30px;height:80px;width:auto;object-fit:contain;opacity:.15;pointer-events:none;filter:brightness(10)}
 .hero-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
 .hero-left{flex:1;min-width:0}
 .hero-greet{font-size:12px;color:rgba(255,255,255,.85);margin-bottom:2px;font-weight:500;letter-spacing:.3px}
@@ -229,8 +229,8 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 .price-chip-label{font-size:11px;color:rgba(255,255,255,.8);font-weight:500}
 .price-chip-val{font-family:var(--mono);font-size:14px;font-weight:700;color:#fff}
 /* quick grid */
-.hero-grid{display:grid;grid-template-columns:repeat(5,1fr);background:var(--sf);border-radius:12px 12px 0 0;margin:6px -14px 0;padding:7px 4px 7px;gap:0}
-.hg-btn{background:none;border:none;cursor:pointer;padding:4px 2px;border-radius:var(--rm);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:var(--body)}
+.hero-grid{display:grid;grid-template-columns:repeat(5,1fr);background:var(--sf);border-radius:12px 12px 0 0;margin:5px -14px 0;padding:6px 2px 6px;gap:0}
+.hg-btn{background:none;border:none;cursor:pointer;padding:3px 1px;border-radius:var(--rm);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:1px;font-family:var(--body)}
 .hg-btn:active{background:var(--sf2);transform:scale(.95)}
 .hg-ico{font-size:22px;line-height:1;display:block;text-align:center}
 .hg-lbl{font-size:9px;color:var(--t2);font-weight:500;text-align:center}
@@ -391,6 +391,10 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 /* Logo blend mode */
 [data-theme="dark"] .logo-img{mix-blend-mode:normal}
 [data-theme="light"] .logo-img{mix-blend-mode:normal}
+
+/* Bottom nav center button */
+.bni-center{position:relative}
+.bni-add-ico{width:44px;height:44px;background:var(--acc);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;box-shadow:0 4px 12px rgba(255,59,31,.4);margin-bottom:2px;margin-top:-16px;border:3px solid var(--sf)}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.fg2{grid-template-columns:1fr}.fg2 .full{grid-column:1}.stat-grid{gap:4px}.sbn{font-size:20px}}
 
@@ -556,7 +560,7 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
         </button>
         <button class="hg-btn" onclick="openAddPlace()">
           <div class="hg-ico" style="background:rgba(255,255,255,.2);border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;margin:0 auto 2px">＋</div>
-          <div class="hg-lbl">เพิ่มที่</div>
+          <div class="hg-lbl">เพิ่มสถานที่</div>
         </button>
       </div>
     </div>
@@ -581,12 +585,12 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
     <div id="stList" class="st-grid" style="padding:8px 16px 0"></div>
   </div>
 
-  <!-- EMERGENCY -->
+  <!-- EMERGENCY + ช่วยเหลือ (รวมกัน) -->
   <div class="screen" id="s-map">
     <div class="page-head">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div>
-          <div class="page-title">🆘 สถานที่ฉุกเฉิน</div>
+          <div class="page-title">🆘 ฉุกเฉิน & ช่วยเหลือ</div>
           <div class="page-sub">กดโทรได้เลย — เปิดให้บริการ 24 ชม.</div>
         </div>
         <button class="btn-acc" onclick="locateMe()" style="padding:8px 14px;font-size:12px;border-radius:var(--rf)">📍 ใกล้ฉัน</button>
@@ -597,7 +601,13 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
         <a class="hl" href="tel:199"><div class="hldot" style="background:var(--warn)"></div>ดับเพลิง<span class="hlnum">199</span></a>
         <a class="hl" href="tel:1193"><div class="hldot" style="background:var(--go)"></div>พลังงาน<span class="hlnum">1193</span></a>
       </div>
-      <div class="chips">
+      <!-- Tab: ฉุกเฉิน / ช่วยเหลือ -->
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button class="auth-tab on" id="em-tab-1" onclick="switchEmTab('emergency',this)" style="flex:1;padding:8px;font-size:12px">🆘 สถานที่ฉุกเฉิน</button>
+        <button class="auth-tab" id="em-tab-2" onclick="switchEmTab('rescue',this)" style="flex:1;padding:8px;font-size:12px">🔧 กู้ภัย & ช่วยเหลือ</button>
+      </div>
+      <!-- Filter ฉุกเฉิน -->
+      <div id="em-filter-1" class="chips">
         <div class="chip on" onclick="setEmf('all',this)">ทั้งหมด</div>
         <div class="chip" onclick="setEmf('hospital',this)">🏥 รพ.</div>
         <div class="chip" onclick="setEmf('police',this)">🚔 ตำรวจ</div>
@@ -605,16 +615,8 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
         <div class="chip" onclick="setEmf('fire',this)">🔥 ดับเพลิง</div>
         <div class="chip" onclick="setEmf('garage',this)">🔧 อู่/ปะยาง</div>
       </div>
-    </div>
-    <div id="emList" style="padding:12px 16px 0"></div>
-  </div>
-
-  <!-- RESCUE DIR -->
-  <div class="screen" id="s-rescue">
-    <div class="page-head">
-      <div class="page-title">🔧 กู้ภัย · ช่วยเหลือ</div>
-      <div class="page-sub">รถสไลด์ · อู่ซ่อม · ปะยาง · อาสาสมัคร</div>
-      <div class="chips" style="margin-top:10px">
+      <!-- Filter ช่วยเหลือ -->
+      <div id="em-filter-2" class="chips" style="display:none">
         <div class="chip on" onclick="setRf('all',this)">ทั้งหมด</div>
         <div class="chip" onclick="setRf('rescue',this)">🚨 กู้ภัย</div>
         <div class="chip" onclick="setRf('tow',this)">🚛 รถสไลด์</div>
@@ -623,16 +625,20 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
         <div class="chip" onclick="setRf('other',this)">🙋 อาสา</div>
       </div>
     </div>
-    <div class="search-row" style="padding-top:8px;padding-bottom:8px">
-      <input class="search-inp" id="rsSrch" placeholder="ค้นหาชื่อ หรือ พื้นที่..." oninput="renderRescue()" style="flex:1">
+    <!-- List ฉุกเฉิน -->
+    <div id="emList" style="padding:12px 16px 0"></div>
+    <!-- List ช่วยเหลือ -->
+    <div id="rescueListInline" style="display:none;padding:0 0 0">
+      <div class="search-row" style="padding:8px 16px">
+        <input class="search-inp" id="rsSrch" placeholder="ค้นหาชื่อ หรือ พื้นที่..." oninput="renderRescue()" style="flex:1">
+      </div>
+      <div id="rescueList" style="padding:0 16px 0"></div>
     </div>
-    <div id="rescueList" style="padding:8px 16px 0"></div>
-    <div class="app-footer">
-      <div class="catloop-sm"><div class="catloop-dot"></div>CATLOOP STUDIOS</div>
-      <div class="footer-v">FuelWatch TH v5.0 · 2569</div>
-    </div>
-    <button class="fab" onclick="openNewListing()">＋</button>
+    <button class="fab" onclick="openNewListing()" style="display:none" id="rescueFab">＋</button>
   </div>
+
+  <!-- RESCUE DIR (hidden — ใช้ใน s-map แทน) -->
+  <div class="screen" id="s-rescue" style="display:none!important"></div>
 
   <!-- TOOLS -->
   <div class="screen" id="s-tools">
@@ -766,8 +772,10 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
   <nav class="bnav">
     <button class="bni on" id="n-fuel" onclick="goTo('fuel')"><span class="bni-i bni-live">⛽</span><span>น้ำมัน</span><span class="bni-dot"></span></button>
     <button class="bni" id="n-map" onclick="goTo('map')"><span class="bni-i">🆘</span><span>ฉุกเฉิน</span><span class="bni-dot"></span></button>
-    <button class="bni" id="n-rescue" onclick="goTo('rescue')"><span class="bni-i">🔧</span><span>ช่วยเหลือ</span><span class="bni-dot"></span></button>
-    <button class="bni" id="n-add" onclick="openAddPlace()" style="color:var(--acc)"><span class="bni-i" style="width:26px;height:26px;background:var(--acc);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px">＋</span><span style="color:var(--acc);font-weight:600">เพิ่มที่</span></button>
+    <button class="bni bni-center" id="n-add" onclick="openAddPlace()">
+      <span class="bni-add-ico">＋</span>
+      <span style="color:var(--acc);font-weight:600;font-size:9px">เพิ่มสถานที่</span>
+    </button>
     <button class="bni" id="n-tools" onclick="goTo('tools')"><span class="bni-i">📊</span><span>เครื่องมือ</span><span class="bni-dot"></span></button>
     <button class="bni" id="n-chat" onclick="goTo('chat')"><span class="bni-i">💬</span><span>แชท</span><span class="bni-dot"></span></button>
   </nav>
@@ -2260,6 +2268,19 @@ function admEditApprove(id){
 }
 
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function switchEmTab(tab, el){
+  // toggle tab buttons
+  document.querySelectorAll('#em-tab-1,#em-tab-2').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const isEmergency = tab==='emergency';
+  document.getElementById('em-filter-1').style.display = isEmergency?'':'none';
+  document.getElementById('em-filter-2').style.display = isEmergency?'none':'';
+  document.getElementById('emList').style.display = isEmergency?'':'none';
+  document.getElementById('rescueListInline').style.display = isEmergency?'none':'';
+  document.getElementById('rescueFab').style.display = isEmergency?'none':'';
+  if(!isEmergency) renderRescue();
+}
 
 /* ─── INIT ─── */
 if(currentUser){enterApp();}
