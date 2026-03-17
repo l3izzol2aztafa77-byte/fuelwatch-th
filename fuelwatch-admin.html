@@ -122,6 +122,7 @@ button{cursor:pointer;font-family:var(--body)}
       <button class="adm-tab" id="tab-approved" onclick="switchTab('approved')">✅ อนุมัติแล้ว</button>
       <button class="adm-tab" id="tab-rejected" onclick="switchTab('rejected')">❌ ปฏิเสธ</button>
       <button class="adm-tab" id="tab-all" onclick="switchTab('all')">📋 ทั้งหมด</button>
+      <button class="adm-tab" id="tab-prices" onclick="switchTab('prices')" style="color:#ea580c">💰 ราคาน้ำมัน</button>
     </div>
     <div class="adm-right">
       <button onclick="loadPlaces()" style="padding:7px 14px;background:var(--sf2);border:1.5px solid var(--bd2);border-radius:10px;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;font-family:var(--body)">🔄 รีเฟรช</button>
@@ -130,6 +131,21 @@ button{cursor:pointer;font-family:var(--body)}
   </header>
 
   <div class="adm-content">
+    <!-- PRICE PANEL -->
+    <div id="price-panel" style="display:none">
+      <div class="adm-section-title">💰 อัปเดตราคาน้ำมัน PTT วันนี้</div>
+      <div style="background:var(--sf);border-radius:16px;padding:20px;box-shadow:var(--sh);border:1px solid var(--bd);margin-bottom:20px">
+        <div style="font-size:12px;color:var(--t3);margin-bottom:16px">ราคา ณ วันที่ <strong id="priceDate">—</strong> · อัปเดตโดย <strong id="priceUpdatedBy">—</strong></div>
+        <div id="priceForm" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button onclick="savePrices()" style="flex:1;padding:12px;background:var(--acc);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--body)">💾 บันทึกราคา</button>
+          <button onclick="loadPrices()" style="padding:12px 16px;background:var(--sf2);border:1.5px solid var(--bd2);border-radius:12px;font-size:13px;font-weight:600;color:var(--t2);cursor:pointer;font-family:var(--body)">🔄 โหลดใหม่</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLACE PANEL -->
+    <div id="place-panel">
     <!-- STATS -->
     <div class="stats-row" id="statsRow">
       <div class="stat-box"><div class="stat-num" id="st-pending" style="color:var(--blue)">—</div><div class="stat-label">รออนุมัติ</div></div>
@@ -161,6 +177,7 @@ button{cursor:pointer;font-family:var(--body)}
     <!-- PLACE LIST -->
     <div id="placeList"></div>
   </div>
+  </div> <!-- end place-panel -->
 </div>
 
 <div class="toast" id="toast"></div>
@@ -202,6 +219,8 @@ function doLogout(){
 function showApp(){
   document.getElementById('loginWrap').style.display='none';
   document.getElementById('adminApp').style.display='block';
+  document.getElementById('price-panel').style.display='none';
+  document.getElementById('place-panel').style.display='block';
   loadPlaces();
 }
 
@@ -240,7 +259,87 @@ function switchTab(tab){
   curTab=tab;
   document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('tab-'+tab).classList.add('on');
-  renderPlaces();
+  if(tab==='prices'){
+    document.getElementById('price-panel').style.display='block';
+    document.getElementById('place-panel').style.display='none';
+    loadPrices();
+  } else {
+    document.getElementById('price-panel').style.display='none';
+    document.getElementById('place-panel').style.display='block';
+    renderPlaces();
+  }
+}
+
+/* ══ PRICE MANAGEMENT ══ */
+const FUEL_LIST=[
+  {key:'diesel',    label:'ดีเซล B7',       emoji:'🛢️'},
+  {key:'gasohol91', label:'แก๊สโซฮอล์ 91',  emoji:'🟡'},
+  {key:'gasohol95', label:'แก๊สโซฮอล์ 95',  emoji:'🟠'},
+  {key:'e20',       label:'E20',             emoji:'🟢'},
+  {key:'e85',       label:'E85',             emoji:'🔵'},
+  {key:'premium95', label:'เบนซิน 95',       emoji:'🔴'},
+  {key:'lpg',       label:'LPG ยานยนต์',    emoji:'🟠'},
+  {key:'ngv',       label:'NGV/CNG',         emoji:'🔵'},
+  {key:'ev',        label:'EV (ต่อหน่วย kWh)',emoji:'⚡'},
+];
+
+async function loadPrices(){
+  const form=document.getElementById('priceForm');
+  if(!form) return;
+  form.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--t3);padding:20px">⏳ กำลังโหลด...</div>';
+  try{
+    const {data,error}=await sb.from('fuel_prices').select('*');
+    if(error) throw error;
+    // build form
+    form.innerHTML=FUEL_LIST.map(f=>{
+      const row=data?.find(d=>d.fuel_type===f.key);
+      const val=row?.price_ptt||'';
+      const updatedAt=row?.updated_at?new Date(row.updated_at).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'ยังไม่มีข้อมูล';
+      return `<div style="background:var(--sf2);border-radius:12px;padding:12px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">
+          <span>${f.emoji}</span><span>${f.label}</span>
+          <span style="font-size:10px;color:var(--t3);font-weight:400;margin-left:auto">${updatedAt}</span>
+        </label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input class="fi" id="price_${f.key}" type="number" step="0.01" min="0" placeholder="ราคา (บาท/ลิตร)" value="${val}"
+            style="flex:1;padding:8px 10px;font-size:14px">
+          <span style="font-size:12px;color:var(--t3);flex-shrink:0">฿/ลิตร</span>
+        </div>
+      </div>`;
+    }).join('');
+    // last updated info
+    if(data?.length){
+      const latest=data.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at))[0];
+      document.getElementById('priceDate').textContent=new Date(latest.updated_at).toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+      document.getElementById('priceUpdatedBy').textContent=latest.updated_by||'Admin';
+    }
+    showToast('✅ โหลดราคาแล้ว');
+  }catch(e){
+    form.innerHTML=`<div style="grid-column:1/-1;color:var(--empty);padding:20px;text-align:center">❌ ${e.message}<br><small>ต้องรัน SQL สร้าง table fuel_prices ก่อนครับ</small></div>`;
+  }
+}
+
+async function savePrices(){
+  const now=new Date().toISOString();
+  const updates=FUEL_LIST.map(f=>{
+    const val=parseFloat(document.getElementById('price_'+f.key)?.value)||null;
+    return {
+      fuel_type: f.key,
+      label_th: f.label,
+      price_ptt: val,
+      updated_at: now,
+      updated_by: 'Admin'
+    };
+  });
+  try{
+    const {error}=await sb.from('fuel_prices')
+      .upsert(updates,{onConflict:'fuel_type'});
+    if(error) throw error;
+    showToast('✅ บันทึกราคาแล้ว! แอปจะอัปเดตทันที');
+    loadPrices();
+  }catch(e){
+    showToast('❌ '+e.message);
+  }
 }
 
 function renderPlaces(){
