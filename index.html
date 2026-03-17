@@ -203,10 +203,11 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 .sc-rpt:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-dim)}
 .sc-fav{width:34px;height:34px;background:var(--sf2);border:1.5px solid var(--bd2);border-radius:var(--rl);display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all .15s;flex-shrink:0}
 .sc-fav.on{background:var(--gold-dim)}
-/* REPORT DRAWER */
-.rpt-drawer{background:var(--sf);border-top:2px solid var(--acc);max-height:0;overflow:hidden;transition:max-height .3s ease;margin:0 16px;border-radius:0 0 var(--rx) var(--rx)}
-.rpt-drawer.on{max-height:360px;overflow-y:auto}
-.rpt-body{padding:14px 16px}
+/* INLINE REPORT PANEL */
+.rpt-panel{display:none;margin-top:10px;padding:12px 14px;background:var(--sf2);border-radius:var(--rl);border:1.5px solid var(--bd2)}
+.rpt-panel.on{display:block;animation:fadeIn .18s ease}
+.rpt-close{float:right;background:none;border:none;font-size:18px;color:var(--t3);cursor:pointer;line-height:1;padding:0;margin-top:-2px}
+.rpt-close:hover{color:var(--t1)}
 .auth-banner{border-radius:var(--rm);padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;line-height:1.4}
 .auth-banner.ok{background:var(--go-dim);color:var(--go)}
 .auth-banner.warn{background:var(--warn-dim);color:var(--warn);cursor:pointer}
@@ -487,12 +488,6 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
       </select>
     </div>
     <div id="stList" class="st-list" style="padding-top:8px"></div>
-    <div class="rpt-drawer" id="rptDrawer"><div class="rpt-body" id="rptBody"></div></div>
-    <div class="share-bar" id="shareBar" style="display:none">
-      <button class="sh-btn line" onclick="share('line')">🟢 LINE</button>
-      <button class="sh-btn fb" onclick="share('fb')">🔵 Facebook</button>
-      <button class="sh-btn" onclick="share('copy')">📋 คัดลอก</button>
-    </div>
   </div>
 
   <!-- EMERGENCY -->
@@ -1061,11 +1056,12 @@ function renderSt(){
       <div class="sc-fuels">${bars}</div>
       <div class="sc-meta"><span style="font-size:10px;background:var(--sf2);padding:2px 7px;border-radius:var(--rf);font-weight:500">🏷 ${s.brand}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--t3)">${s.address||''}</span><span style="font-size:10px;color:var(--t3)">${ago(ts)}</span>${dist}${lastRep}</div>
       <div class="sc-acts">
-        <button class="sc-rpt" onclick="openRpt(${s.id})">📝 รายงานสถานะ</button>
+        <button class="sc-rpt" onclick="toggleRpt(${s.id})">📝 รายงานสถานะ</button>
         <a class="btn-gm" href="${gm}" target="_blank">📍 Maps</a>
         <a class="btn-nav2" href="${nav}" target="_blank">🗺️ นำทาง</a>
         <div class="sc-fav${isFav?' on':''}" onclick="toggleFav(${s.id})" title="บันทึกปั๊มโปรด">⭐</div>
       </div>
+      <div class="rpt-panel" id="rpt-${s.id}"></div>
     </div>`;
   }).join('');
 }
@@ -1073,34 +1069,63 @@ function renderSt(){
 function setFtf(ft,el){ftf=ft;document.querySelectorAll('#ftChips .chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');renderSt();}
 
 /* ─── REPORT (ต้องมีชื่อ) ─── */
-function openRpt(id){
-  selSid=id;rptFuel=null;rptStat=null;
-  const s=stations.find(x=>x.id===id);if(!s)return;
-  const fbtns=FT.map(ft=>`<button class="rfbtn" onclick="selRFuel('${ft}')">${FL[ft]}</button>`).join('');
-  // Banner แสดงสถานะ login
+function toggleRpt(id){
+  // ถ้ากดซ้ำที่เดิม → ปิด
+  const panel=document.getElementById('rpt-'+id);
+  if(!panel) return;
+  if(panel.classList.contains('on')){
+    panel.classList.remove('on');
+    panel.innerHTML='';
+    selSid=null;
+    return;
+  }
+  // ปิดอันอื่นก่อน
+  document.querySelectorAll('.rpt-panel.on').forEach(p=>{p.classList.remove('on');p.innerHTML='';});
+
+  selSid=id; rptFuel=null; rptStat=null;
+  const s=stations.find(x=>x.id===id); if(!s) return;
+
+  const fbtns=FT.map(ft=>`<button class="rfbtn" onclick="selRFuel('${ft}',this)">${FL[ft]}</button>`).join('');
   const banner=currentUser
-    ?`<div class="auth-banner ok">✅ รายงานในนาม <b>${currentUser.name}</b> — Report มีน้ำหนักมากกว่า</div>`
-    :`<div class="auth-banner warn" onclick="location.reload()">⚠️ คุณยังไม่ได้เข้าสู่ระบบ — กดเพื่อ Login ก่อน Report เพื่อความน่าเชื่อถือ</div>`;
-  document.getElementById('rptBody').innerHTML=`
-    ${banner}
-    <div style="font-size:13px;font-weight:800;margin-bottom:9px;color:var(--t1)">${s.name}</div>
-    <div class="sect-lbl" style="margin-bottom:6px">เลือกชนิดน้ำมัน</div>
-    <div class="rfuels" id="rfBtns" style="margin-bottom:10px">${fbtns}</div>
-    <div class="sect-lbl" style="margin-bottom:6px">สถานะ</div>
-    <div class="rst-row" style="margin-bottom:10px">
-      <button class="rstbtn ok" onclick="selRS('ok')">✅ มีน้ำมัน</button>
-      <button class="rstbtn low" onclick="selRS('low')">⚠️ เหลือน้อย</button>
-      <button class="rstbtn empty" onclick="selRS('empty')">🚫 หมดแล้ว</button>
+    ?`<div class="auth-banner ok" style="margin-bottom:10px">✅ รายงานในนาม <b>${currentUser.name}</b></div>`
+    :`<div class="auth-banner warn" style="margin-bottom:10px;cursor:pointer" onclick="location.reload()">⚠️ ยังไม่ได้เข้าสู่ระบบ — กดเพื่อ Login</div>`;
+
+  panel.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:600;color:var(--t2)">รายงานสถานะน้ำมัน</div>
+      <button class="rpt-close" onclick="toggleRpt(${id})">×</button>
     </div>
-    <button class="rpt-sub" onclick="doReport(${id})">ส่ง Report</button>
+    ${banner}
+    <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">เลือกชนิดน้ำมัน</div>
+    <div class="rfuels" id="rfBtns-${id}" style="margin-bottom:12px">${fbtns}</div>
+    <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">สถานะ</div>
+    <div class="rst-row" style="margin-bottom:12px">
+      <button class="rstbtn ok" onclick="selRS('ok',this,${id})">✅ มีน้ำมัน</button>
+      <button class="rstbtn low" onclick="selRS('low',this,${id})">⚠️ เหลือน้อย</button>
+      <button class="rstbtn empty" onclick="selRS('empty',this,${id})">🚫 หมดแล้ว</button>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="rpt-sub" style="flex:1" onclick="doReport(${id})">📤 ส่ง Report</button>
+      <button class="btn-sf" onclick="share('line','${id}')">LINE</button>
+      <button class="btn-sf" onclick="share('copy','${id}')">คัดลอก</button>
+    </div>
   `;
-  document.getElementById('rptDrawer').classList.add('on');
-  document.getElementById('shareBar').style.display='flex';
-  document.getElementById('sc-'+id)?.scrollIntoView({behavior:'smooth',block:'nearest'});
+  panel.classList.add('on');
 }
 
-function selRFuel(ft){rptFuel=ft;document.querySelectorAll('.rfbtn').forEach(b=>b.classList.remove('on'));event.target.classList.add('on');}
-function selRS(st){rptStat=st;document.querySelectorAll('.rstbtn').forEach(b=>b.classList.remove('on'));event.target.classList.add('on');}
+function selRFuel(ft,el){
+  rptFuel=ft;
+  // หา parent rfBtns ของ panel นี้
+  const parent=el.closest('.rfuels');
+  if(parent) parent.querySelectorAll('.rfbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+function selRS(st,el,id){
+  rptStat=st;
+  const panel=document.getElementById('rpt-'+id);
+  if(panel) panel.querySelectorAll('.rstbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
 
 async function doReport(sid){
   if(!rptFuel){showToast('⚠️ เลือกชนิดน้ำมันก่อน');return;}
@@ -1152,11 +1177,15 @@ async function doReport(sid){
   document.getElementById('totalR').textContent=totalReports;
   document.getElementById('emptyR').textContent=stations.filter(x=>x.overall==='empty').length;
   showToast('✅ Report ส่งแล้ว'+(currentUser?' ✓':''));
+  // ปิด panel หลังส่งสำเร็จ
+  const panel=document.getElementById('rpt-'+sid);
+  if(panel){panel.classList.remove('on');panel.innerHTML='';}
 }
 
 
-function share(via){
-  const s=selSid?stations.find(x=>x.id===selSid):null;
+function share(via,sid){
+  const id=sid?parseInt(sid):selSid;
+  const s=id?stations.find(x=>x.id===id):null;
   const txt=s?`น้ำมันที่ ${s.name}: ${slabel(s.overall)} | FuelWatch TH fuelwatch-th.vercel.app`:`FuelWatch TH — เช็คน้ำมันใกล้คุณ fuelwatch-th.vercel.app`;
   if(via==='line')window.open('https://line.me/R/msg/text/?'+encodeURIComponent(txt),'_blank');
   else if(via==='fb')window.open('https://www.facebook.com/sharer/sharer.php?u=https://fuelwatch-th.vercel.app&quote='+encodeURIComponent(txt),'_blank');
