@@ -184,7 +184,7 @@ textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
 .sc-grid:active{transform:scale(.99)}
 .sc-grid .sc-accent{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--rl) 0 0 var(--rl)}
 .sc-grid.ok .sc-accent{background:var(--go)}.sc-grid.low .sc-accent{background:var(--warn)}.sc-grid.empty .sc-accent{background:var(--empty)}.sc-grid.partial .sc-accent{background:var(--part)}
-.sc-brand-logo{width:36px;height:36px;border-radius:8px;background:var(--sf);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:6px;flex-shrink:0;overflow:hidden;border:1px solid var(--bd);box-shadow:var(--sh1);padding:3px}
+.sc-brand-logo{width:44px;height:44px;border-radius:10px;background:var(--sf);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden;border:1px solid var(--bd);box-shadow:var(--sh1)}
 .sc-grid-name{font-size:14px;font-weight:600;color:var(--t1);line-height:1.35;margin-bottom:4px}
 .sc-grid-fuels{display:flex;gap:2px;flex-wrap:wrap;margin-bottom:6px}
 .sc-grid-fuels .fb{font-size:9px;padding:1px 5px}
@@ -1281,7 +1281,10 @@ function renderSt(){
       <!-- Row 1: logo + ชื่อ + สถานะ + ดาว -->
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px">
         <div class="sc-brand-logo brand-${s.brand}" style="flex-shrink:0">
-          ${BRAND_LOGO[s.brand]?`<img src="${BRAND_LOGO[s.brand]}" style="width:100%;height:100%;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=font-size:16px>${ico}</span>'">`:`<span style="font-size:16px">${ico}</span>`}
+          ${BRAND_LOGO[s.brand]
+            ? `<img src="${BRAND_LOGO[s.brand]}" style="width:100%;height:100%;object-fit:contain;border-radius:6px">`
+            : `<span style="font-size:18px">${ico}</span>`
+          }
         </div>
         <div style="flex:1;min-width:0">
           <div class="sc-grid-name">${s.name}</div>
