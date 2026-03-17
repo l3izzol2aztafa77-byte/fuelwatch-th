@@ -1187,10 +1187,11 @@ function renderPricesFromDB(prices){
   };
   const LBL={'diesel':'ดีเซล B7','gasohol91':'แก๊สโซฮอล์ 91','gasohol95':'แก๊สโซฮอล์ 95','e20':'E20','e85':'E85','premium95':'พรีเมียม 95','lpg':'LPG'};
   row.innerHTML=prices.filter(p=>p.price_ptt).map(p=>{
-    const ico=ICO[p.fuel_type]||'⛽';
+    const icoSrc=ICO[p.fuel_type];
+    const icoHtml=icoSrc?`<img src="${icoSrc}" style="width:20px;height:20px;object-fit:contain;border-radius:4px">`:`<span style="font-size:14px">⛽</span>`;
     const lbl=LBL[p.fuel_type]||p.label_th;
     return `<div class="price-chip">
-      <div class="price-chip-ico">${ico}</div>
+      <div class="price-chip-ico">${icoHtml}</div>
       <div>
         <div class="price-chip-label">${lbl}</div>
         <div class="price-chip-val">${p.price_ptt}฿</div>
@@ -1906,10 +1907,15 @@ function chatTime(ts){
 
 /* ─── PRICE CHART ─── */
 function renderPrices(){
-  const ICO={'ดีเซล B7':'🛢️','91':'🟡','95':'🟠','E20':'🟢','E85':'🔵','พรีเมียม':'⭐','LPG':'🔴'};
+  const KEY_MAP={'ดีเซล B7':'diesel','91':'gasohol91','95':'gasohol95','E20':'e20','E85':'e85','พรีเมียม':'premium95','LPG':'lpg'};
+  const EMOJI={'diesel':'🛢️','gasohol91':'🟡','gasohol95':'🟠','e20':'🟢','e85':'🔵','premium95':'⭐','lpg':'🔴'};
   document.getElementById('pRow').innerHTML=PRICES.map(p=>{
-    const ico=Object.entries(ICO).find(([k])=>p.t.includes(k))?.[1]||'⛽';
-    return `<div class="price-chip"><div class="price-chip-ico">${ico}</div><div><div class="price-chip-label">${p.t}</div><div class="price-chip-val">${p.p}฿</div></div></div>`;
+    const key=Object.entries(KEY_MAP).find(([k])=>p.t.includes(k))?.[1]||'';
+    const icoSrc=key&&FUEL_ICONS[key]?FUEL_ICONS[key]:'';
+    const icoHtml=icoSrc
+      ?`<img src="${icoSrc}" style="width:20px;height:20px;object-fit:contain;border-radius:4px">`
+      :`<span style="font-size:14px">${EMOJI[key]||'⛽'}</span>`;
+    return `<div class="price-chip"><div class="price-chip-ico">${icoHtml}</div><div><div class="price-chip-label">${p.t}</div><div class="price-chip-val">${p.p}฿</div></div></div>`;
   }).join('');
 }
 const PRICE_DATA={diesel:[29.94,29.94,28.94,29.94,30.44,29.94,29.94,28.94,29.94,29.94,30.44,29.94,29.94,28.94,29.94,29.44,29.94,29.94,28.94,30.44,29.94,29.94,29.94,28.94,29.94,29.94,29.94,29.44,29.94,29.94],gasohol95:[31.05,31.05,32.05,31.05,31.55,31.05,31.05,30.05,31.05,31.05,31.55,31.05,31.05,32.05,31.05,31.05,31.05,31.05,32.05,31.55,31.05,31.05,31.05,32.05,31.05,31.05,31.05,31.05,31.05,31.05],gasohol91:[30.68,30.68,31.68,30.68,31.18,30.68,30.68,29.68,30.68,30.68,31.18,30.68,30.68,31.68,30.68,30.68,30.68,30.68,31.68,31.18,30.68,30.68,30.68,31.68,30.68,30.68,30.68,30.68,30.68,30.68],e20:[27.84,27.84,28.84,27.84,28.34,27.84,27.84,26.84,27.84,27.84,28.34,27.84,27.84,28.84,27.84,27.84,27.84,27.84,28.84,28.34,27.84,27.84,27.84,28.84,27.84,27.84,27.84,27.84,27.84,27.84]};
