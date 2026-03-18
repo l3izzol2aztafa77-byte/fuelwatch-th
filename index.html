@@ -665,7 +665,7 @@ button:active:not(.bni-center):not([disabled]),
       </div>
     </div>
     <!-- FILTER -->
-    <!-- Filter + ปุ่มซ่อนน้ำมันหมด -->
+    <!-- Filter -->
     <div style="display:flex;align-items:center;gap:8px;padding:8px 16px 0;flex-wrap:wrap">
       <div class="filter-wrap" id="ftChips" style="padding:0;border:none;flex:1;min-width:0">
         <div class="chip on" onclick="setFtf('all',this)">ทั้งหมด</div>
@@ -675,11 +675,10 @@ button:active:not(.bni-center):not([disabled]),
         <div class="chip" onclick="setFtf('e20',this)">🟢 E20</div>
         <div class="chip" onclick="setFtf('e85',this)">🔵 E85</div>
         <div class="chip" onclick="setFtf('lpg',this)">🔴 LPG</div>
-        <div class="chip" onclick="setFtf('premium95',this)">🔴 เบนซิน 95</div>
+        <div class="chip" onclick="setFtf('ngv',this)">🟤 NGV</div>
+        <div class="chip" onclick="setFtf('ev',this)">⚡ EV</div>
+        <div class="chip" onclick="setFtf('premium95',this)">💎 เบนซิน 95</div>
       </div>
-      <button id="hideEmptyBtn" onclick="toggleHideEmpty()" style="flex-shrink:0;padding:6px 12px;background:var(--sf2);border:1.5px solid var(--bd2);border-radius:var(--rf);font-size:11px;font-weight:600;color:var(--t2);cursor:pointer;white-space:nowrap;font-family:var(--body);transition:all .15s">
-        🚫 ซ่อนหมด
-      </button>
     </div>
     <div class="search-row">
       <input class="search-inp" id="stSrch" placeholder="ค้นหาชื่อปั๊ม หรือ ที่อยู่..." oninput="renderSt()" style="flex:1">
