@@ -1334,8 +1334,10 @@ async function loadData(){
     if(!fsRes.error && fsRes.data?.length){
       const fsMap={};
       fsRes.data.forEach(f=>{
-        if(!fsMap[f.station_id]) fsMap[f.station_id]={};
-        fsMap[f.station_id][f.fuel_type]={
+        // ใช้ string key เพื่อป้องกัน int vs string mismatch
+        const sid=String(f.station_id);
+        if(!fsMap[sid]) fsMap[sid]={};
+        fsMap[sid][f.fuel_type]={
           status: f.status||'unknown',
           ts: f.updated_at ? new Date(f.updated_at).getTime()/1000 : 0,
           reporter: f.reporter_name||null,
@@ -1343,17 +1345,19 @@ async function loadData(){
         };
       });
       stations.forEach(s=>{
-        const fs=fsMap[s.id];
+        const fs=fsMap[String(s.id)];
         if(!fs) return;
         Object.keys(fs).forEach(ft=>{
-          if(s.fuels[ft]) s.fuels[ft]=fs[ft];
+          s.fuels[ft]=fs[ft]; // ใส่ทุก ft ที่มีใน Supabase ไม่เช็ค ifs
         });
         s.overall=cOver(s.fuels);
       });
+      renderSt(); updateStats(); updateTicker();
       // save ลง localStorage
       const toSave={};
       stations.forEach(s=>{ toSave[s.id]=s.fuels; });
       localStorage.setItem('fw_fuel_status',JSON.stringify(toSave));
+      console.log(`✅ Loaded ${fsRes.data.length} fuel_status from Supabase`);
     }
 
     if(!priceRes.error && priceRes.data?.length){
@@ -1688,7 +1692,7 @@ async function doReport(sid){
 
     // อัปเดต fuel_status — สำคัญที่สุด ทำก่อนเสมอ
     const {error:fsErr} = await sb.from('fuel_status').upsert({
-      station_id: sid,
+      station_id: parseInt(sid),
       fuel_type: rptFuel,
       status: actualStatus,
       reporter_name: reporterName,
@@ -1698,15 +1702,7 @@ async function doReport(sid){
 
     if(fsErr) throw fsErr;
 
-    // บันทึก report log (ถ้า table มี — ไม่บังคับ)
-    try{
-      await sb.from('reports').insert({
-        station_id: sid,
-        fuel_type: rptFuel,
-        status: actualStatus,
-        reporter_name: reporterName
-      });
-    }catch(e){ /* reports table อาจยังไม่มี — ไม่เป็นไร */ }
+    // หมายเหตุ: ไม่บันทึก reports table เพื่อลด error
 
   } catch(err){
     console.warn('Report save error:', err.message);
