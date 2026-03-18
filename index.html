@@ -1228,18 +1228,6 @@ async function loadData(){
   // โหลด mock data ก่อน (base)
   loadMockData();
 
-  // ดึง fuel_status ที่ save ไว้ใน localStorage มาใส่ก่อนเสมอ
-  const savedStatus = JSON.parse(localStorage.getItem('fw_fuel_status')||'{}');
-  if(Object.keys(savedStatus).length){
-    stations.forEach(s=>{
-      const saved = savedStatus[s.id];
-      if(!saved) return;
-      Object.keys(saved).forEach(ft=>{
-        if(s.fuels[ft]) s.fuels[ft] = saved[ft];
-      });
-      s.overall = cOver(s.fuels);
-    });
-  }
 
   renderSt(); updateStats(); updateTicker();
 
@@ -1400,32 +1388,43 @@ function loadMockData(){
   const pool=['ok','ok','ok','low','empty','partial'];
   const now=Math.floor(Date.now()/1000);
 
-  // ปั๊มที่มี LPG จริง (ตามชื่อ/ข้อมูล)
-  const HAS_LPG=[8,53]; // PT สุพรรณ 5 (น้ำมัน+แก๊ส), บางจาก หวลบุดตา (มี LPG)
-  // ปั๊มที่มี NGV จริง
-  const HAS_NGV=[15]; // ปตท. สุพรรณบุรี (น้ำมัน+NGV+EV)
-  // ปั๊มที่มี EV จริง
-  const HAS_EV=[15,17,20,21,44,45,47,54,55]; // ตามชื่อปั๊มที่ระบุ +EV
+  // ดึง saved status จาก localStorage — ใช้แทน random ถ้ามี
+  const savedStatus=JSON.parse(localStorage.getItem('fw_fuel_status')||'{}');
+
+  const HAS_LPG=[8,53];
+  const HAS_NGV=[15];
+  const HAS_EV=[15,17,20,21,44,45,47,54,55];
 
   stations=rawSt.map(s=>{
     const fuels={};
-    // core fuels ทุกปั๊มมี
+    const saved=savedStatus[s.id]||{};
+    // core fuels — ใช้ saved ถ้ามี ไม่งั้น random
     ['diesel','gasohol91','gasohol95','e20','e85','premium95'].forEach(ft=>{
-      const st=pool[Math.floor(Math.random()*pool.length)];
-      fuels[ft]={status:st,ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};
+      if(saved[ft]){
+        fuels[ft]=saved[ft];
+      } else {
+        const st=pool[Math.floor(Math.random()*pool.length)];
+        fuels[ft]={status:st,ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};
+      }
     });
-    // LPG — เฉพาะปั๊มที่มีจริง
-    fuels.lpg = HAS_LPG.includes(s.id)
-      ? {status:pool[Math.floor(Math.random()*pool.length)],ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false}
-      : {status:'unknown',ts:0,reporter:null,verified:false};
-    // NGV — เฉพาะปั๊มที่มีจริง
-    fuels.ngv = HAS_NGV.includes(s.id)
-      ? {status:pool[Math.floor(Math.random()*pool.length)],ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false}
-      : {status:'unknown',ts:0,reporter:null,verified:false};
-    // EV — เฉพาะปั๊มที่มีจริง
-    fuels.ev = HAS_EV.includes(s.id)
-      ? {status:'ok',ts:now-Math.floor(Math.random()*30+1)*60,reporter:null,verified:false}
-      : {status:'unknown',ts:0,reporter:null,verified:false};
+    // LPG
+    if(HAS_LPG.includes(s.id)){
+      fuels.lpg=saved.lpg||{status:pool[Math.floor(Math.random()*pool.length)],ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};
+    } else {
+      fuels.lpg=saved.lpg?.status&&saved.lpg.status!=='unknown'?saved.lpg:{status:'unknown',ts:0,reporter:null,verified:false};
+    }
+    // NGV
+    if(HAS_NGV.includes(s.id)){
+      fuels.ngv=saved.ngv||{status:pool[Math.floor(Math.random()*pool.length)],ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};
+    } else {
+      fuels.ngv=saved.ngv?.status&&saved.ngv.status!=='unknown'?saved.ngv:{status:'unknown',ts:0,reporter:null,verified:false};
+    }
+    // EV
+    if(HAS_EV.includes(s.id)){
+      fuels.ev=saved.ev||{status:'ok',ts:now-Math.floor(Math.random()*30+1)*60,reporter:null,verified:false};
+    } else {
+      fuels.ev=saved.ev?.status&&saved.ev.status!=='unknown'?saved.ev:{status:'unknown',ts:0,reporter:null,verified:false};
+    }
     return{...s,fuels,overall:cOver(fuels)};
   });
   rescueData=[
