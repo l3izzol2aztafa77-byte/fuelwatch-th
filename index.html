@@ -1223,77 +1223,65 @@ async function loadData(){
   renderPrices();
   setInterval(updateClock,1000);
 
-  // แสดง loading
   document.getElementById('stList').innerHTML=`<div style="text-align:center;padding:32px;color:var(--t3);font-size:13px">⏳ กำลังโหลดข้อมูลปั๊มน้ำมัน...</div>`;
 
+  // โหลด mock data ก่อน (base)
+  loadMockData();
+
+  // ดึง fuel_status ที่ save ไว้ใน localStorage มาใส่ก่อนเสมอ
+  const savedStatus = JSON.parse(localStorage.getItem('fw_fuel_status')||'{}');
+  if(Object.keys(savedStatus).length){
+    stations.forEach(s=>{
+      const saved = savedStatus[s.id];
+      if(!saved) return;
+      Object.keys(saved).forEach(ft=>{
+        if(s.fuels[ft]) s.fuels[ft] = saved[ft];
+      });
+      s.overall = cOver(s.fuels);
+    });
+  }
+
+  renderSt(); updateStats(); updateTicker();
+
+  // ดึง fuel_status จาก Supabase (ถ้ามี)
   try {
-    // โหลด stations + fuel_status พร้อมกัน
-    const [stRes, fsRes, rescRes, priceRes] = await Promise.all([
-      sb.from('stations').select('*').order('id'),
+    const [fsRes, priceRes] = await Promise.all([
       sb.from('fuel_status').select('*'),
-      sb.from('rescue_listings').select('*').order('verified',{ascending:false}).order('created_at',{ascending:false}),
       sb.from('fuel_prices').select('*').order('fuel_type'),
     ]);
 
-    if(stRes.error) throw stRes.error;
-
-    // Build stations map
-    const now = Math.floor(Date.now()/1000);
-    const fsMap = {};
-    (fsRes.data||[]).forEach(f=>{
-      if(!fsMap[f.station_id]) fsMap[f.station_id]={};
-      fsMap[f.station_id][f.fuel_type]={
-        status: f.status||'unknown',
-        ts: f.updated_at ? new Date(f.updated_at).getTime()/1000 : now,
-        reporter: f.reporter_name||null,
-        verified: f.verified||false
-      };
-    });
-
-    stations = (stRes.data||[]).map(s=>{
-      const fuels={};
-      FT.forEach(ft=>{
-        fuels[ft] = fsMap[s.id]?.[ft] || {status:'unknown',ts:0,reporter:null,verified:false};
+    // overlay fuel_status จาก Supabase ทับ mock
+    if(!fsRes.error && fsRes.data?.length){
+      const fsMap={};
+      fsRes.data.forEach(f=>{
+        if(!fsMap[f.station_id]) fsMap[f.station_id]={};
+        fsMap[f.station_id][f.fuel_type]={
+          status: f.status||'unknown',
+          ts: f.updated_at ? new Date(f.updated_at).getTime()/1000 : 0,
+          reporter: f.reporter_name||null,
+          verified: f.verified||false
+        };
       });
-      return {...s, fuels, overall: cOver(fuels)};
-    });
-
-    // Rescue listings
-    if(!rescRes.error && rescRes.data?.length){
-      rescueData = rescRes.data.map(l=>({
-        id: l.id,
-        type: l.type,
-        name_th: l.name,
-        name_en: l.name,
-        phone: l.phone,
-        phone2: l.phone2,
-        line_id: l.line_id,
-        area_th: l.area,
-        area_en: l.area,
-        tags_th: l.tags||[],
-        tags_en: l.tags||[],
-        h24: l.h24||false,
-        is_free: l.is_free||false,
-        heavy: l.heavy||false,
-        quick: l.quick||false,
-        note_th: l.note||null,
-        note_en: l.note||null,
-        verified: l.verified||false,
-        ownerId: l.owner_id||null,
-        ownerName: l.owner_name||null,
-        pin_hash: l.pin_hash||null,
-        created_at: l.created_at
-      }));
+      stations.forEach(s=>{
+        const fs=fsMap[s.id];
+        if(!fs) return;
+        Object.keys(fs).forEach(ft=>{
+          if(s.fuels[ft]) s.fuels[ft]=fs[ft];
+        });
+        s.overall=cOver(s.fuels);
+      });
+      // save ลง localStorage
+      const toSave={};
+      stations.forEach(s=>{ toSave[s.id]=s.fuels; });
+      localStorage.setItem('fw_fuel_status',JSON.stringify(toSave));
     }
 
-    // Fuel prices
     if(!priceRes.error && priceRes.data?.length){
       renderPricesFromDB(priceRes.data);
     }
 
   } catch(err) {
-    console.warn('Supabase load error, using mock:', err.message);
-    loadMockData();
+    console.warn('Supabase load error, using cached/mock:', err.message);
   }
 
   renderSt(); updateStats(); updateTicker();
@@ -1311,6 +1299,10 @@ async function loadData(){
         verified: f.verified||false
       };
       s.overall = cOver(s.fuels);
+      // save ลง localStorage ทันที
+      const toSave={};
+      stations.forEach(st=>{ toSave[st.id]=st.fuels; });
+      localStorage.setItem('fw_fuel_status',JSON.stringify(toSave));
       renderSt(); updateStats(); updateTicker();
       if(f.status==='empty') showToast(`⛽ ${s.name} — น้ำมัน${FL[f.fuel_type]} หมดแล้ว!`);
     })
@@ -1612,6 +1604,17 @@ async function doReport(sid){
   s.fuels[rptFuel].verified=!!currentUser;
   s.overall=cOver(s.fuels);
   renderSt();updateStats();updateTicker();
+
+  // บันทึกลง localStorage ทันที — กันหาย เมื่อ refresh
+  const savedStatus=JSON.parse(localStorage.getItem('fw_fuel_status')||'{}');
+  if(!savedStatus[s.id]) savedStatus[s.id]={};
+  savedStatus[s.id][rptFuel]={
+    status:actualStatus,
+    ts:Math.floor(Date.now()/1000),
+    reporter:currentUser?.name||'ผู้ใช้ทั่วไป',
+    verified:!!currentUser
+  };
+  localStorage.setItem('fw_fuel_status',JSON.stringify(savedStatus));
 
   // Save to Supabase
   try {
