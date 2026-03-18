@@ -1385,46 +1385,20 @@ function loadMockData(){
     {id:62, name:'บางจาก พลับพลาไชย',                              brand:'Bangchak', lat:14.529919, lng:99.910769,  address:'ต.พลับพลาไชย อ.อู่ทอง จ.สุพรรณบุรี'},
     {id:63, name:'เชลล์ เจริญภัณฑ์ปั๊ม สามชุก',                   brand:'Shell',    lat:14.752000, lng:100.076000, address:'819/2 ม.2 ถ.สุพรรณบุรี-ชัยนาท ต.สามชุก'},
   ];
-  const pool=['ok','ok','ok','low','empty','partial'];
   const now=Math.floor(Date.now()/1000);
-
-  // ดึง saved status จาก localStorage — ใช้แทน random ถ้ามี
-  const savedStatus=JSON.parse(localStorage.getItem('fw_fuel_status')||'{}');
-
   const HAS_LPG=[8,53];
   const HAS_NGV=[15];
   const HAS_EV=[15,17,20,21,44,45,47,54,55];
 
+  // ค่าเริ่มต้น = unknown ทั้งหมด — รอ Supabase มา fill
   stations=rawSt.map(s=>{
     const fuels={};
-    const saved=savedStatus[s.id]||{};
-    // core fuels — ใช้ saved ถ้ามี ไม่งั้น random
     ['diesel','gasohol91','gasohol95','e20','e85','premium95'].forEach(ft=>{
-      if(saved[ft]){
-        fuels[ft]=saved[ft];
-      } else {
-        const st=pool[Math.floor(Math.random()*pool.length)];
-        fuels[ft]={status:st,ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};
-      }
+      fuels[ft]={status:'unknown',ts:0,reporter:null,verified:false};
     });
-    // LPG
-    if(HAS_LPG.includes(s.id)){
-      fuels.lpg=saved.lpg||{status:pool[Math.floor(Math.random()*pool.length)],ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};
-    } else {
-      fuels.lpg=saved.lpg?.status&&saved.lpg.status!=='unknown'?saved.lpg:{status:'unknown',ts:0,reporter:null,verified:false};
-    }
-    // NGV
-    if(HAS_NGV.includes(s.id)){
-      fuels.ngv=saved.ngv||{status:pool[Math.floor(Math.random()*pool.length)],ts:now-Math.floor(Math.random()*90+3)*60,reporter:null,verified:false};
-    } else {
-      fuels.ngv=saved.ngv?.status&&saved.ngv.status!=='unknown'?saved.ngv:{status:'unknown',ts:0,reporter:null,verified:false};
-    }
-    // EV
-    if(HAS_EV.includes(s.id)){
-      fuels.ev=saved.ev||{status:'ok',ts:now-Math.floor(Math.random()*30+1)*60,reporter:null,verified:false};
-    } else {
-      fuels.ev=saved.ev?.status&&saved.ev.status!=='unknown'?saved.ev:{status:'unknown',ts:0,reporter:null,verified:false};
-    }
+    fuels.lpg  = HAS_LPG.includes(s.id)?{status:'unknown',ts:0,reporter:null,verified:false}:{status:'unknown',ts:0,reporter:null,verified:false};
+    fuels.ngv  = HAS_NGV.includes(s.id)?{status:'unknown',ts:0,reporter:null,verified:false}:{status:'unknown',ts:0,reporter:null,verified:false};
+    fuels.ev   = HAS_EV.includes(s.id) ?{status:'unknown',ts:0,reporter:null,verified:false}:{status:'unknown',ts:0,reporter:null,verified:false};
     return{...s,fuels,overall:cOver(fuels)};
   });
   rescueData=[
@@ -1620,15 +1594,8 @@ async function doReport(sid){
     const reporterName = currentUser?.name || 'ผู้ใช้ทั่วไป';
     const isVerified = !!currentUser;
 
-    // บันทึก report
-    await sb.from('reports').insert({
-      station_id: sid,
-      fuel_type: rptFuel,
-      status: actualStatus
-    });
-
-    // อัปเดต fuel_status
-    await sb.from('fuel_status').upsert({
+    // อัปเดต fuel_status — สำคัญที่สุด ทำก่อนเสมอ
+    const {error:fsErr} = await sb.from('fuel_status').upsert({
       station_id: sid,
       fuel_type: rptFuel,
       status: actualStatus,
@@ -1637,8 +1604,21 @@ async function doReport(sid){
       updated_at: new Date().toISOString()
     },{onConflict:'station_id,fuel_type'});
 
+    if(fsErr) throw fsErr;
+
+    // บันทึก report log (ถ้า table มี — ไม่บังคับ)
+    try{
+      await sb.from('reports').insert({
+        station_id: sid,
+        fuel_type: rptFuel,
+        status: actualStatus,
+        reporter_name: reporterName
+      });
+    }catch(e){ /* reports table อาจยังไม่มี — ไม่เป็นไร */ }
+
   } catch(err){
     console.warn('Report save error:', err.message);
+    showToast('⚠️ บันทึกไม่สำเร็จ: '+err.message);
   }
 
   if(currentUser){
