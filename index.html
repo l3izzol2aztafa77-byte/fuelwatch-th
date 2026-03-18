@@ -503,6 +503,18 @@ button:active:not(.bni-center):not([disabled]),
 @media(max-width:380px){.fg2{grid-template-columns:1fr}.fg2 .full{grid-column:1}.stat-grid{gap:4px}.sbn{font-size:20px}}
 
 </style>
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FuelWatch TH">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAFfUlEQVR4nO3cQW4UMRCFYc8oZ0BilROwYxeuwYpDcBwOEcQpGLHiEJGQOMawiDo4k+lpd7ftqvL7vz3Ibb835Z5EOSQ0cX64P9f8/w6np0PN/w/P2NQdaod8K8qxHRtXyEvYS1GKMmzSjGiBX0IhrmNTMqOFfg5l+E9+I1RCP0e9DJIPrx76OYplkHpggl9GqQgSD0rwt1EowrAPSOjrGrUMwz0UwW9rtCIcrRdQE+Fvb7Q9HqLNox1KFCNMg9APQPB9iFyEkAsn+D5FLEK4dwDC71fEswnT2IibqyzKNAgxAQh/PFHOzH0Bomwk3opwdm7HVITNQzmvVyKXE4Dwj8frmborgNeNwn4ez9bNWPK4OWjHy5XIxQQg/Hq8nLl5AbxsBPrzcPamBfCwAbBlnQGzAlg/OPywzIJJAQg/LlllonsBCD/mWGSjawEIP5b0zki3AhB+lOqZlS4FIPxYq1dmmheA8GOrHtlpWgDCj71aZ6hZAQg/ammZJfNfhQAsNSkAn/6orVWmqheA8KOVFtmqWgDCj9ZqZ4x3AEirVgA+/dFLzaxVKQDhR2+1Mre7AIQfVmpkj3cASNtVAD79YW1vBjcXgPDDiz1Z5AoEaZsKwKc/vNmaSSYApK3+83QSn/7fvqf04aP1Kur5fUrp6xfrVXSx9k8uMgEgbVUBJD79EdrajBYXgPAjijVZ5QoEaUUF4NMf0ZRm9q71Qoby+VNKf/9Yr2Leu/cp/fhlvYpQuAJB2mIBuP4gqpLsMgEg7WYB+PRHdEsZZgJA2mwB+PTHKG5lmQkAaRQA0q4WgOsPRjOXaSYApFEASHtTAK4/GNW1bDMBII0CQNqrAnD9weguM84EgDQKAGkUANJeCsD9HyryrDMBII0CQBoFgDQKAGnHlHgBhp4p80wASKMAkEYBII0CQBoFgDQKAGlHvgKFqvPD/ZkJAGkUANIoAKRRAEijAJBGASCNAkAaBYA0CgBpFADSKACkUQBIowCQRgEgjQJAGgWANAoAaRQA0igApB0Pp6eD9SIAC4fT04EJAGkUANIoAKRRAEijAJBGASDtmNLz10HWCwF6mjLPBIA0CgBpFADSKACkvRSAF2GoyLPOBIA0CgBpFADSXhWA9wCM7jLjTABIowCQ9qYAXIMwqmvZZgJAGgWAtKsF4BqE0cxlmgkAaRQA0mYLwDUIo7iVZSYApN0sAFMA0S1lmAkAaYsFYAogqpLs3vVYyDAef1qvAJVxBYK0ogJwDUI0pZllAkBacQGYAohiTVZXTQBKAO/WZnR1oM8P9+e1/wboZW0BVr8DMAXg1ZZs8hIMaZsKwBSAN1szyQSAtM0FYArAiz1Z3DUBKAGs7c0gVyBI210ApgCs1MhelQlACdBbrcxVuwJRAvRSM2u8A0Ba1QIwBdBa7YxVnwCUAK20yFaTKxAlQG2tMsU7AKQ1KwBTALW0zFLTCUAJsFfrDDW/AlECbNUjO13eASgB1uqVmW4vwZQApXpmpeu3QJQAS3pnpPvXoJQAcyyyYfJzAEqAS1aZMPtBGCXAxDILpj8JpgSwzoD5r0JYbwDseDh78wKk5GMj0JeXM3exiBx/e3RsXoI/cTEBct42CPV4PFt3BUjJ50ZhH69n6nJROa5EsXkN/sTlBMh530DMi3B27guQUoyNxGtRzizEInNciXyLEvxJiAmQi7bBSiKeTbgF55gGPkQM/iTswnMUwUbk4E/CP0COIvQxQvAn4d4BbhnpYLwabY+Hepgc06Cu0YI/GfKhLlGGbUYNfW74B8xRhDIKwZ/IPGiOIlynFPyJ3ANfUi+DYuhz0g9/SaUM6qHPsREzRisDob+OTSkUrRAEvgybtIOXUhD27di4RmqXg5C38Q/E4NIwBz6epQAAAABJRU5ErkJggg==">
+  <link rel="apple-touch-icon" sizes="152x152" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJgAAACYCAYAAAAYwiAhAAAEQklEQVR4nO3dvXEUQRCG4dlDWWDIxCICGUSATQAkQAxkg4eNB8VFgIVBFRfJYVB7tVrt3v7NN9Pd8z4uVdTszKvekQRSl3BzfXq85vh7uvOly/H3RNDkRuQKaasWw2vigWsFtaSF4EI+oNWglkQMLswDeY1qTpTY3D9EtLDGvIfmcvHRo5rjMTZXC241rDFPoblYKGFN8xCa6QUS1jqWQzvVXsAc4lrP8l6ZK9/yZnlgbZqZWQxh5WUlNBOvSOLKz8qeVg/MykZEZGFvq41RCw/fklqvzCoTjLjKq7XnxQMjrnpq7H2xsUlYtpR6ZRaZYMRlT6kzkQdGXHaVOBtpYMRln/qMZIERlx/Ks5IERlz+qM4se2DE5Zfi7LIGRlz+5T7DbIERVxw5z7L6N7sRW5bAmF7x5DrTw4ERV1w5zvZQYMQV39Ez5g4Gqd2BMb3aceSsdwVGXO3Ze+abAyOudu05e+5gkNoUGNMLWxtggkFqdWBML/S2tLDqH/67jevL95ReP9ZexX3fvqb0+VPtVeyy5j+O8IqE1GJgbqcX5Na0wQSD1N3AmF5YstTIQ6mFmPD7V0of39ddw48/KZ1e1V1DQbMTjOmFte61wh0MUgQGqcnAeD1iq7lmmGCQehEY0wt7TbXDBIMUgUHqWWC8HnHUuCEmGKQIDFIEBqlbYNy/kMuwJSYYpAgMUgQGqVNK3L+QX98UEwxSBAYpAoMUgUGKwCB14jNIqFyfHq9MMEgRGKQIDFIEBikCgxSBQYrAIEVgkCIwSBEYpAgMUgQGKQKDFIFBisAgRWCQIjBIndb8xixgj+586ZhgkCIwSBEYpAgMUgQGqVNK6373MrBF3xQTDFIEBikCg9QtMO5hyGXYEhMMUgQGKQKD1LPAuIfhqHFDTDBIERikXgTGaxJ7TbXDBIPUZGBMMWw11wwTDFIEBqmHuT/ozpcu3M/Qf/M2pZ9/a68inHtXKiYYpO4GxmUfS5YaYYJBajEwphjmrGlj9pIfwod3tVfQvFWvSKYYxtY2sfoORmTobWmBSz6kNgXGFMPWBphgkNocGFOsXXvOftcEI7L27D3z3a9IImvHkbPmDgapQ4ExxeI7esaHJxiRxZXjbLO8Ioksnlxnyh0MUtkCY4rFkfMss04wIvMv9xlmf0USmV+Ks5PcwYjMH9WZyS75ROaH8qykn0USmX3qM5J/mYLI7CpxNkW+DkZk9pQ6k+IHH+7HEThT+oO9+FfymWb11Nj7Kt8qIrLyau159YPmlalV+4O5+je7a29AZBb2tnpgKdnYiGis7KmJRQzxyjzGSlg9U4sZIrRtrIXVM/GKnGJ1wyyyvFdmFzbENJtmOaye+QUOEdp/HsLquVnoUKuheQqr527BY9Fj8xjVkOvFD0ULzXtYvRAPMeY1tihRDYV7oClWg4sY1Fj4B5xSK7gWghpr7oHvyRVeiyHN+QeetXFg6iMdSgAAAABJRU5ErkJggg==">
+  <link rel="apple-touch-icon" sizes="144x144" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAYAAADnRuK4AAAECUlEQVR4nO3aPW4UQRCG4Z6VIUJcwdzDHIuIkICIiANwAESMyIh8AUIyXwGRL4E11njY2fn5uruqut9HIkTumXpdM2t7SJ07392elf8/3D8Muc4SURcXr0ZyVA9xNXmBVsGsaTGoZi7IazRLWokp9EVEi2ZJ5JhCHryVcOYihhTmwK1GsyRKTO4P2Vs4c95Dcnu43sOZ8xqSu0MRznXeQjpZH2CKeNZ5u0cuavZ2U6LwsI3MNxDxHOfh3pkV7OHiW2K1jUw2EPHkZ3VPqwdEPOVY3Ntqa49w6qr1SKuygYinvlr3vHhAxGOnxr0vGhDx2Cs9g2IBEY8fJWdRJCDi8afUTLIHRDx+lZhN1oCIx7/cM8oWEPHEkXNWWQIinnhyzUwOiHjiyjE78z/nQGxSQGyf+NQZHg6IeNqhzPJQQMTTnqMz5R0Ikt0BsX3adWS2uwIinvbtnTGPMEg2B8T26ceeWW8KiHj6s3XmN6UPUtWr1yn9+GV9imWfP6T09Yv1KbJa3UBsn35tmT0v0ZBcDYjtg7UG2noHuuTju5S+f7P52j9/p/Tipc3XrmRxA7F9MLrWAu9AkBAQJBcD4vGFuaUm2ECQ/BcQ2wdLLrXBBoKEgCB5FhCPL6yZN8IGgoSAIHkKiMcXtpq2wgaChIAgISBITinx/oP9xmbYQJAQECQEBAkBQUJAkBAQJCc+wuOo893tmQ0ECQFBQkCQEBAkBAQJAUFCQJAQECQEBAkBQUJAkBAQJAQECQFBQkCQnIb7h8H6EIhpuH8Y2ECQEBAkBAQJAUFCQJAQECSnlB4/jlkfBLGMzbCBICEgSAgIkqeAeA/CVtNW2ECQEBAkzwLiMYY180bYQJAQECT/BcRjDEsutcEGguRiQGwhzC01wQaChIAgWQyIxxhG11q4qXkQE+8/Pf5DEVcfYWwhrDXAOxAkqwGxhfq1ZfZtvQP9/ZPS2zfWp+jKpkcYW6g/W2e++R2IiPqxZ9a8REOyKyC2UPv2znj3BiKidh2ZLY8wSA4FxBZqz9GZHt5ARNQOZZbSI4yI4lNnyDsQJHJAbKG4cswuywYionhyzSzbI4yI4sg5q6zvQETkX+4ZZX+JJiK/SsymyKcwIvKn1EyKfYwnIj9KzqLoz4GIyF7pGRT/QSIR2alx76v8JJqI6qt1z6sP9nx3e679NXtS+5u1+u/C2EblWNxbk1+mElF+VvfUfJA80jTW34zmf85hfQMi83DvzA8wxTbaxkM4I/MNNOXpxnjl7R65OswU2+g5b+GMXB5qqveQvIYzcn24qd5C8h7OKMQh51qNKUo0U+EOPNVKSBHDGYU9+Fy0mCJHM9XERcx5jamVaKaau6BLrIJqMZi55i9wjRpXD5Fc8w+cS2Ft6PZZ2AAAAABJRU5ErkJggg==">
+  <!-- Splash screen color -->
+  <meta name="msapplication-TileColor" content="#FF3B1F">
+  <meta name="msapplication-TileImage" content="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAYAAADnRuK4AAAECUlEQVR4nO3aPW4UQRCG4Z6VIUJcwdzDHIuIkICIiANwAESMyIh8AUIyXwGRL4E11njY2fn5uruqut9HIkTumXpdM2t7SJ07392elf8/3D8Muc4SURcXr0ZyVA9xNXmBVsGsaTGoZi7IazRLWokp9EVEi2ZJ5JhCHryVcOYihhTmwK1GsyRKTO4P2Vs4c95Dcnu43sOZ8xqSu0MRznXeQjpZH2CKeNZ5u0cuavZ2U6LwsI3MNxDxHOfh3pkV7OHiW2K1jUw2EPHkZ3VPqwdEPOVY3Ntqa49w6qr1SKuygYinvlr3vHhAxGOnxr0vGhDx2Cs9g2IBEY8fJWdRJCDi8afUTLIHRDx+lZhN1oCIx7/cM8oWEPHEkXNWWQIinnhyzUwOiHjiyjE78z/nQGxSQGyf+NQZHg6IeNqhzPJQQMTTnqMz5R0Ikt0BsX3adWS2uwIinvbtnTGPMEg2B8T26ceeWW8KiHj6s3XmN6UPUtWr1yn9+GV9imWfP6T09Yv1KbJa3UBsn35tmT0v0ZBcDYjtg7UG2noHuuTju5S+f7P52j9/p/Tipc3XrmRxA7F9MLrWAu9AkBAQJBcD4vGFuaUm2ECQ/BcQ2wdLLrXBBoKEgCB5FhCPL6yZN8IGgoSAIHkKiMcXtpq2wgaChIAgISBITinx/oP9xmbYQJAQECQEBAkBQUJAkBAQJCc+wuOo893tmQ0ECQFBQkCQEBAkBAQJAUFCQJAQECQEBAkBQUJAkBAQJAQECQFBQkCQnIb7h8H6EIhpuH8Y2ECQEBAkBAQJAUFCQJAQECSnlB4/jlkfBLGMzbCBICEgSAgIkqeAeA/CVtNW2ECQEBAkzwLiMYY180bYQJAQECT/BcRjDEsutcEGguRiQGwhzC01wQaChIAgWQyIxxhG11q4qXkQE+8/Pf5DEVcfYWwhrDXAOxAkqwGxhfq1ZfZtvQP9/ZPS2zfWp+jKpkcYW6g/W2e++R2IiPqxZ9a8REOyKyC2UPv2znj3BiKidh2ZLY8wSA4FxBZqz9GZHt5ARNQOZZbSI4yI4lNnyDsQJHJAbKG4cswuywYionhyzSzbI4yI4sg5q6zvQETkX+4ZZX+JJiK/SsymyKcwIvKn1EyKfYwnIj9KzqLoz4GIyF7pGRT/QSIR2alx76v8JJqI6qt1z6sP9nx3e679NXtS+5u1+u/C2EblWNxbk1+mElF+VvfUfJA80jTW34zmf85hfQMi83DvzA8wxTbaxkM4I/MNNOXpxnjl7R65OswU2+g5b+GMXB5qqveQvIYzcn24qd5C8h7OKMQh51qNKUo0U+EOPNVKSBHDGYU9+Fy0mCJHM9XERcx5jamVaKaau6BLrIJqMZi55i9wjRpXD5Fc8w+cS2Ft6PZZ2AAAAABJRU5ErkJggg==">
 </head>
 <body>
 
@@ -2302,7 +2314,7 @@ function ago(ts){if(!ts)return'—';const d=Math.floor((typeof ts==='number'&&ts
 function distR(a,b,c,d){const R=6371,dL=r(c-a),dG=r(d-b);const x=Math.sin(dL/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dG/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
 function dist1(a,b,c,d){return distR(a,b,c,d).toFixed(1);}
 function r(d){return d*Math.PI/180;}
-let tt;function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),3000);}
+let tt;function showToast(msg,dur=3000){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),dur);}
 
 /* ─── ADD PLACE SYSTEM ─── */
 const PLACE_TYPE_LABEL={
@@ -3037,5 +3049,27 @@ document.addEventListener('DOMContentLoaded',()=>{
 if(currentUser){enterApp();}
 else{document.getElementById('app').style.display='none';}
 </script>
+
+  <script>
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('/sw.js')
+        .then(r=>console.log('SW registered'))
+        .catch(e=>console.warn('SW failed:', e));
+    });
+  }
+  // iOS install prompt helper
+  window.addEventListener('load',()=>{
+    const isIos=()=>/iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    const isStandalone=()=>'standalone' in navigator&&navigator.standalone;
+    const shown=localStorage.getItem('fw_pwa_prompt');
+    if(isIos()&&!isStandalone()&&!shown){
+      setTimeout(()=>{
+        showToast('📲 กด Share → "Add to Home Screen" เพื่อติดตั้งแอป!',5000);
+        localStorage.setItem('fw_pwa_prompt','1');
+      },3000);
+    }
+  });
+  </script>
 </body>
 </html>
