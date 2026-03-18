@@ -1644,11 +1644,18 @@ function toggleRpt(id){
   selSid=id; rptFuels=[]; rptStat=null;
   const s=stations.find(x=>x.id===id); if(!s) return;
 
-  // แสดง fuel ทั้งหมดที่ปั๊มนี้มี
-  const availFuels=FT.filter(ft=>s.fuels[ft]&&(s.fuels[ft].status!=='unknown'
-    ||['diesel','gasohol91','gasohol95','e20','e85','premium95'].includes(ft)));
-  const fbtns=availFuels
-    .map(ft=>`<button class="rfbtn" data-ft="${ft}" onclick="toggleRFuel('${ft}',this)">${FL[ft]}</button>`).join('');
+  // แสดง fuel ทั้งหมด — แบ่งเป็น "มีอยู่แล้ว" กับ "เพิ่มใหม่ได้"
+  const coreFuels=['diesel','gasohol91','gasohol95','e20','e85','premium95'];
+  const extraFuels=['lpg','ngv','ev'];
+  const existingFuels=FT.filter(ft=>s.fuels[ft]&&s.fuels[ft].status!=='unknown');
+  const allShowFuels=[...coreFuels,...extraFuels];
+  
+  const fbtns=allShowFuels.map(ft=>{
+    const exists=existingFuels.includes(ft)||coreFuels.includes(ft);
+    const isNew=!exists;
+    const newTag=isNew?` <span style="font-size:8px;color:var(--go);font-weight:700">+ใหม่</span>`:'';
+    return `<button class="rfbtn${isNew?' new-fuel':''}" data-ft="${ft}" onclick="toggleRFuel('${ft}',this)" style="${isNew?'border-style:dashed;':''}">${FL[ft]||ft}${newTag}</button>`;
+  }).join('');
   const selectAllBtn=`<button class="rfbtn" style="font-weight:700;border-color:var(--acc);color:var(--acc)" onclick="selectAllFuels(${id})">✅ เลือกทั้งหมด</button>`;
   const isAdmin=currentUser&&currentUser.name==='admin';
   const isBizOwner=currentUser&&currentUser.type==='biz';
@@ -1667,15 +1674,15 @@ function toggleRpt(id){
     </div>
     ${banner}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1px">เลือกชนิดน้ำมัน (เลือกได้หลายอัน)</div>
+      <div style="font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1px">เลือกชนิดน้ำมัน / EV (เลือกได้หลายอัน)</div>
     </div>
     <div class="rfuels" id="rfBtns-${id}" style="margin-bottom:4px">${fbtns}</div>
     <div style="margin-bottom:12px">${selectAllBtn}</div>
     <div style="font-size:11px;font-weight:600;color:var(--t3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">สถานะ</div>
     <div class="rst-row" style="margin-bottom:6px">
-      <button class="rstbtn ok" onclick="selRS('ok',this,${id})">✅ มีน้ำมัน</button>
+      <button class="rstbtn ok" onclick="selRS('ok',this,${id})">✅ มี / พร้อมใช้</button>
       <button class="rstbtn low" onclick="selRS('low',this,${id})">⚠️ เหลือน้อย</button>
-      <button class="rstbtn empty" onclick="selRS('empty',this,${id})">🚫 หมดแล้ว</button>
+      <button class="rstbtn empty" onclick="selRS('empty',this,${id})">🚫 หมด / ปิด</button>
     </div>
     <div style="margin-bottom:12px">
       <button class="rstbtn discontinued" style="width:100%;font-size:11px" onclick="selRS('discontinued',this,${id})">
@@ -1746,6 +1753,10 @@ async function doReport(sid){
   if(!savedStatus[s.id]) savedStatus[s.id]={};
 
   for(const ft of rptFuels){
+    // สร้าง fuel entry ใหม่ถ้าปั๊มยังไม่มี (เช่น เพิ่ม EV/NGV/LPG ใหม่)
+    if(!s.fuels[ft]||s.fuels[ft].status==='unknown'){
+      s.fuels[ft]={status:'unknown',ts:0,reporter:null,verified:false};
+    }
     s.fuels[ft].status=actualStatus;
     s.fuels[ft].ts=now;
     s.fuels[ft].reporter=reporterName;
